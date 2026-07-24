@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document sets the visual and interaction direction for public and admin experiences. Phase 2 implements the shared foundation documented in `design-system-implementation.md`; final business pages and protected admin functionality remain future work.
+This document sets the visual and interaction direction for public and admin experiences. Phase 2 implements the shared foundation documented in `design-system-implementation.md`; Phase 3 implements protected administration; and Phase 4 applies the system to the static public marketing website documented in `public-marketing-implementation.md`.
 
 ## Brand character
 

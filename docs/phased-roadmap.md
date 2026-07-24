@@ -22,7 +22,7 @@ Implemented secure staff authentication; Users -> Roles -> Permissions; server-s
 
 ## Phase 4 — Public marketing website
 
-Implement home, services, areas, About, Contact, FAQs, testimonials only when verified, calls to action, residential/commercial content, blog preview, and estimator promotion.
+Implemented the static home, service and area pages, About, Contact foundation, FAQs, honest empty testimonial state, calls to action, residential/commercial content, local demonstration portfolio, planned blog preview, estimator foundation, quote-request foundation, metadata, safe structured data, sitemap, and robots behavior. Phase 4 adds no submissions, uploads, calculations, database-backed projects, or publishing.
 
 ## Phase 5 — Before-and-after system
 

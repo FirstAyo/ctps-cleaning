@@ -1,13 +1,13 @@
 # CTPS Cleaning Website
 
-CTPS Cleaning is a VPS-portable public website, protected staff application, and API. Phases 1–3
+CTPS Cleaning is a VPS-portable public website, protected staff application, and API. Phases 1–4
 provide the monorepo foundation, premium design system, PostgreSQL-backed staff authentication,
-server authorization, user/role administration, and audit foundation. Later business features are
-not implemented.
+server authorization, user/role administration, audit foundation, and static public marketing
+website. Later business workflows are not implemented.
 
 ## Workspace
 
-- `apps/web` — public Next.js foundation page on port 3000
+- `apps/web` — static public CTPS marketing website on port 3000; `/design-system` preserves the Phase 2 preview
 - `apps/admin` — protected staff administration on port 3001; `/design-system` retains the Phase 2 demonstration
 - `apps/api` — authoritative NestJS authentication and administration API on port 4000
 - `packages/*` — database and minimal shared foundations
@@ -94,6 +94,7 @@ both status pages, then shuts the application processes down.
   client configuration and access the Docker engine.
 
 Stop local PostgreSQL with `pnpm db:stop`. See
-`docs/authentication-authorization-implementation.md` for the Phase 3 security design. Quote,
+`docs/authentication-authorization-implementation.md` for the Phase 3 security design and
+`docs/public-marketing-implementation.md` for the Phase 4 public architecture. Quote,
 estimator, blog, project, media, email-delivery, customer-authentication, and production deployment
 features remain unimplemented.

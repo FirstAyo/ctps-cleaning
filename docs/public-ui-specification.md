@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This specification defines the planned public screen structure, responsive behavior, states, and interactions. It follows `design-direction.md`; it does not describe an implemented website.
+This specification defines the public screen structure, responsive behavior, states, and interactions. Phase 4 implements its static marketing scope as recorded in `public-marketing-implementation.md`; later database-backed workflows remain planned.
 
 ## 1. Global public layout
 

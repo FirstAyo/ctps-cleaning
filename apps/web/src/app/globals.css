@@ -16,3 +16,29 @@
   letter-spacing: -0.035em;
   line-height: 1.05;
 }
+
+.eyebrow {
+  color: var(--primary);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.17em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.mobile-nav-link {
+  display: flex;
+  min-height: 3rem;
+  align-items: center;
+  border-radius: var(--radius-md);
+  padding: 0.5rem 0.75rem;
+  font-weight: 650;
+}
+
+.mobile-nav-link:hover {
+  background: var(--surface-muted);
+}
+
+img {
+  max-width: 100%;
+}

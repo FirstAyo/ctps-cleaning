@@ -5,16 +5,9 @@ import { Container } from "@ctps/ui/layout";
 import { Button, IconButton, LinkButton } from "@ctps/ui/primitives";
 import { ThemeToggle } from "@ctps/ui/theme";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
-const links = [
-  "Services",
-  "Before & After",
-  "Service Areas",
-  "Estimate",
-  "Blog",
-  "About",
-  "Contact",
-] as const;
+import { primaryNavigation, serviceAreas, services } from "@/content/site";
 
 function trapTab(event: KeyboardEvent, container: HTMLElement | null) {
   if (event.key !== "Tab" || !container) return;
@@ -35,7 +28,12 @@ function trapTab(event: KeyboardEvent, container: HTMLElement | null) {
   }
 }
 
+function active(pathname: string, href: string) {
+  return href === "/" ? pathname === href : pathname.startsWith(href);
+}
+
 export function PublicHeader() {
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLElement>(null);
@@ -45,10 +43,8 @@ export function PublicHeader() {
     const overflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     panelRef.current?.querySelector<HTMLElement>("button")?.focus();
-    const close = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(false);
-      else trapTab(event, panelRef.current);
-    };
+    const close = (event: KeyboardEvent) =>
+      event.key === "Escape" ? setOpen(false) : trapTab(event, panelRef.current);
     document.addEventListener("keydown", close);
     return () => {
       document.body.style.overflow = overflow;
@@ -57,132 +53,223 @@ export function PublicHeader() {
     };
   }, [open]);
   return (
-    <header className="sticky top-0 z-40 border-b border-border/80 bg-background/95 backdrop-blur">
-      <Container className="flex min-h-18 items-center justify-between gap-4" size="wide">
-        <Link
-          aria-label="CTPS design foundation"
-          className="flex items-center gap-3 font-bold tracking-tight"
-          href="/"
-        >
-          <span
-            aria-hidden="true"
-            className="grid size-9 place-items-center rounded-md bg-secondary text-secondary-foreground"
+    <>
+      <div className="bg-secondary py-2 text-center text-xs font-semibold tracking-wide text-secondary-foreground">
+        Residential and commercial service across Vancouver and surrounding communities
+      </div>
+      <header className="sticky top-0 z-40 border-b border-border/80 bg-background/95 backdrop-blur">
+        <Container className="flex min-h-18 items-center justify-between gap-4" size="wide">
+          <Link
+            aria-label="CTPS home"
+            className="flex items-center gap-3 font-bold tracking-tight"
+            href="/"
           >
-            C
-          </span>
-          <span>
-            CTPS <span className="font-normal text-muted-foreground">Clean Precision</span>
-          </span>
-        </Link>
-        <nav aria-label="Primary navigation" className="hidden items-center gap-1 xl:flex">
-          {links.map((link) => (
-            <a
-              className="rounded-md px-3 py-2 text-sm font-semibold hover:bg-surface-muted"
-              href="/design-system"
-              key={link}
+            <span
+              aria-hidden="true"
+              className="grid size-10 place-items-center rounded-md bg-secondary text-secondary-foreground"
             >
-              {link}
-            </a>
-          ))}
-          <ThemeToggle />
-          <LinkButton href="/design-system">Request a Quote</LinkButton>
-        </nav>
-        <div className="flex items-center gap-2 xl:hidden">
-          <ThemeToggle />
-          <Button
-            aria-expanded={open}
-            aria-label="Open navigation menu"
-            onClick={() => setOpen(true)}
-            ref={triggerRef}
-            size="icon"
-            variant="outline"
-          >
-            <span aria-hidden="true">Menu</span>
-          </Button>
-        </div>
-      </Container>
-      {open ? (
-        <div className="fixed inset-0 z-50 min-h-dvh">
-          <button
-            aria-label="Close navigation menu"
-            className="absolute inset-0 size-full bg-[oklch(0.1_0.02_255/0.65)]"
-            onClick={() => setOpen(false)}
-          />
-          <nav
-            aria-label="Mobile navigation"
-            aria-modal="true"
-            className="absolute inset-y-0 right-0 w-[min(24rem,92vw)] overflow-y-auto bg-popover p-5 text-popover-foreground shadow-[var(--shadow-overlay)]"
-            ref={panelRef}
-            role="dialog"
-          >
-            <div className="mb-6 flex items-center justify-between">
-              <strong>CTPS navigation</strong>
-              <IconButton aria-label="Close navigation menu" onClick={() => setOpen(false)}>
-                ×
-              </IconButton>
-            </div>
-            <div className="grid gap-1">
-              {links.map((link) => (
-                <a
-                  className="flex min-h-12 items-center rounded-md px-3 font-semibold hover:bg-surface-muted"
-                  href="/design-system"
-                  key={link}
-                  onClick={() => setOpen(false)}
+              C
+            </span>
+            <span>
+              CTPS{" "}
+              <span className="hidden font-normal text-muted-foreground sm:inline">
+                Clean Precision
+              </span>
+            </span>
+          </Link>
+          <nav aria-label="Primary navigation" className="hidden items-center gap-0.5 xl:flex">
+            <details className="group relative">
+              <summary
+                className={`flex min-h-11 cursor-pointer list-none items-center rounded-md px-3 text-sm font-semibold hover:bg-surface-muted ${active(pathname, "/services") ? "text-primary" : ""}`}
+              >
+                Services{" "}
+                <span aria-hidden="true" className="ml-1">
+                  ⌄
+                </span>
+              </summary>
+              <div className="absolute left-0 z-20 mt-1 w-64 rounded-md border border-border bg-popover p-2 shadow-[var(--shadow-md)]">
+                <Link
+                  className="block rounded-sm px-3 py-2 text-sm font-semibold hover:bg-surface-muted"
+                  href="/services"
                 >
-                  {link}
-                </a>
-              ))}
-              <LinkButton className="mt-3" href="/design-system" onClick={() => setOpen(false)}>
-                Request a Quote
-              </LinkButton>
-            </div>
+                  All services
+                </Link>
+                {services.map((service) => (
+                  <Link
+                    className="block rounded-sm px-3 py-2 text-sm hover:bg-surface-muted"
+                    href={`/services/${service.slug}`}
+                    key={service.slug}
+                  >
+                    {service.name}
+                  </Link>
+                ))}
+              </div>
+            </details>
+            {primaryNavigation.map((link) => (
+              <Link
+                aria-current={active(pathname, link.href) ? "page" : undefined}
+                className="rounded-md px-2.5 py-2 text-sm font-semibold hover:bg-surface-muted aria-[current=page]:text-primary"
+                href={link.href}
+                key={link.href}
+              >
+                {link.label}
+              </Link>
+            ))}
+            <ThemeToggle />
+            <LinkButton href="/request-a-quote">Request a Quote</LinkButton>
           </nav>
-        </div>
-      ) : null}
-    </header>
+          <div className="flex items-center gap-2 xl:hidden">
+            <ThemeToggle />
+            <Button
+              aria-expanded={open}
+              aria-label="Open navigation menu"
+              onClick={() => setOpen(true)}
+              ref={triggerRef}
+              size="icon"
+              variant="outline"
+            >
+              <span aria-hidden="true">Menu</span>
+            </Button>
+          </div>
+        </Container>
+        {open ? (
+          <div className="fixed inset-0 z-50 min-h-dvh">
+            <button
+              aria-label="Close navigation menu"
+              className="absolute inset-0 size-full bg-[oklch(0.1_0.02_255/0.65)]"
+              onClick={() => setOpen(false)}
+            />
+            <nav
+              aria-label="Mobile navigation"
+              aria-modal="true"
+              className="absolute inset-y-0 right-0 w-[min(25rem,92vw)] overflow-y-auto bg-popover p-5 text-popover-foreground shadow-[var(--shadow-overlay)]"
+              ref={panelRef}
+              role="dialog"
+            >
+              <div className="mb-5 flex items-center justify-between">
+                <strong>CTPS navigation</strong>
+                <IconButton aria-label="Close navigation menu" onClick={() => setOpen(false)}>
+                  ×
+                </IconButton>
+              </div>
+              <div className="grid gap-1">
+                <Link className="mobile-nav-link" href="/services" onClick={() => setOpen(false)}>
+                  Services
+                </Link>
+                <div className="ml-3 border-l border-border pl-3">
+                  {services.map((service) => (
+                    <Link
+                      className="block min-h-10 py-2 text-sm text-muted-foreground"
+                      href={`/services/${service.slug}`}
+                      key={service.slug}
+                      onClick={() => setOpen(false)}
+                    >
+                      {service.name}
+                    </Link>
+                  ))}
+                </div>
+                {primaryNavigation.map((link) => (
+                  <Link
+                    aria-current={active(pathname, link.href) ? "page" : undefined}
+                    className="mobile-nav-link aria-[current=page]:text-primary"
+                    href={link.href}
+                    key={link.href}
+                    onClick={() => setOpen(false)}
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+                <LinkButton className="mt-3" href="/request-a-quote" onClick={() => setOpen(false)}>
+                  Request a Quote
+                </LinkButton>
+              </div>
+            </nav>
+          </div>
+        ) : null}
+      </header>
+    </>
   );
 }
 
+const footerGroups = [
+  {
+    title: "Services",
+    links: services.map((item) => ({ label: item.name, href: `/services/${item.slug}` })),
+  },
+  {
+    title: "Service areas",
+    links: serviceAreas.map((item) => ({ label: item.name, href: `/service-areas/${item.slug}` })),
+  },
+  {
+    title: "Company",
+    links: [
+      { label: "About", href: "/about" },
+      { label: "Contact", href: "/contact" },
+      { label: "FAQ", href: "/faq" },
+    ],
+  },
+  {
+    title: "Resources",
+    links: [
+      { label: "Before & After", href: "/before-after" },
+      { label: "Planned blog", href: "/blog" },
+      { label: "Estimate", href: "/estimate" },
+      { label: "Privacy placeholder", href: "/contact#privacy" },
+    ],
+  },
+] as const;
+
 export function PublicFooter() {
-  const groups = [
-    { title: "Services", links: ["Window Cleaning", "Pressure Washing", "Gutter Cleaning"] },
-    { title: "Company", links: ["About", "Contact", "Service Areas"] },
-    { title: "Resources", links: ["Design System", "Blog", "Before & After"] },
-    { title: "Legal", links: ["Privacy placeholder", "Terms placeholder"] },
-  ];
   return (
-    <footer className="border-t border-sidebar-border bg-sidebar py-12 text-sidebar-foreground">
+    <footer className="border-t border-sidebar-border bg-sidebar py-14 text-sidebar-foreground">
       <Container size="wide">
-        <div className="grid gap-10 md:grid-cols-[1.5fr_repeat(4,1fr)]">
+        <div className="grid gap-10 md:grid-cols-2 xl:grid-cols-[1.4fr_repeat(4,1fr)]">
           <div>
-            <p className="text-xl font-bold">CTPS</p>
-            <p className="mt-2 max-w-xs text-sm text-sidebar-muted">
-              Clean Precision design foundation. Verified business contact information will be added
-              in a later phase.
+            <p className="text-2xl font-bold">CTPS</p>
+            <p className="mt-3 max-w-xs text-sm text-sidebar-muted">
+              Residential and commercial property-care inquiries across six Metro Vancouver
+              communities.
+            </p>
+            <p className="mt-4 max-w-xs text-sm text-sidebar-muted">
+              Contact details will be added before production.
             </p>
           </div>
-          {groups.map((group) => (
+          {footerGroups.map((group) => (
             <nav aria-label={`${group.title} links`} key={group.title}>
               <h2 className="text-sm font-bold uppercase tracking-wider">{group.title}</h2>
               <ul className="mt-3 grid list-none gap-2 p-0">
                 {group.links.map((link) => (
-                  <li key={link}>
-                    <a
+                  <li key={link.href}>
+                    <Link
                       className="text-sm text-sidebar-muted hover:text-sidebar-foreground"
-                      href="/design-system"
+                      href={link.href}
                     >
-                      {link}
-                    </a>
+                      {link.label}
+                    </Link>
                   </li>
                 ))}
               </ul>
             </nav>
           ))}
         </div>
-        <div className="mt-10 border-t border-sidebar-border pt-6 text-sm text-sidebar-muted">
-          Phase 2 demonstration — not final production navigation or content.
+        <div className="mt-10 flex flex-wrap justify-between gap-3 border-t border-sidebar-border pt-6 text-sm text-sidebar-muted">
+          <span>© {new Date().getFullYear()} CTPS. Production legal wording pending.</span>
+          <Link href="/design-system">Design system preview</Link>
         </div>
       </Container>
     </footer>
+  );
+}
+
+export function PublicLayout({ children }: { readonly children: React.ReactNode }) {
+  return (
+    <>
+      <a className="skip-link" href="#main-content">
+        Skip to main content
+      </a>
+      <PublicHeader />
+      <main id="main-content">{children}</main>
+      <PublicFooter />
+    </>
   );
 }

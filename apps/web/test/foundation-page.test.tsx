@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { FoundationPage } from "../src/components/foundation-page";
 import { PublicDesignSystem } from "../src/components/public-design-system";
 
-describe("public Phase 2 routes", () => {
+describe("preserved Phase 2 routes", () => {
   it("preserves health visibility while stating the implementation boundary", () => {
     const markup = renderToStaticMarkup(
       <FoundationPage environment="test" health={{ api: "unavailable", database: "unknown" }} />,

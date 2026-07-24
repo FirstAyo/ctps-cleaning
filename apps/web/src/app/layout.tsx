@@ -6,8 +6,10 @@ import { themeInitScript } from "@ctps/ui/theme-core";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "CTPS — Design Foundation",
-  description: "Phase 2 design-system foundation for the planned CTPS public website.",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
+  title: { default: "CTPS | Property Care", template: "%s | CTPS" },
+  description:
+    "Residential and commercial property-care services across Vancouver and surrounding communities.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {

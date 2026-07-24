@@ -2,7 +2,11 @@
 
 ## Purpose
 
-This document defines a provider-neutral plan for service, blog, author, project, Open Graph, and customer-upload media. No storage implementation exists in Phase 0.
+This document defines a provider-neutral plan for service, blog, author, project, Open Graph, and customer-upload media. Phase 4 uses only original committed development illustrations for static public presentation; no storage service or upload workflow is implemented.
+
+## Phase 4 local assets
+
+Public marketing illustrations are organized under `apps/web/public/images` and referenced through local root-relative paths with Next.js image handling. They contain no customer data, third-party watermarks, or external URLs and are labeled as development demonstrations where project meaning could otherwise be inferred. Approved CTPS photography may replace these stable references later. The quote-photo presentation is static and implements no file picker, object URL, upload, persistence, or API call.
 
 ## Classification boundary
 

@@ -20,33 +20,44 @@ export function getNextComparisonValue(value: number, key: string, shiftKey = fa
 }
 
 export function ImageComparison({
+  before,
+  after,
   className,
   initialValue = 50,
+  beforeLabel = "Before",
+  afterLabel = "After",
 }: {
+  readonly before?: React.ReactNode;
+  readonly after?: React.ReactNode;
   readonly className?: string;
   readonly initialValue?: number;
+  readonly beforeLabel?: string;
+  readonly afterLabel?: string;
 }) {
   const [value, setValue] = useState(clampComparisonValue(initialValue));
   const instructionsId = useId();
   return (
     <figure className={cn("m-0", className)}>
       <div className="relative aspect-[16/10] overflow-hidden rounded-[var(--radius-lg)] border border-border bg-surface-muted">
+        <div aria-hidden={!after} className="absolute inset-0">
+          {after ?? (
+            <div className="size-full bg-[linear-gradient(135deg,var(--surface-muted),var(--surface-elevated)_55%,var(--accent))]" />
+          )}
+        </div>
         <div
-          aria-hidden="true"
-          className="absolute inset-0 bg-[linear-gradient(135deg,var(--surface-muted),var(--surface-elevated)_55%,var(--accent))]"
-        />
-        <div
-          aria-hidden="true"
+          aria-hidden={!before}
           className="absolute inset-0 overflow-hidden"
           style={{ clipPath: `inset(0 ${100 - value}% 0 0)` }}
         >
-          <div className="size-full bg-[linear-gradient(135deg,var(--secondary),var(--primary)_60%,var(--surface-muted))]" />
+          {before ?? (
+            <div className="size-full bg-[linear-gradient(135deg,var(--secondary),var(--primary)_60%,var(--surface-muted))]" />
+          )}
         </div>
         <span className="absolute left-3 top-3 rounded-sm bg-secondary px-2 py-1 text-xs font-bold text-secondary-foreground">
-          Before
+          {beforeLabel}
         </span>
         <span className="absolute right-3 top-3 rounded-sm bg-surface-elevated px-2 py-1 text-xs font-bold text-foreground">
-          After
+          {afterLabel}
         </span>
         <div
           aria-hidden="true"
