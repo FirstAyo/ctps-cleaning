@@ -1,11 +1,14 @@
 import type { FoundationHealthStatus } from "@ctps/types";
-import { StatusBadge } from "@ctps/ui";
+import { Alert } from "@ctps/ui/content";
+import { Container } from "@ctps/ui/layout";
+import { LinkButton } from "@ctps/ui/primitives";
+import { StatusBadge } from "@ctps/ui/status-badge";
+import { ThemeToggle } from "@ctps/ui/theme";
 
 interface FoundationPageProps {
   readonly environment: string;
   readonly health: FoundationHealthStatus;
 }
-
 const labels = {
   api: {
     available: "API reachable",
@@ -21,37 +24,46 @@ const labels = {
 
 export function FoundationPage({ environment, health }: FoundationPageProps) {
   return (
-    <main className="mx-auto flex min-h-screen max-w-3xl items-center px-6 py-16">
-      <section
-        aria-labelledby="foundation-title"
-        className="w-full rounded-xl border border-slate-200 bg-white p-8 shadow-sm"
-      >
-        <p className="text-sm font-semibold uppercase tracking-wider text-blue-700">CTPS Admin</p>
-        <h1
-          id="foundation-title"
-          className="mt-2 text-3xl font-semibold tracking-tight text-slate-950"
+    <main className="grid min-h-dvh place-items-center px-4 py-12">
+      <Container size="reading">
+        <section
+          aria-labelledby="foundation-title"
+          className="rounded-lg border border-border bg-card p-6 shadow-[var(--shadow-md)] sm:p-8"
         >
-          Admin Application Foundation
-        </h1>
-        <p className="mt-4 max-w-2xl text-base leading-7 text-slate-700">
-          This route is an unprotected Phase 1 status page. Authentication and admin functionality
-          are not implemented yet.
-        </p>
-        <dl className="mt-8 grid gap-5 sm:grid-cols-2">
-          <div>
-            <dt className="text-sm font-medium text-slate-600">Environment</dt>
-            <dd className="mt-1 text-base text-slate-950">{environment}</dd>
+          <div className="flex items-center justify-between gap-4">
+            <p className="text-sm font-bold uppercase tracking-[0.16em] text-primary">CTPS Admin</p>
+            <ThemeToggle />
           </div>
-          <div>
-            <dt className="text-sm font-medium text-slate-600">Foundation phase</dt>
-            <dd className="mt-1 text-base text-slate-950">Phase 1</dd>
+          <h1 className="admin-page-heading mt-4" id="foundation-title">
+            Admin design foundation
+          </h1>
+          <Alert className="mt-5" title="Authentication is not implemented" tone="warning">
+            This is an unprotected Phase 2 status page. The shell preview is not secured and
+            contains no business data or admin functionality.
+          </Alert>
+          <p className="mt-5 text-muted-foreground">
+            Phase 2 provides shared visual and interaction patterns only. Protected routes, users,
+            roles, permissions, and real administration remain Phase 3 or later work.
+          </p>
+          <dl className="mt-7 grid gap-5 sm:grid-cols-2">
+            <div>
+              <dt className="text-sm text-muted-foreground">Environment</dt>
+              <dd className="font-semibold">{environment}</dd>
+            </div>
+            <div>
+              <dt className="text-sm text-muted-foreground">Foundation phase</dt>
+              <dd className="font-semibold">Phase 2</dd>
+            </div>
+          </dl>
+          <div aria-label="Service health" className="mt-7 flex flex-wrap gap-3">
+            <StatusBadge label={labels.api[health.api]} state={health.api} />
+            <StatusBadge label={labels.database[health.database]} state={health.database} />
           </div>
-        </dl>
-        <div aria-label="Service health" className="mt-8 flex flex-wrap gap-3">
-          <StatusBadge label={labels.api[health.api]} state={health.api} />
-          <StatusBadge label={labels.database[health.database]} state={health.database} />
-        </div>
-      </section>
+          <div className="mt-7">
+            <LinkButton href="/design-system">Review admin components</LinkButton>
+          </div>
+        </section>
+      </Container>
     </main>
   );
 }

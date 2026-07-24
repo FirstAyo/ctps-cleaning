@@ -2,13 +2,13 @@
 
 ## Purpose
 
-This document sets the planned visual and interaction direction for public and admin experiences. It is a design constraint, not an implemented system.
+This document sets the visual and interaction direction for public and admin experiences. Phase 2 implements the shared foundation documented in `design-system-implementation.md`; final business pages and protected admin functionality remain future work.
 
 ## Brand character
 
 CTPS should feel modern, premium, trustworthy, clean, professional, robust, calm, accessible, responsive, and conversion-focused—never like a generic cleaning-company template. Use strong editorial typography, generous spacing, high-quality property imagery, selective radii, thin borders, subtle shadows, and clear hierarchy.
 
-The starting palette uses deep navy/near-black for premium sections, white and warm off-white surfaces, a clean blue primary accent, restrained green support, and neutral grays. Final color values require contrast testing and brand approval. Avoid bright gradients, pervasive glassmorphism, oversized rounded cards, decorative blobs, random icons, competing accents, heavy animation, constant carousels, and stock-layout repetition.
+The implemented semantic palette uses a deep navy for premium and sidebar surfaces, warm off-white light backgrounds, clean blue primary actions, restrained green accents and success states, and neutral blue-grays. Values are defined as OKLCH tokens with complete light and dark mappings; final external brand approval remains required. Avoid bright gradients, pervasive glassmorphism, oversized rounded cards, decorative blobs, random icons, competing accents, heavy animation, constant carousels, and stock-layout repetition.
 
 ## Composition
 

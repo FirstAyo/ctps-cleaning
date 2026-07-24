@@ -4,17 +4,20 @@ export interface StatusBadgeProps {
 }
 
 const stateClasses: Record<StatusBadgeProps["state"], string> = {
-  available: "border-emerald-300 bg-emerald-50 text-emerald-900",
-  unavailable: "border-red-300 bg-red-50 text-red-900",
-  unknown: "border-slate-300 bg-slate-50 text-slate-800",
+  available: "border-success/40 bg-success/10 text-success",
+  unavailable: "border-destructive/40 bg-destructive/10 text-destructive",
+  unknown: "border-border bg-surface-muted text-muted-foreground",
 };
 
 export function StatusBadge({ label, state }: StatusBadgeProps) {
   return (
     <span
-      className={`inline-flex items-center rounded-full border px-3 py-1 text-sm font-medium ${stateClasses[state]}`}
+      className={`inline-flex items-center gap-2 rounded-md border px-2.5 py-1 text-sm font-semibold ${stateClasses[state]}`}
       data-state={state}
     >
+      <span aria-hidden="true">
+        {state === "available" ? "✓" : state === "unavailable" ? "!" : "–"}
+      </span>
       {label}
     </span>
   );

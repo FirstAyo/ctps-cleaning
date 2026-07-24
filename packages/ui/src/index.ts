@@ -1,3 +1,10 @@
+export * from "./content";
+export * from "./layout";
+export * from "./image-comparison";
+export * from "./navigation";
+export * from "./primitives";
 export { StatusBadge } from "./status-badge";
 export type { StatusBadgeProps } from "./status-badge";
+export * from "./theme-core";
+export { ThemeProvider, ThemeToggle, applyTheme } from "./theme";
 export { cn } from "./utils";

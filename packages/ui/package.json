@@ -4,6 +4,48 @@
   "private": true,
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./content": {
+      "types": "./dist/content.d.ts",
+      "default": "./dist/content.js"
+    },
+    "./image-comparison": {
+      "types": "./dist/image-comparison.d.ts",
+      "default": "./dist/image-comparison.js"
+    },
+    "./layout": {
+      "types": "./dist/layout.d.ts",
+      "default": "./dist/layout.js"
+    },
+    "./navigation": {
+      "types": "./dist/navigation.d.ts",
+      "default": "./dist/navigation.js"
+    },
+    "./primitives": {
+      "types": "./dist/primitives.d.ts",
+      "default": "./dist/primitives.js"
+    },
+    "./status-badge": {
+      "types": "./dist/status-badge.d.ts",
+      "default": "./dist/status-badge.js"
+    },
+    "./theme": {
+      "types": "./dist/theme.d.ts",
+      "default": "./dist/theme.js"
+    },
+    "./theme-core": {
+      "types": "./dist/theme-core.d.ts",
+      "default": "./dist/theme-core.js"
+    },
+    "./utils": {
+      "types": "./dist/utils.d.ts",
+      "default": "./dist/utils.js"
+    }
+  },
   "files": [
     "dist"
   ],
