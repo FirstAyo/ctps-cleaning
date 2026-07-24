@@ -1,0 +1,11 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Phase 1 intentionally contains no business models. Connectivity is verified
+// with a parameter-free SELECT through Prisma rather than a placeholder table.

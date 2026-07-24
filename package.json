@@ -1,0 +1,42 @@
+{
+  "name": "ctps-cleaning",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@10.15.1",
+  "engines": {
+    "node": ">=22.0.0 <23",
+    "pnpm": ">=10.0.0 <11"
+  },
+  "scripts": {
+    "dev": "turbo run dev --parallel",
+    "build": "turbo run build",
+    "lint": "eslint scripts && turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "verify:runtime": "dotenv -e .env -- node scripts/verify-runtime.mjs",
+    "verify:database-outage": "dotenv -e .env -- node scripts/verify-runtime.mjs --expect-database-unavailable",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "clean": "turbo run clean",
+    "db:generate": "pnpm --filter @ctps/database db:generate",
+    "db:migrate": "pnpm --filter @ctps/database db:migrate",
+    "db:push": "pnpm --filter @ctps/database db:push",
+    "db:studio": "pnpm --filter @ctps/database db:studio",
+    "db:start": "docker compose up -d postgres",
+    "db:stop": "docker compose down",
+    "db:logs": "docker compose logs -f postgres"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.0",
+    "@types/node": "^22.19.0",
+    "cross-env": "^10.1.0",
+    "dotenv-cli": "^11.0.0",
+    "eslint": "^9.39.0",
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "^3.8.0",
+    "rimraf": "^6.1.2",
+    "turbo": "^2.10.6",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.56.0"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "name": "@ctps/admin",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "cross-env NODE_ENV=development dotenv -e ../../.env -- node scripts/run-next.mjs dev ADMIN_PORT 3001",
+    "build": "cross-env NODE_ENV=production dotenv -e ../../.env -- next build",
+    "start": "cross-env NODE_ENV=production dotenv -e ../../.env -- node scripts/run-next.mjs start ADMIN_PORT 3001",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "clean": "rimraf .next coverage"
+  },
+  "dependencies": {
+    "@ctps/config": "workspace:*",
+    "@ctps/types": "workspace:*",
+    "@ctps/ui": "workspace:*",
+    "next": "^16.2.11",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.3",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "eslint-config-next": "^16.2.11",
+    "tailwindcss": "^4.3.3",
+    "vitest": "^4.1.10"
+  }
+}

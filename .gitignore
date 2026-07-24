@@ -1,0 +1,25 @@
+# Dependencies and build output
+node_modules/
+.next/
+dist/
+coverage/
+*.tsbuildinfo
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+
+# Generated database client
+packages/database/src/generated/
+
+# Local data and logs
+*.log
+.turbo/
+postgres-data/
+
+# Editors and operating systems
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
