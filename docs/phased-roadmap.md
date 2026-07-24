@@ -14,33 +14,33 @@ Plan pnpm workspace/Turborepo; public/admin Next.js apps; NestJS API; shared pac
 
 ## Phase 2 — Premium design system
 
-Implement approved brand/color/type/spacing/radius/shadow/container tokens; buttons, forms, cards, navigation, admin shell; themes; accessibility; responsive behavior; and restrained motion. Add Storybook/component documentation only if justified.
+Implement approved brand/color/type/spacing/radius/shadow/container tokens; buttons, forms, cards, and navigation primitives; themes; accessibility; responsive behavior; and restrained motion. Add Storybook/component documentation only if justified. Do not implement the protected admin shell or feature-specific admin tools in this phase.
 
-## Phase 3 — Public marketing website
+## Phase 3 — Authentication, authorization, and admin foundation
+
+Implement secure staff authentication; Users -> Roles -> Permissions; server-side permission enforcement; protected routes; permission-aware navigation; the protected admin shell; account and session security; secure initial Super Admin setup; and the audit-log foundation. Establish reusable authorization guards and resource-ownership policy boundaries before protected feature modules are added. Phase 3 is a dependency gate: no later phase may implement protected admin tools or expose private staff/customer data until these controls are implemented and verified.
+
+## Phase 4 — Public marketing website
 
 Implement home, services, areas, About, Contact, FAQs, testimonials only when verified, calls to action, residential/commercial content, blog preview, and estimator promotion.
 
-## Phase 4 — Before-and-after system
+## Phase 5 — Before-and-after system
 
-Implement model, media handling, admin management, accessible comparison slider/fallback, filters, gallery, details, and SEO.
+Implement model, media handling, permission-protected admin management, accessible comparison slider/fallback, filters, gallery, details, and SEO. Extend the Phase 3 audit foundation for project publishing and media changes.
 
-## Phase 5 — Quote-request system
+## Phase 6 — Quote-request system
 
-Implement public flow, reference numbers, typed service questions, private photos, confirmation/email, admin review/status/internal notes, security, rate limits, and audit behavior.
+Implement public flow, reference numbers, typed service questions, private photos, confirmation/email, permission-protected admin review/status/internal notes, security, rate limits, and audit events built on the Phase 3 foundation.
 
-## Phase 6 — Price estimator
+## Phase 7 — Price estimator
 
-Implement configurable ranges/model, deterministic engine, admin controls, result/breakdown, quote conversion, audit logging, and comprehensive calculation tests.
-
-## Phase 7 — Authentication and admin dashboard
-
-Implement secure staff authentication, users/roles/permissions, protected routes, permission-aware navigation, audit logs, account controls, and secure Super Admin setup. If earlier admin tooling is needed, explicitly reconcile phase dependencies rather than weakening authorization.
+Implement configurable ranges/model, deterministic engine, permission-protected admin controls, result/breakdown, quote conversion, audit events built on the Phase 3 foundation, and comprehensive calculation tests.
 
 ## Phase 8 — Blogging system
 
-Implement authors/profiles, posts, categories/tags, editor, media, SEO, scheduling, revisions, preview, search, RSS, sitemaps, and article pages. Do not add comments.
+Implement permission-protected authoring and administration for authors/profiles, posts, categories/tags, editor, media, SEO, scheduling, revisions, and preview; extend the Phase 3 audit foundation for publishing changes; and implement public search, RSS, sitemaps, and article pages. Do not add comments.
 
-## Phase 9 — Job and scheduling management (possible future)
+## Phase 9 — Possible future job and scheduling management
 
 Only if later confirmed: jobs from accepted quotes, scheduling, staff assignment, status, completion records, and internal notes. This is not confirmed first-release scope.
 
@@ -50,4 +50,4 @@ Complete accessibility, responsive/browser, security, and performance reviews; i
 
 ## Cross-phase gates
 
-Every phase must preserve VPS portability, private/public data boundaries, server authorization, accessibility, deterministic money handling, no fabricated content, tested migration/rollback plans where relevant, and honest documentation of what is actually shipped.
+Every phase must preserve VPS portability, private/public data boundaries, server authorization, accessibility, deterministic money handling, no fabricated content, tested migration/rollback plans where relevant, and honest documentation of what is actually shipped. Any protected administration added in Phases 5–8 must use the authentication, authorization, protected-route, admin-shell, Super Admin, and audit foundations completed in Phase 3; feature phases may extend those controls but must not defer or bypass them.
