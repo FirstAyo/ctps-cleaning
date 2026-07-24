@@ -1,9 +1,15 @@
 import { Injectable, Logger, type OnApplicationShutdown, type OnModuleInit } from "@nestjs/common";
-import { checkDatabaseConnection, connectDatabase, disconnectDatabase } from "@ctps/database";
+import {
+  checkDatabaseConnection,
+  connectDatabase,
+  disconnectDatabase,
+  prisma,
+} from "@ctps/database";
 
 @Injectable()
 export class DatabaseService implements OnModuleInit, OnApplicationShutdown {
   private readonly logger = new Logger(DatabaseService.name);
+  readonly client = prisma;
 
   async onModuleInit(): Promise<void> {
     try {

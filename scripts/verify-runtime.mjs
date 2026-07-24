@@ -6,11 +6,11 @@ const root = process.cwd();
 const processes = [];
 const expectDatabaseUnavailable = process.argv.includes("--expect-database-unavailable");
 
-function startProcess(command, args, cwd) {
+function startProcess(command, args, cwd, environment = {}) {
   const output = [];
   const child = spawn(command, args, {
     cwd,
-    env: { ...process.env, NODE_ENV: "production" },
+    env: { ...process.env, NODE_ENV: "production", ...environment },
     stdio: ["ignore", "pipe", "pipe"],
   });
 
@@ -63,7 +63,9 @@ function reportProcessOutput() {
 }
 
 try {
-  startProcess(process.execPath, ["dist/main.js"], path.join(root, "apps/api"));
+  startProcess(process.execPath, ["dist/main.js"], path.join(root, "apps/api"), {
+    NODE_ENV: "development",
+  });
   const healthResponse = await waitForResponse("http://127.0.0.1:4000/health");
   const databaseResponse = await waitForResponse(
     "http://127.0.0.1:4000/health/database",
@@ -101,29 +103,21 @@ try {
 
     const result = {
       admin: {
-        apiReady: adminHtml.includes("API reachable"),
-        foundationPage: adminHtml.includes("Admin Application Foundation"),
+        staffLogin: adminHtml.includes("Staff sign in"),
         status: adminResponse.status,
-        unprotectedNotice: adminHtml.includes("unprotected Phase 1 status page"),
       },
       api: health,
       database,
       web: {
         apiReady: webHtml.includes("API reachable"),
-        foundationPage: webHtml.includes("Public Website Foundation"),
+        foundationPage: webHtml.includes("Premium public design foundation"),
         status: webResponse.status,
       },
     };
 
     console.log(JSON.stringify(result, null, 2));
 
-    if (
-      !result.admin.apiReady ||
-      !result.admin.foundationPage ||
-      !result.admin.unprotectedNotice ||
-      !result.web.apiReady ||
-      !result.web.foundationPage
-    ) {
+    if (!result.admin.staffLogin || !result.web.apiReady || !result.web.foundationPage) {
       throw new Error("A foundation page did not render its expected safe status content");
     }
   }

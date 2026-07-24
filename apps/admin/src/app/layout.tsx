@@ -6,8 +6,8 @@ import { themeInitScript } from "@ctps/ui/theme-core";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "CTPS Admin — Design Foundation",
-  description: "Unprotected Phase 2 admin design-system demonstration.",
+  title: "CTPS Staff Administration",
+  description: "Protected staff administration for CTPS Cleaning.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {

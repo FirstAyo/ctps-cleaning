@@ -12,6 +12,13 @@
     "dev": "tsc -p tsconfig.json --watch --preserveWatchOutput",
     "lint": "eslint src",
     "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
     "clean": "rimraf dist"
+  },
+  "devDependencies": {
+    "vitest": "^4.1.10"
+  },
+  "devDependencies": {
+    "vitest": "^4.1.10"
   }
 }

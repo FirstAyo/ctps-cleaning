@@ -1,14 +1,15 @@
 # CTPS Cleaning Website
 
-CTPS Cleaning is a planned VPS-hosted public website, admin application, and API. Phase 1 provides
-the monorepo, development database, health checks, shared-package boundaries, and quality tooling.
-No CTPS business features or authentication are implemented yet.
+CTPS Cleaning is a VPS-portable public website, protected staff application, and API. Phases 1–3
+provide the monorepo foundation, premium design system, PostgreSQL-backed staff authentication,
+server authorization, user/role administration, and audit foundation. Later business features are
+not implemented.
 
 ## Workspace
 
 - `apps/web` — public Next.js foundation page on port 3000
-- `apps/admin` — unprotected admin foundation page on port 3001
-- `apps/api` — NestJS foundation API on port 4000
+- `apps/admin` — protected staff administration on port 3001; `/design-system` retains the Phase 2 demonstration
+- `apps/api` — authoritative NestJS authentication and administration API on port 4000
 - `packages/*` — database and minimal shared foundations
 - `docs` — authoritative Phase 0 requirements
 - `infrastructure` — production-infrastructure deferral notice only
@@ -37,12 +38,16 @@ needed. Browser code receives no secrets and does not connect to PostgreSQL.
 pnpm install
 pnpm db:start
 pnpm db:generate
+pnpm db:migrate
+pnpm auth:initialize
+pnpm auth:bootstrap-super-admin
 pnpm dev
 ```
 
-The database is deliberately started separately from `pnpm dev`. Prisma generation requires no
-business migration because the Phase 1 schema has no models. `db:push` exists only for disposable
-local development and must not replace reviewed migrations after models are introduced.
+The database is deliberately started separately from `pnpm dev`. Apply the reviewed Phase 3
+migration, initialize idempotent system access, and create the initial Super Admin through the
+masked trusted-terminal command. `db:push` is only for disposable local development and does not
+replace reviewed migrations.
 
 Individual applications can be run with `pnpm --filter @ctps/web dev`,
 `pnpm --filter @ctps/admin dev`, or `pnpm --filter @ctps/api dev`. Shared packages are built first
@@ -88,5 +93,7 @@ both status pages, then shuts the application processes down.
 - **Docker reports configuration access warnings:** verify the current account can read its Docker
   client configuration and access the Docker engine.
 
-Stop local PostgreSQL with `pnpm db:stop`. Phase 1 contains no final homepage, premium design,
-authentication, quotes, estimator, blog, projects, uploads, email delivery, or production deployment.
+Stop local PostgreSQL with `pnpm db:stop`. See
+`docs/authentication-authorization-implementation.md` for the Phase 3 security design. Quote,
+estimator, blog, project, media, email-delivery, customer-authentication, and production deployment
+features remain unimplemented.

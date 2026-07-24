@@ -6,7 +6,7 @@ This document establishes minimum controls for the planned system. Specific libr
 
 ## Identity and sessions
 
-Staff authentication only is confirmed for the initial admin scope; guest quote submission needs no account. Store passwords with a current adaptive password hash and secure reset flow. Use secure, HttpOnly, SameSite cookies where cookie sessions are chosen; rotate identifiers on authentication/privilege change, enforce expiry/revocation, and protect reset/setup tokens. Throttle login and recovery; define lockout that resists denial-of-service. Initial Super Admin setup must be non-public.
+Staff authentication only is implemented for the admin scope; guest quote submission will need no account. Phase 3 uses Argon2id, 256-bit opaque PostgreSQL sessions stored only as hashes, secure/HttpOnly/SameSite cookies, absolute and idle expiry, revocation and rotation, durable time-limited login throttling, and a non-public masked Super Admin CLI. Production environment validation refuses insecure authentication cookies. Details and parameters are recorded in `authentication-authorization-implementation.md`.
 
 ## Request protection
 
@@ -34,4 +34,4 @@ Before release: dependency/container scanning, authorization matrix tests, input
 
 ## Unresolved decisions
 
-Authentication/session library, MFA requirement, password policy, lockout thresholds, session duration, CSRF pattern, upload limits/scanning, encryption-at-rest approach, retention, audit retention, backup RPO/RTO, incident process, and privacy/legal wording require approval.
+MFA policy, password breach screening, upload limits/scanning, encryption-at-rest approach, retention, audit retention, backup RPO/RTO, incident process, and privacy/legal wording require future approval. Phase 3 fixes the password, session, CSRF, and login-throttle baselines documented in the implementation record.

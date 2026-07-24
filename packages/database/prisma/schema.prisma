@@ -7,5 +7,127 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Phase 1 intentionally contains no business models. Connectivity is verified
-// with a parameter-free SELECT through Prisma rather than a placeholder table.
+enum UserStatus {
+  ACTIVE
+  DISABLED
+}
+
+model User {
+  id                 String     @id @default(uuid()) @db.Uuid
+  email              String     @unique @db.VarChar(254)
+  displayName        String     @db.VarChar(100)
+  passwordHash       String     @db.Text
+  status             UserStatus @default(ACTIVE)
+  mustChangePassword Boolean    @default(true)
+  lastLoginAt        DateTime?
+  passwordChangedAt  DateTime?
+  disabledAt         DateTime?
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
+  roles              UserRole[]
+  sessions           Session[]
+  auditLogs          AuditLog[] @relation("AuditActor")
+
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Role {
+  id          String           @id @default(uuid()) @db.Uuid
+  key         String           @unique @db.VarChar(64)
+  displayName String           @db.VarChar(100)
+  description String           @db.VarChar(500)
+  isSystem    Boolean          @default(false)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  users       UserRole[]
+  permissions RolePermission[]
+
+  @@index([isSystem])
+}
+
+model Permission {
+  id          String           @id @default(uuid()) @db.Uuid
+  key         String           @unique @db.VarChar(100)
+  displayName String           @db.VarChar(120)
+  description String           @db.VarChar(500)
+  group       String           @db.VarChar(64)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  roles       RolePermission[]
+
+  @@index([group])
+}
+
+model UserRole {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @db.Uuid
+  roleId     String   @db.Uuid
+  assignedAt DateTime @default(now())
+  assignedBy String?  @db.Uuid
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role       Role     @relation(fields: [roleId], references: [id], onDelete: Restrict)
+
+  @@unique([userId, roleId])
+  @@index([roleId])
+  @@index([userId])
+}
+
+model RolePermission {
+  id           String     @id @default(uuid()) @db.Uuid
+  roleId       String     @db.Uuid
+  permissionId String     @db.Uuid
+  assignedAt   DateTime   @default(now())
+  assignedBy   String?    @db.Uuid
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Restrict)
+
+  @@unique([roleId, permissionId])
+  @@index([permissionId])
+  @@index([roleId])
+}
+
+model Session {
+  id                String    @id @default(uuid()) @db.Uuid
+  tokenHash         String    @unique @db.Char(64)
+  csrfTokenHash     String?   @db.Char(64)
+  userId            String    @db.Uuid
+  createdAt         DateTime  @default(now())
+  lastActivityAt    DateTime  @default(now())
+  absoluteExpiresAt DateTime
+  idleExpiresAt     DateTime
+  revokedAt         DateTime?
+  revocationReason  String?   @db.VarChar(100)
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, revokedAt])
+  @@index([absoluteExpiresAt])
+  @@index([idleExpiresAt])
+}
+
+model AuditLog {
+  id           String   @id @default(uuid()) @db.Uuid
+  actorUserId  String?  @db.Uuid
+  action       String   @db.VarChar(100)
+  resourceType String   @db.VarChar(100)
+  resourceId   String?  @db.VarChar(100)
+  metadata     Json?
+  createdAt    DateTime @default(now())
+  actor        User?    @relation("AuditActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt(sort: Desc)])
+  @@index([actorUserId, createdAt(sort: Desc)])
+  @@index([action, createdAt(sort: Desc)])
+  @@index([resourceType, createdAt(sort: Desc)])
+}
+
+model LoginThrottle {
+  id              String    @id @default(uuid()) @db.Uuid
+  keyHash         String    @unique @db.Char(64)
+  attempts        Int       @default(0)
+  windowStartedAt DateTime  @default(now())
+  blockedUntil    DateTime?
+  updatedAt       DateTime  @updatedAt
+
+  @@index([blockedUntil])
+}

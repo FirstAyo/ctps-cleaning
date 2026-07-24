@@ -8,7 +8,7 @@ import { ThemeToggle } from "@ctps/ui/theme";
 import { cn } from "@ctps/ui/utils";
 import Link from "next/link";
 
-const navigation = [
+const demoNavigation = [
   "Dashboard",
   "Quote Requests",
   "Estimates",
@@ -23,6 +23,11 @@ const navigation = [
   "Audit Logs",
   "Settings",
 ] as const;
+
+export interface AdminNavigationItem {
+  readonly href: string;
+  readonly label: string;
+}
 
 function trapTab(event: KeyboardEvent, container: HTMLElement | null) {
   if (event.key !== "Tab" || !container) return;
@@ -45,23 +50,25 @@ function trapTab(event: KeyboardEvent, container: HTMLElement | null) {
 
 function SidebarNavigation({
   collapsed = false,
+  items,
   onNavigate,
 }: {
   readonly collapsed?: boolean;
+  readonly items: readonly AdminNavigationItem[];
   readonly onNavigate?: () => void;
 }) {
   return (
     <nav aria-label="Demonstration admin navigation" className="grid gap-1 p-3">
-      {navigation.map((item, index) => (
-        <a
-          aria-label={collapsed ? item : undefined}
+      {items.map((item, index) => (
+        <Link
+          {...(collapsed ? { "aria-label": item.label } : {})}
           className={cn(
             "flex min-h-10 items-center gap-3 rounded-md px-3 text-sm font-medium text-sidebar-muted hover:bg-sidebar-accent hover:text-sidebar-foreground",
             index === 0 && "bg-sidebar-accent text-sidebar-foreground",
           )}
-          href="/design-system"
-          key={item}
-          onClick={onNavigate}
+          href={item.href}
+          key={`${item.href}:${item.label}`}
+          {...(onNavigate ? { onClick: onNavigate } : {})}
         >
           <span
             aria-hidden="true"
@@ -69,8 +76,8 @@ function SidebarNavigation({
           >
             {index + 1}
           </span>
-          {collapsed ? <span className="sr-only">{item}</span> : <span>{item}</span>}
-        </a>
+          {collapsed ? <span className="sr-only">{item.label}</span> : <span>{item.label}</span>}
+        </Link>
       ))}
     </nav>
   );
@@ -78,9 +85,15 @@ function SidebarNavigation({
 
 export function AdminShell({
   children,
+  description = "Unprotected Phase 2 component demonstration. No staff session or permissions exist.",
+  identity,
+  navigationItems = demoNavigation.map((label) => ({ href: "/design-system", label })),
   pageTitle,
 }: {
   readonly children: React.ReactNode;
+  readonly description?: string;
+  readonly identity?: { readonly displayName: string; readonly email: string };
+  readonly navigationItems?: readonly AdminNavigationItem[];
   readonly pageTitle: string;
 }) {
   const [collapsed, setCollapsed] = useState(false);
@@ -129,7 +142,7 @@ export function AdminShell({
           </IconButton>
         </div>
         <div className="overflow-y-auto">
-          <SidebarNavigation collapsed={collapsed} />
+          <SidebarNavigation collapsed={collapsed} items={navigationItems} />
         </div>
         <p
           className={cn(
@@ -137,7 +150,7 @@ export function AdminShell({
             collapsed && "sr-only",
           )}
         >
-          Unprotected design demonstration
+          {identity ? "Authorized staff access" : "Unprotected design demonstration"}
         </p>
       </div>
       <div className={cn("transition-[padding]", collapsed ? "md:pl-20" : "md:pl-64")}>
@@ -155,16 +168,18 @@ export function AdminShell({
               Menu
             </Button>
             <div>
-              <p className="text-sm font-semibold">Design-system demonstration</p>
+              <p className="text-sm font-semibold">
+                {identity ? identity.displayName : "Design-system demonstration"}
+              </p>
               <p className="hidden text-xs text-muted-foreground sm:block">
-                Authentication is not implemented
+                {identity?.email ?? "Authentication is not implemented"}
               </p>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <ThemeToggle />
             <button aria-label="Open user menu placeholder" className="rounded-full">
-              <Avatar label="Demo user placeholder" />
+              <Avatar label={identity?.displayName ?? "Demo user placeholder"} />
             </button>
           </div>
         </header>
@@ -173,9 +188,7 @@ export function AdminShell({
             <Breadcrumb items={["Admin preview", pageTitle]} />
             <div className="mt-3 mb-6">
               <h1 className="admin-page-heading">{pageTitle}</h1>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Unprotected Phase 2 component demonstration. No staff session or permissions exist.
-              </p>
+              <p className="mt-2 text-sm text-muted-foreground">{description}</p>
             </div>
             {children}
           </div>
@@ -205,7 +218,7 @@ export function AdminShell({
                 ×
               </IconButton>
             </div>
-            <SidebarNavigation onNavigate={() => setMobileOpen(false)} />
+            <SidebarNavigation items={navigationItems} onNavigate={() => setMobileOpen(false)} />
           </aside>
         </div>
       ) : null}

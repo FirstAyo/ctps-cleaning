@@ -1,6 +1,141 @@
-declare const permissionIdentifierBrand: unique symbol;
+export const ROLE_KEYS = {
+  SUPER_ADMIN: "SUPER_ADMIN",
+  ADMIN: "ADMIN",
+  AUTHOR: "AUTHOR",
+} as const;
 
-/** A type boundary only. Permission values and enforcement begin in Phase 3. */
-export type PermissionIdentifier = string & {
-  readonly [permissionIdentifierBrand]: "PermissionIdentifier";
-};
+export type RoleKey = (typeof ROLE_KEYS)[keyof typeof ROLE_KEYS];
+
+export const PERMISSION_KEYS = {
+  ADMIN_ACCESS: "admin.access",
+  USERS_READ: "users.read",
+  USERS_CREATE: "users.create",
+  USERS_UPDATE: "users.update",
+  USERS_DISABLE: "users.disable",
+  USERS_ASSIGN_ROLES: "users.assignRoles",
+  ROLES_READ: "roles.read",
+  ROLES_CREATE: "roles.create",
+  ROLES_UPDATE: "roles.update",
+  ROLES_ASSIGN_PERMISSIONS: "roles.assignPermissions",
+  AUDIT_READ: "audit.read",
+  SESSIONS_READ_OWN: "sessions.readOwn",
+  SESSIONS_REVOKE_OWN: "sessions.revokeOwn",
+} as const;
+
+export type PermissionKey = (typeof PERMISSION_KEYS)[keyof typeof PERMISSION_KEYS];
+export type PermissionGroup = "Administration" | "Users" | "Roles" | "Security";
+
+export interface PermissionDefinition {
+  readonly key: PermissionKey;
+  readonly label: string;
+  readonly description: string;
+  readonly group: PermissionGroup;
+}
+
+export const PERMISSION_DEFINITIONS: readonly PermissionDefinition[] = [
+  {
+    key: PERMISSION_KEYS.ADMIN_ACCESS,
+    label: "Access staff dashboard",
+    description: "Sign in and access the protected admin foundation.",
+    group: "Administration",
+  },
+  {
+    key: PERMISSION_KEYS.USERS_READ,
+    label: "Read users",
+    description: "View staff accounts and role summaries.",
+    group: "Users",
+  },
+  {
+    key: PERMISSION_KEYS.USERS_CREATE,
+    label: "Create users",
+    description: "Create staff accounts with one-time temporary passwords.",
+    group: "Users",
+  },
+  {
+    key: PERMISSION_KEYS.USERS_UPDATE,
+    label: "Update users",
+    description: "Update staff display names, emails, status, and temporary passwords.",
+    group: "Users",
+  },
+  {
+    key: PERMISSION_KEYS.USERS_DISABLE,
+    label: "Disable users",
+    description: "Disable or reactivate staff accounts and revoke sessions.",
+    group: "Users",
+  },
+  {
+    key: PERMISSION_KEYS.USERS_ASSIGN_ROLES,
+    label: "Assign user roles",
+    description: "Replace a staff member's role assignments.",
+    group: "Users",
+  },
+  {
+    key: PERMISSION_KEYS.ROLES_READ,
+    label: "Read roles",
+    description: "View roles and their permission assignments.",
+    group: "Roles",
+  },
+  {
+    key: PERMISSION_KEYS.ROLES_CREATE,
+    label: "Create roles",
+    description: "Create custom staff roles.",
+    group: "Roles",
+  },
+  {
+    key: PERMISSION_KEYS.ROLES_UPDATE,
+    label: "Update roles",
+    description: "Update custom role names and descriptions.",
+    group: "Roles",
+  },
+  {
+    key: PERMISSION_KEYS.ROLES_ASSIGN_PERMISSIONS,
+    label: "Assign role permissions",
+    description: "Replace permissions assigned to configurable roles.",
+    group: "Roles",
+  },
+  {
+    key: PERMISSION_KEYS.AUDIT_READ,
+    label: "Read audit logs",
+    description: "View safe, read-only security audit history.",
+    group: "Security",
+  },
+  {
+    key: PERMISSION_KEYS.SESSIONS_READ_OWN,
+    label: "Read own sessions",
+    description: "View safe summaries of the current user's sessions.",
+    group: "Security",
+  },
+  {
+    key: PERMISSION_KEYS.SESSIONS_REVOKE_OWN,
+    label: "Revoke own sessions",
+    description: "Revoke the current user's other sessions.",
+    group: "Security",
+  },
+] as const;
+
+export const ALL_PERMISSION_KEYS = PERMISSION_DEFINITIONS.map(({ key }) => key);
+const permissionKeySet = new Set<string>(ALL_PERMISSION_KEYS);
+
+export function isPermissionKey(value: string): value is PermissionKey {
+  return permissionKeySet.has(value);
+}
+
+export function hasPermission(
+  granted: ReadonlySet<string> | readonly string[],
+  required: PermissionKey,
+): boolean {
+  return Array.isArray(granted)
+    ? granted.includes(required)
+    : (granted as ReadonlySet<string>).has(required);
+}
+
+export function hasEveryPermission(
+  granted: ReadonlySet<string> | readonly string[],
+  required: readonly PermissionKey[],
+): boolean {
+  return required.every((permission) => hasPermission(granted, permission));
+}
+
+export function combinePermissionKeys(groups: readonly (readonly string[])[]): PermissionKey[] {
+  return [...new Set(groups.flat().filter(isPermissionKey))];
+}

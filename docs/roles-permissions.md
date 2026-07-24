@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document defines the planned authorization model. Authorization is always server-enforced and follows `Users -> Roles -> Permissions`; UI hiding is only a usability aid.
+This document defines the authorization model implemented as a Phase 3 foundation. Authorization is always server-enforced and follows `Users -> Roles -> Permissions`; UI hiding is only a usability aid.
 
 ## Model
 
@@ -43,6 +43,10 @@ Additional identifiers should use stable `domain.resource.action[Scope]` naming.
 - Cache permissions only with reliable invalidation/session revocation after role changes.
 - Audit user lifecycle, role/permission assignments, publishing, pricing changes, quote status/notes, private media access where appropriate, and security events.
 
+## Phase 3 implementation
+
+The foundational catalogue contains only admin access; user, role, audit, and own-session keys documented in `authentication-authorization-implementation.md`. `SUPER_ADMIN` always resolves to every known permission. `ADMIN` and `AUTHOR` initially receive only `admin.access`; future blog and business permissions are added with their feature phases. Multiple roles combine permissions. Final-active-Super-Admin protections use serializable transactions.
+
 ## Unresolved policy
 
-Exact permission catalogue, multi-role conflict semantics, session invalidation timing, approval requirements, audit retention, support access, and whether certain pricing or publishing actions need two-person review remain future decisions.
+Later-feature permission catalogues, approval requirements, audit retention, support access, and whether certain pricing or publishing actions need two-person review remain future decisions.

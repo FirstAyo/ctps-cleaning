@@ -18,7 +18,7 @@ Implement approved brand/color/type/spacing/radius/shadow/container tokens; butt
 
 ## Phase 3 — Authentication, authorization, and admin foundation
 
-Implement secure staff authentication; Users -> Roles -> Permissions; server-side permission enforcement; protected routes; permission-aware navigation; the protected admin shell; account and session security; secure initial Super Admin setup; and the audit-log foundation. Establish reusable authorization guards and resource-ownership policy boundaries before protected feature modules are added. Phase 3 is a dependency gate: no later phase may implement protected admin tools or expose private staff/customer data until these controls are implemented and verified.
+Implemented secure staff authentication; Users -> Roles -> Permissions; server-side permission enforcement; protected routes; permission-aware navigation; the protected admin shell; account and session security; secure initial Super Admin setup; and the audit-log foundation. Reusable authorization guards and resource-ownership policy boundaries now precede every protected feature module. Phase 3 remains a dependency gate: no later phase may implement protected admin tools or expose private staff/customer data without using these verified controls.
 
 ## Phase 4 — Public marketing website
 

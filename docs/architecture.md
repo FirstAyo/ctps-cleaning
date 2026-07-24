@@ -22,7 +22,7 @@ The planned pnpm/Turborepo monorepo has `apps/web` (public Next.js), `apps/admin
 
 ## Authentication and authorization
 
-Staff-only authentication terminates at trusted server boundaries. A secure session is presented to web/admin and verified by the API. Authorization maps users through roles to permissions and applies resource ownership (such as author-owned posts). Choice of authentication/session library is unresolved. Initial Super Admin creation should use a protected CLI/setup procedure, never public registration.
+Phase 3 implements staff-only authentication in the NestJS API using Argon2id passwords and opaque PostgreSQL sessions whose raw tokens exist only in an HttpOnly cookie. The admin validates sessions and forwards cookies server-side but never independently grants access. Authorization maps Users -> Roles -> Permissions through typed constants and API guards; the Super Admin effective-permission invariant is protected. Initial Super Admin creation uses a masked trusted-terminal CLI, never public registration. Session-bound synchronizer tokens protect unsafe cookie requests, and database records provide durable login throttling and audit history. See `authentication-authorization-implementation.md`.
 
 ## Deployment topology
 
@@ -47,4 +47,4 @@ Root workspace, Docker, and infrastructure files are deferred to Phase 1 or late
 
 ## Unresolved decisions
 
-Authentication implementation; API transport conventions; job queue; cache; rich editor; analytics; observability stack; exact media paths/limits; storage cutover criteria; backup schedule/RPO/RTO; multi-VPS needs; and whether web/admin deploy as separate processes require architecture decisions before implementation.
+MFA, email-based recovery, audit retention, job queue, cache, rich editor, analytics, observability stack, exact media paths/limits, storage cutover criteria, backup schedule/RPO/RTO, multi-VPS needs, and whether web/admin deploy as separate processes remain future decisions.
