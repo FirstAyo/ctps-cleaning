@@ -1,9 +1,9 @@
 # CTPS Cleaning Website
 
-CTPS Cleaning is a VPS-portable public website, protected staff application, and API. Phases 1–5
-provide the monorepo foundation, premium design system, PostgreSQL-backed staff authentication,
-server authorization, user/role administration, audit foundation, public marketing website, and
-the managed before-and-after portfolio. Later business workflows are not implemented.
+CTPS Cleaning is a VPS-portable public website, protected staff application, and API. Phases 1–7
+provide the monorepo and design foundations, staff authentication and authorization, the public
+marketing website, managed before-and-after and quote-request workflows, and the preliminary
+price estimator. Later business workflows are not implemented.
 
 ## Workspace
 
@@ -45,7 +45,7 @@ pnpm dev
 ```
 
 The database is deliberately started separately from `pnpm dev`. Apply the reviewed migrations,
-initialize idempotent system and Phase 5 feature access, and create the initial Super Admin through the
+initialize idempotent system and feature access, and create the initial Super Admin through the
 masked trusted-terminal command. `db:push` is only for disposable local development and does not
 replace reviewed migrations.
 
@@ -96,6 +96,9 @@ both status pages, then shuts the application processes down.
 Stop local PostgreSQL with `pnpm db:stop`. See
 `docs/authentication-authorization-implementation.md` for the Phase 3 security design and
 `docs/public-marketing-implementation.md` for the Phase 4 public architecture. The Phase 5 model,
-storage, lifecycle, routes, and limits are in `docs/before-after-implementation.md`. Quote requests,
-customer uploads, estimator calculations, blog publishing, scheduling, email delivery, customer
+storage, lifecycle, routes, and limits are in `docs/before-after-implementation.md`. Quote requests
+and customer uploads are described in the Phase 6 guide. The Phase 7 preliminary estimator,
+pricing versions, secure result transfer, and operations are documented in
+`docs/estimator-implementation.md`. Run `pnpm estimator:initialize-development` only to create its
+explicitly unapproved Draft starting configuration. Blog publishing, scheduling, customer
 authentication, and production deployment remain unimplemented.

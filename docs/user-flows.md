@@ -17,11 +17,12 @@ Recoverable errors preserve non-sensitive answers and identify affected fields. 
 
 ## Preliminary estimator to quote
 
-1. Visitor chooses supported services, customer/property type, service area, and conditional details.
+1. Visitor chooses one supported service, customer/property type, service area, and conditional details.
 2. API validates answers and loads active, effective, compatible pricing configuration.
 3. Code-controlled engine returns a deterministic range and safe explanation or an unavailable/configuration error.
-4. UI labels the result non-binding and offers Edit Answers, Start Over, or Convert to Quote.
-5. Conversion carries validated answers into the quote flow; the visitor adds contact/consent/photos and reviews before submitting.
+4. UI labels the tokenized, expiring result non-binding and offers Start Over or transfer to Quote.
+5. A separate short-lived opaque transfer carries only allowlisted compatible answers; the visitor can edit them and adds address/contact/consent/photos before submitting.
+6. The API records Matched, Inputs Changed, or Expired without treating the result as a formal quote or blocking a changed request.
 
 An estimate is not a formal quote and never confirms a booking. Confidential rule details remain server-side.
 

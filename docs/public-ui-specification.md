@@ -100,6 +100,8 @@ File upload supports button and drag/drop without requiring drag. Errors explain
 
 ## 13. Public states
 
+The Phase 7 `/estimate` implementation uses six keyboard-operable steps and one service per estimate. It exposes only published availability/questions, approved explanation labels, non-binding range/manual-review text, assumptions, exclusions, and expiry. Tokenized result routes are noindex and excluded from robots; unavailable and expired states offer the quote-request path without a fallback price.
+
 - **Loading:** reserve layout; use skeletons only where shape is known and label indefinite operations for assistive technology.
 - **Empty:** explain why no content matches and offer a safe next step/reset.
 - **Error/offline:** use plain language, preserve input, offer retry, and provide a correlation reference when helpful.

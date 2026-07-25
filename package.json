@@ -27,6 +27,8 @@
     "verify:auth-runtime": "pnpm --filter @ctps/api verify:auth-runtime",
     "verify:before-after-runtime": "pnpm --filter @ctps/api verify:before-after-runtime",
     "verify:quote-request-runtime": "pnpm --filter @ctps/api verify:quote-request-runtime",
+    "estimator:initialize-development": "pnpm --filter @ctps/api estimator:initialize-development",
+    "verify:estimator-runtime": "pnpm --filter @ctps/api verify:estimator-runtime",
     "db:start": "docker compose up -d postgres",
     "db:stop": "docker compose down",
     "db:logs": "docker compose logs -f postgres"

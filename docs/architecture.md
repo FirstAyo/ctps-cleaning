@@ -55,4 +55,6 @@ Root workspace, Docker, and infrastructure files are deferred to Phase 1 or late
 
 ## Unresolved decisions
 
+Phase 7 keeps the estimator boundary explicit: PostgreSQL owns versioned business configuration and immutable result snapshots; `packages/pricing` owns the pure deterministic integer-cents engine; the API owns calculation, persistence, transfer validation, and protected administration; public web and admin remain separate consumers. See `estimator-implementation.md`.
+
 MFA, email-based recovery, audit retention, job queue, cache, rich editor, analytics, observability stack, storage cutover criteria, backup schedule/RPO/RTO, multi-VPS needs, and whether web/admin deploy as separate processes remain future decisions. Phase 5 local media paths and limits are recorded in `before-after-implementation.md`.

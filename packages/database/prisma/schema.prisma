@@ -70,6 +70,48 @@ enum EmailOutboxStatus {
   FAILED
 }
 
+enum PricingVersionStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum PricingRuleType {
+  FIXED_RANGE_ADDITION
+  FIXED_RANGE_REPLACEMENT
+  PER_UNIT_RANGE
+  PERCENTAGE_RANGE_ADJUSTMENT
+  TIER_RANGE
+  MINIMUM_CHARGE
+  SERVICE_AREA_RANGE_ADDITION
+  CUSTOMER_TYPE_RANGE_ADDITION
+  MANUAL_REVIEW
+}
+
+enum PricingConditionOperator {
+  EQUALS
+  NOT_EQUALS
+  IN
+  GREATER_THAN
+  GREATER_THAN_OR_EQUAL
+  LESS_THAN
+  LESS_THAN_OR_EQUAL
+  BOOLEAN_TRUE
+  BOOLEAN_FALSE
+}
+
+enum EstimateOutcome {
+  RANGE
+  MANUAL_REVIEW
+}
+
+enum EstimateMatchStatus {
+  NOT_LINKED
+  MATCHED
+  INPUTS_CHANGED
+  EXPIRED
+}
+
 model User {
   id                         String                      @id @default(uuid()) @db.Uuid
   email                      String                      @unique @db.VarChar(254)
@@ -91,6 +133,8 @@ model User {
   assignedQuoteRequests      QuoteRequest[]              @relation("QuoteRequestAssignee")
   quoteRequestNotes          QuoteRequestNote[]
   quoteStatusChanges         QuoteRequestStatusHistory[]
+  createdPricingVersions     PricingVersion[]            @relation("PricingVersionCreatedBy")
+  updatedPricingVersions     PricingVersion[]            @relation("PricingVersionUpdatedBy")
 
   @@index([status])
   @@index([createdAt])
@@ -141,11 +185,120 @@ model QuoteRequest {
   internalNotes          QuoteRequestNote[]
   statusHistory          QuoteRequestStatusHistory[]
   emailMessages          EmailOutbox[]
+  estimateResultId       String?                     @unique @db.Uuid
+  estimateMatchStatus    EstimateMatchStatus         @default(NOT_LINKED)
+  estimateSnapshot       Json?
+  estimateResult         EstimateResult?             @relation(fields: [estimateResultId], references: [id], onDelete: SetNull)
 
   @@index([status, createdAt(sort: Desc)])
   @@index([assignedToUserId, status])
   @@index([customerEmail])
   @@index([archivedAt])
+}
+
+model PricingVersion {
+  id              String                  @id @default(uuid()) @db.Uuid
+  versionCode     String                  @unique @db.VarChar(64)
+  name            String                  @db.VarChar(160)
+  status          PricingVersionStatus    @default(DRAFT)
+  effectiveFrom   DateTime?
+  effectiveTo     DateTime?
+  publishedAt     DateTime?
+  createdByUserId String                  @db.Uuid
+  updatedByUserId String                  @db.Uuid
+  version         Int                     @default(1)
+  notes           String?                 @db.VarChar(2000)
+  createdAt       DateTime                @default(now())
+  updatedAt       DateTime                @updatedAt
+  archivedAt      DateTime?
+  createdBy       User                    @relation("PricingVersionCreatedBy", fields: [createdByUserId], references: [id], onDelete: Restrict)
+  updatedBy       User                    @relation("PricingVersionUpdatedBy", fields: [updatedByUserId], references: [id], onDelete: Restrict)
+  configurations  ServicePricingConfiguration[]
+  estimates       EstimateResult[]
+
+  @@index([status, effectiveFrom, effectiveTo])
+}
+
+model ServicePricingConfiguration {
+  id                     String         @id @default(uuid()) @db.Uuid
+  pricingVersionId       String         @db.Uuid
+  serviceKey             String         @db.VarChar(64)
+  enabled                Boolean        @default(true)
+  baseMinimumCents       Int
+  baseMaximumCents       Int
+  minimumChargeCents     Int
+  maximumEstimatorCents  Int
+  roundingIncrementCents Int
+  displayOrder           Int            @default(0)
+  customerDisclaimer     String         @db.VarChar(1000)
+  assumptions            Json
+  exclusions             Json
+  createdAt              DateTime       @default(now())
+  updatedAt              DateTime       @updatedAt
+  pricingVersion         PricingVersion @relation(fields: [pricingVersionId], references: [id], onDelete: Cascade)
+  rules                  PricingRule[]
+
+  @@unique([pricingVersionId, serviceKey])
+  @@index([pricingVersionId, displayOrder])
+}
+
+model PricingRule {
+  id                            String                       @id @default(uuid()) @db.Uuid
+  servicePricingConfigurationId String                       @db.Uuid
+  ruleKey                       String                       @db.VarChar(100)
+  questionKey                   String                       @db.VarChar(100)
+  ruleType                      PricingRuleType
+  conditionOperator             PricingConditionOperator
+  comparisonValue               Json?
+  minimumAdjustmentCents        Int?
+  maximumAdjustmentCents        Int?
+  adjustmentBasisPoints         Int?
+  sortOrder                     Int
+  enabled                       Boolean                      @default(true)
+  publicLabel                   String                       @db.VarChar(200)
+  internalDescription           String?                      @db.VarChar(1000)
+  createdAt                     DateTime                     @default(now())
+  updatedAt                     DateTime                     @updatedAt
+  servicePricingConfiguration   ServicePricingConfiguration @relation(fields: [servicePricingConfigurationId], references: [id], onDelete: Cascade)
+
+  @@unique([servicePricingConfigurationId, ruleKey])
+  @@index([servicePricingConfigurationId, sortOrder])
+}
+
+model EstimateResult {
+  id                    String         @id @default(uuid()) @db.Uuid
+  publicTokenHash       String         @unique @db.Char(64)
+  transferTokenHash     String?        @unique @db.Char(64)
+  transferTokenExpiresAt DateTime?
+  idempotencyKeyHash    String         @unique @db.Char(64)
+  inputFingerprint      String         @db.Char(64)
+  sourceHash            String         @db.Char(64)
+  serviceKey            String         @db.VarChar(64)
+  customerType          QuotePropertyType
+  serviceAreaKey        String         @db.VarChar(64)
+  outcome               EstimateOutcome
+  minimumCents          Int?
+  maximumCents          Int?
+  currency              String         @default("CAD") @db.Char(3)
+  pricingVersionId      String         @db.Uuid
+  pricingVersionCode    String         @db.VarChar(64)
+  normalizedInput       Json
+  publicExplanation     Json
+  calculationTrace      Json
+  assumptionsSnapshot   Json
+  exclusionsSnapshot    Json
+  disclaimerSnapshot    String         @db.VarChar(1000)
+  createdAt             DateTime       @default(now())
+  expiresAt             DateTime
+  archivedAt            DateTime?
+  convertedAt           DateTime?
+  pricingVersion        PricingVersion @relation(fields: [pricingVersionId], references: [id], onDelete: Restrict)
+  quoteRequest          QuoteRequest?
+
+  @@index([createdAt(sort: Desc)])
+  @@index([expiresAt])
+  @@index([pricingVersionId])
+  @@index([serviceKey, outcome])
 }
 
 model QuoteRequestUpload {

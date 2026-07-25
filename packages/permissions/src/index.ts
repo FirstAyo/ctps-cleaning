@@ -38,11 +38,32 @@ export const PERMISSION_KEYS = {
   QUOTE_REQUESTS_READ_PRIVATE_MEDIA: "quoteRequests.readPrivateMedia",
   QUOTE_REQUESTS_ARCHIVE: "quoteRequests.archive",
   QUOTE_REQUESTS_DELETE: "quoteRequests.delete",
+  PRICING_VERSIONS_READ: "pricingVersions.read",
+  PRICING_VERSIONS_CREATE: "pricingVersions.create",
+  PRICING_VERSIONS_UPDATE: "pricingVersions.update",
+  PRICING_VERSIONS_PUBLISH: "pricingVersions.publish",
+  PRICING_VERSIONS_ARCHIVE: "pricingVersions.archive",
+  PRICING_VERSIONS_DELETE: "pricingVersions.delete",
+  PRICING_RULES_READ: "pricingRules.read",
+  PRICING_RULES_CREATE: "pricingRules.create",
+  PRICING_RULES_UPDATE: "pricingRules.update",
+  PRICING_RULES_DELETE: "pricingRules.delete",
+  ESTIMATOR_RESULTS_READ: "estimatorResults.read",
+  ESTIMATOR_RESULTS_READ_CALCULATION_TRACE: "estimatorResults.readCalculationTrace",
+  ESTIMATOR_RESULTS_ARCHIVE: "estimatorResults.archive",
 } as const;
 
 export type PermissionKey = (typeof PERMISSION_KEYS)[keyof typeof PERMISSION_KEYS];
 export type PermissionGroup =
-  "Administration" | "Users" | "Roles" | "Security" | "Projects" | "Media" | "Quote Requests";
+  | "Administration"
+  | "Users"
+  | "Roles"
+  | "Security"
+  | "Projects"
+  | "Media"
+  | "Quote Requests"
+  | "Pricing"
+  | "Estimator Results";
 
 export interface PermissionDefinition {
   readonly key: PermissionKey;
@@ -238,6 +259,80 @@ export const PERMISSION_DEFINITIONS: readonly PermissionDefinition[] = [
     description: "Permanently delete eligible quote requests after confirmation.",
     group: "Quote Requests",
   },
+  ...(
+    [
+      [
+        PERMISSION_KEYS.PRICING_VERSIONS_READ,
+        "Read pricing versions",
+        "View pricing versions and service configurations.",
+      ],
+      [
+        PERMISSION_KEYS.PRICING_VERSIONS_CREATE,
+        "Create pricing versions",
+        "Create or clone draft pricing versions.",
+      ],
+      [
+        PERMISSION_KEYS.PRICING_VERSIONS_UPDATE,
+        "Update pricing versions",
+        "Edit draft pricing versions and service configuration.",
+      ],
+      [
+        PERMISSION_KEYS.PRICING_VERSIONS_PUBLISH,
+        "Publish pricing versions",
+        "Validate and publish an effective pricing version.",
+      ],
+      [
+        PERMISSION_KEYS.PRICING_VERSIONS_ARCHIVE,
+        "Archive pricing versions",
+        "Archive superseded pricing versions without changing history.",
+      ],
+      [
+        PERMISSION_KEYS.PRICING_VERSIONS_DELETE,
+        "Delete pricing drafts",
+        "Delete eligible unreferenced draft pricing versions.",
+      ],
+      [PERMISSION_KEYS.PRICING_RULES_READ, "Read pricing rules", "View structured pricing rules."],
+      [
+        PERMISSION_KEYS.PRICING_RULES_CREATE,
+        "Create pricing rules",
+        "Add structured rules to draft pricing versions.",
+      ],
+      [
+        PERMISSION_KEYS.PRICING_RULES_UPDATE,
+        "Update pricing rules",
+        "Edit structured rules on draft pricing versions.",
+      ],
+      [
+        PERMISSION_KEYS.PRICING_RULES_DELETE,
+        "Delete pricing rules",
+        "Delete structured rules from draft pricing versions.",
+      ],
+    ] as const
+  ).map(([key, label, description]) => ({ key, label, description, group: "Pricing" as const })),
+  ...(
+    [
+      [
+        PERMISSION_KEYS.ESTIMATOR_RESULTS_READ,
+        "Read estimator results",
+        "View safe preliminary estimate records.",
+      ],
+      [
+        PERMISSION_KEYS.ESTIMATOR_RESULTS_READ_CALCULATION_TRACE,
+        "Read calculation traces",
+        "View internal pricing calculation traces.",
+      ],
+      [
+        PERMISSION_KEYS.ESTIMATOR_RESULTS_ARCHIVE,
+        "Archive estimator results",
+        "Archive estimator result records.",
+      ],
+    ] as const
+  ).map(([key, label, description]) => ({
+    key,
+    label,
+    description,
+    group: "Estimator Results" as const,
+  })),
 ] as const;
 
 export const ALL_PERMISSION_KEYS = PERMISSION_DEFINITIONS.map(({ key }) => key);

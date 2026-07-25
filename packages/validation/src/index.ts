@@ -80,6 +80,10 @@ export const apiEnvironmentSchema = z
     QUOTE_MIN_COMPLETION_SECONDS: positiveSecondsSchema.min(1).max(3600).default(8),
     QUOTE_RATE_LIMIT_MAX_ATTEMPTS: positiveIntegerSchema.max(100).default(12),
     QUOTE_RATE_LIMIT_WINDOW_SECONDS: positiveSecondsSchema.min(30).default(900),
+    ESTIMATOR_RESULT_TTL_SECONDS: positiveSecondsSchema.min(300).default(604_800),
+    ESTIMATOR_TRANSFER_TTL_SECONDS: positiveSecondsSchema.min(60).default(1_800),
+    ESTIMATOR_RATE_LIMIT_MAX_ATTEMPTS: positiveIntegerSchema.max(100).default(20),
+    ESTIMATOR_RATE_LIMIT_WINDOW_SECONDS: positiveSecondsSchema.min(30).default(900),
     QUOTE_MAX_UPLOAD_FILES: positiveIntegerSchema.max(20).default(8),
     QUOTE_MAX_FILE_BYTES: positiveIntegerSchema.max(25 * 1024 * 1024).default(8 * 1024 * 1024),
     QUOTE_MAX_TOTAL_UPLOAD_BYTES: positiveIntegerSchema
@@ -459,6 +463,7 @@ export const quoteSubmissionSchema = z
   .object({
     draftToken: z.string().min(43).max(200),
     idempotencyKey: z.uuid(),
+    estimateTransferToken: z.string().min(43).max(200).optional(),
     honeypot: z.string().max(0).default(""),
     propertyType: z.enum(["RESIDENTIAL", "COMMERCIAL"]),
     services: z.array(quoteServiceKeySchema).min(1).max(5),
@@ -559,6 +564,118 @@ export const quoteSubmissionSchema = z
           message: "Preferred dates cannot be in the past",
         });
   });
+
+export const estimatorServiceKeySchema = quoteServiceKeySchema;
+export const estimatorCustomerTypeSchema = z.enum(["RESIDENTIAL", "COMMERCIAL"]);
+export const estimatorAnswerSchema = z.union([
+  z.string().trim().max(200),
+  z.number().finite().min(0).max(100_000),
+  z.boolean(),
+]);
+export const estimatorCalculationSchema = z
+  .object({
+    idempotencyKey: z.uuid(),
+    honeypot: z.string().max(0).default(""),
+    serviceKey: estimatorServiceKeySchema,
+    customerType: estimatorCustomerTypeSchema,
+    serviceAreaKey: quoteServiceAreaKeySchema,
+    answers: z.record(z.string().trim().min(1).max(64), estimatorAnswerSchema),
+  })
+  .strict();
+export const estimatorResultListQuerySchema = paginationSchema.extend({
+  serviceKey: estimatorServiceKeySchema.optional(),
+  outcome: z.enum(["RANGE", "MANUAL_REVIEW"]).optional(),
+  archived: z
+    .enum(["true", "false"])
+    .transform((value) => value === "true")
+    .default(false),
+});
+export const pricingVersionCreateSchema = z.object({
+  versionCode: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .min(3)
+    .max(64)
+    .regex(/^[A-Z0-9][A-Z0-9._-]+$/),
+  name: z.string().trim().min(3).max(160),
+  notes: z.string().trim().max(2000).optional(),
+  effectiveFrom: z.iso.datetime({ offset: true }).optional(),
+  cloneFromVersionId: identifierSchema.optional(),
+});
+export const pricingVersionUpdateSchema = z.object({
+  version: z.number().int().positive(),
+  name: z.string().trim().min(3).max(160).optional(),
+  notes: z.string().trim().max(2000).nullable().optional(),
+  effectiveFrom: z.iso.datetime({ offset: true }).nullable().optional(),
+  effectiveTo: z.iso.datetime({ offset: true }).nullable().optional(),
+});
+export const servicePricingConfigurationSchema = z.object({
+  serviceKey: estimatorServiceKeySchema,
+  enabled: z.boolean(),
+  baseMinimumCents: z.number().int().nonnegative(),
+  baseMaximumCents: z.number().int().nonnegative(),
+  minimumChargeCents: z.number().int().nonnegative(),
+  maximumEstimatorCents: z.number().int().positive(),
+  roundingIncrementCents: z.number().int().positive(),
+  displayOrder: z.number().int().min(0).max(100),
+  customerDisclaimer: z.string().trim().min(10).max(1000),
+  assumptions: z.array(z.string().trim().min(1).max(300)).max(20),
+  exclusions: z.array(z.string().trim().min(1).max(300)).max(20),
+});
+export const pricingRuleSchema = z.object({
+  ruleKey: z
+    .string()
+    .trim()
+    .min(2)
+    .max(100)
+    .regex(/^[a-zA-Z0-9._-]+$/),
+  questionKey: z.string().trim().min(2).max(100),
+  ruleType: z.enum([
+    "FIXED_RANGE_ADDITION",
+    "FIXED_RANGE_REPLACEMENT",
+    "PER_UNIT_RANGE",
+    "PERCENTAGE_RANGE_ADJUSTMENT",
+    "TIER_RANGE",
+    "MINIMUM_CHARGE",
+    "SERVICE_AREA_RANGE_ADDITION",
+    "CUSTOMER_TYPE_RANGE_ADDITION",
+    "MANUAL_REVIEW",
+  ]),
+  conditionOperator: z.enum([
+    "EQUALS",
+    "NOT_EQUALS",
+    "IN",
+    "GREATER_THAN",
+    "GREATER_THAN_OR_EQUAL",
+    "LESS_THAN",
+    "LESS_THAN_OR_EQUAL",
+    "BOOLEAN_TRUE",
+    "BOOLEAN_FALSE",
+  ]),
+  comparisonValue: z
+    .union([estimatorAnswerSchema, z.array(estimatorAnswerSchema).max(30)])
+    .optional(),
+  minimumAdjustmentCents: z.number().int().optional(),
+  maximumAdjustmentCents: z.number().int().optional(),
+  adjustmentBasisPoints: z.number().int().min(-10_000).max(100_000).optional(),
+  sortOrder: z.number().int().min(0).max(10_000),
+  enabled: z.boolean(),
+  publicLabel: z.string().trim().min(1).max(200),
+  internalDescription: z.string().trim().max(1000).optional(),
+});
+export const pricingPreviewSchema = estimatorCalculationSchema.omit({
+  idempotencyKey: true,
+  honeypot: true,
+});
+
+export type EstimatorCalculationInput = z.infer<typeof estimatorCalculationSchema>;
+export type EstimatorResultListQuery = z.infer<typeof estimatorResultListQuerySchema>;
+export type PricingVersionCreateInput = z.infer<typeof pricingVersionCreateSchema>;
+export type PricingVersionUpdateInput = z.infer<typeof pricingVersionUpdateSchema>;
+export type ServicePricingConfigurationInput = z.infer<typeof servicePricingConfigurationSchema>;
+export type PricingRuleInput = z.infer<typeof pricingRuleSchema>;
+export type PricingPreviewInput = z.infer<typeof pricingPreviewSchema>;
 export const quoteListQuerySchema = paginationSchema.extend({
   search: safeText(120).optional(),
   status: quoteStatusSchema.optional(),

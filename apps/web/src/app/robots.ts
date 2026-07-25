@@ -5,7 +5,13 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: ["/admin", "/design-system", "/api/", "/request-a-quote/confirmation"],
+      disallow: [
+        "/admin",
+        "/design-system",
+        "/api/",
+        "/request-a-quote/confirmation",
+        "/estimate/results/",
+      ],
     },
     sitemap: new URL("/sitemap.xml", site.url).toString(),
   };

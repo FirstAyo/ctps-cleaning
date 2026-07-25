@@ -34,12 +34,14 @@ export function PageHero({
   description,
   image,
   imageAlt,
+  estimateHref = "/estimate",
 }: {
   readonly eyebrow: string;
   readonly title: string;
   readonly description: string;
   readonly image?: string;
   readonly imageAlt?: string;
+  readonly estimateHref?: string;
 }) {
   return (
     <section className="overflow-hidden border-b border-border bg-secondary text-secondary-foreground">
@@ -53,7 +55,7 @@ export function PageHero({
           <p className="mt-6 max-w-2xl text-lg text-sidebar-muted">{description}</p>
           <div className="mt-8 flex flex-wrap gap-3">
             <LinkButton href="/request-a-quote">Request a Quote</LinkButton>
-            <LinkButton href="/estimate" variant="outline">
+            <LinkButton href={estimateHref} variant="outline">
               Explore the Estimator
             </LinkButton>
           </div>
@@ -272,6 +274,7 @@ export function ServicePageContent({ service }: { readonly service: Service }) {
         image={service.image}
         imageAlt={service.alt}
         title={service.name}
+        estimateHref={`/estimate?service=${service.slug}`}
       />
       <Section>
         <Container>

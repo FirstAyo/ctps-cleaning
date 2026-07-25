@@ -14,12 +14,15 @@
     "verify:auth-runtime": "dotenv -e ../../.env -- tsx src/cli/verify-auth-runtime.ts",
     "verify:before-after-runtime": "dotenv -e ../../.env -- tsx src/cli/verify-before-after-runtime.ts",
     "verify:quote-request-runtime": "dotenv -e ../../.env -- tsx src/cli/verify-quote-request-runtime.ts",
+    "estimator:initialize-development": "dotenv -e ../../.env -- tsx src/cli/initialize-estimator-development.ts",
+    "verify:estimator-runtime": "dotenv -e ../../.env -- tsx src/cli/verify-estimator-runtime.ts",
     "clean": "rimraf dist coverage"
   },
   "dependencies": {
     "@ctps/database": "workspace:*",
     "@ctps/email": "workspace:*",
     "@ctps/permissions": "workspace:*",
+    "@ctps/pricing": "workspace:*",
     "@ctps/types": "workspace:*",
     "@ctps/validation": "workspace:*",
     "@inquirer/prompts": "^8.5.2",

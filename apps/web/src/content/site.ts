@@ -267,7 +267,7 @@ export const generalFaqs = [
   {
     title: "Is the estimator a final price?",
     content:
-      "No. The future estimator will provide a preliminary, non-binding range. Final pricing may change after CTPS reviews property details and requested services.",
+      "No. The estimator provides a preliminary, non-binding range when an approved pricing version is available. Final pricing may change after CTPS reviews property details and requested services.",
   },
   {
     title: "Can I upload property photos?",

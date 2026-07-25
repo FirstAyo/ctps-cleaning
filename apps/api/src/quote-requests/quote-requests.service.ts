@@ -15,6 +15,7 @@ import type {
   QuoteStatusUpdateInput,
   QuoteSubmissionInput,
 } from "@ctps/validation";
+import { ESTIMATOR_QUESTIONS } from "@ctps/pricing";
 import { AuditService } from "../auth/audit.service";
 import { DatabaseService } from "../database/database.service";
 import { QuoteConfigService } from "./quote-config.service";
@@ -110,6 +111,55 @@ export class QuoteRequestsService {
         code: "SUBMITTED_TOO_QUICKLY",
         message: "Please review the request before submitting.",
       });
+    let estimateLink:
+      | {
+          id: string;
+          matchStatus: "MATCHED" | "INPUTS_CHANGED" | "EXPIRED";
+          snapshot: Prisma.InputJsonValue;
+        }
+      | undefined;
+    if (input.estimateTransferToken) {
+      const estimate = await this.database.client.estimateResult.findUnique({
+        where: { transferTokenHash: this.security.hash(input.estimateTransferToken) },
+        include: { quoteRequest: { select: { id: true } } },
+      });
+      if (estimate && !estimate.quoteRequest) {
+        const normalized = estimate.normalizedInput as {
+          serviceKey: string;
+          customerType: string;
+          serviceAreaKey: string;
+          answers: Record<string, string | number | boolean>;
+        };
+        const mappedAnswers = Object.fromEntries(
+          ESTIMATOR_QUESTIONS.filter(
+            (question) =>
+              question.serviceKey === normalized.serviceKey && question.quoteQuestionKey,
+          ).map((question) => [question.quoteQuestionKey!, normalized.answers[question.key]]),
+        );
+        const quoteAnswers = input.serviceAnswers[normalized.serviceKey] ?? {};
+        const unchanged =
+          input.propertyType === normalized.customerType &&
+          input.address.serviceAreaKey === normalized.serviceAreaKey &&
+          input.services.includes(normalized.serviceKey as (typeof input.services)[number]) &&
+          Object.entries(mappedAnswers).every(([key, value]) => quoteAnswers[key] === value);
+        const expired =
+          !estimate.transferTokenExpiresAt ||
+          estimate.transferTokenExpiresAt <= new Date() ||
+          estimate.expiresAt <= new Date();
+        estimateLink = {
+          id: estimate.id,
+          matchStatus: expired ? "EXPIRED" : unchanged ? "MATCHED" : "INPUTS_CHANGED",
+          snapshot: {
+            pricingVersionCode: estimate.pricingVersionCode,
+            serviceKey: estimate.serviceKey,
+            outcome: estimate.outcome,
+            minimumCents: estimate.minimumCents,
+            maximumCents: estimate.maximumCents,
+            currency: estimate.currency,
+          },
+        };
+      }
+    }
     const confirmationToken = this.security.token();
     let created;
     for (let attempt = 0; attempt < QUOTE_REFERENCE_COLLISION_ATTEMPTS; attempt += 1) {
@@ -140,6 +190,13 @@ export class QuoteRequestsService {
                 companyName: input.contact.companyName ?? null,
                 notes: input.notes ?? null,
                 consentAcceptedAt: new Date(),
+                ...(estimateLink
+                  ? {
+                      estimateResultId: estimateLink.id,
+                      estimateMatchStatus: estimateLink.matchStatus,
+                      estimateSnapshot: estimateLink.snapshot,
+                    }
+                  : {}),
               },
             });
             await transaction.quoteRequestUpload.updateMany({
@@ -150,6 +207,11 @@ export class QuoteRequestsService {
               where: { id: draft.id },
               data: { submittedAt: new Date() },
             });
+            if (estimateLink)
+              await transaction.estimateResult.update({
+                where: { id: estimateLink.id },
+                data: { convertedAt: new Date() },
+              });
             await transaction.emailOutbox.createMany({
               data: this.email.records({
                 quoteRequestId: quote.id,
@@ -170,6 +232,7 @@ export class QuoteRequestsService {
                   reference,
                   serviceCount: input.services.length,
                   uploadCount: draft.uploads.length,
+                  estimateMatchStatus: estimateLink?.matchStatus ?? "NOT_LINKED",
                 },
               },
             });
@@ -273,6 +336,19 @@ export class QuoteRequestsService {
       omit: { confirmationTokenHash: true, idempotencyKeyHash: true },
       include: {
         assignedTo: { select: { id: true, displayName: true, email: true } },
+        estimateResult: {
+          select: {
+            id: true,
+            serviceKey: true,
+            outcome: true,
+            minimumCents: true,
+            maximumCents: true,
+            currency: true,
+            pricingVersionCode: true,
+            createdAt: true,
+            expiresAt: true,
+          },
+        },
         uploads: {
           where: { status: "READY" },
           orderBy: { sortOrder: "asc" },

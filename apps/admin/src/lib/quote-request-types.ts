@@ -26,6 +26,19 @@ export interface QuoteDetail extends QuoteListItem {
   notes: string | null;
   consentAcceptedAt: string;
   updatedAt: string;
+  estimateMatchStatus: "NOT_LINKED" | "MATCHED" | "INPUTS_CHANGED" | "EXPIRED";
+  estimateSnapshot: Record<string, unknown> | null;
+  estimateResult: {
+    id: string;
+    serviceKey: string;
+    outcome: string;
+    minimumCents: number | null;
+    maximumCents: number | null;
+    currency: string;
+    pricingVersionCode: string;
+    createdAt: string;
+    expiresAt: string;
+  } | null;
   uploads: {
     id: string;
     originalFilename: string;

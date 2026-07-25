@@ -34,7 +34,7 @@ Implemented the guest multi-step public flow, durable request drafts, unique ref
 
 ## Phase 7 — Price estimator
 
-Implement configurable ranges/model, deterministic engine, permission-protected admin controls, result/breakdown, quote conversion, audit events built on the Phase 3 foundation, and comprehensive calculation tests.
+Implemented configurable version/service/rule models, a deterministic integer-cents engine, permission-protected admin controls, expiring tokenized results, safe public explanations, quote transfer with match-state validation, audit events built on the Phase 3 foundation, and calculation/security tests. Initial values remain an explicitly unapproved Draft until CTPS reviews and publishes them. See `estimator-implementation.md`.
 
 ## Phase 8 — Blogging system
 

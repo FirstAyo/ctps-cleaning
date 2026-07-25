@@ -48,8 +48,20 @@ async function jsonRequest(path: string, init: RequestInit = {}) {
   return body;
 }
 
-export function QuoteRequestForm() {
+export function QuoteRequestForm({
+  estimateTransferToken = "",
+}: {
+  estimateTransferToken?: string;
+}) {
   const router = useRouter();
+  const [transferToken] = useState(
+    () =>
+      estimateTransferToken ||
+      (typeof window === "undefined"
+        ? ""
+        : new URLSearchParams(window.location.search).get("estimate") || ""),
+  );
+  const [estimateNotice, setEstimateNotice] = useState("");
   const [idempotencyKey] = useState(() => crypto.randomUUID());
   const [step, setStep] = useState(0);
   const [draftToken, setDraftToken] = useState("");
@@ -110,6 +122,39 @@ export function QuoteRequestForm() {
       .catch((cause: Error) => setError(cause.message));
     return () => clearTimeout(restore);
   }, []);
+  useEffect(() => {
+    if (!transferToken) return;
+    void fetch(`/api/estimator/quote-transfer/${encodeURIComponent(transferToken)}`, {
+      cache: "no-store",
+    })
+      .then(async (response) => {
+        const body = (await response.json()) as {
+          message?: string;
+          serviceKey?: string;
+          propertyType?: "RESIDENTIAL" | "COMMERCIAL";
+          serviceAreaKey?: string;
+          serviceAnswers?: Record<string, string | number | boolean>;
+        };
+        if (!response.ok || !body.serviceKey)
+          throw new Error(body.message ?? "Estimate transfer unavailable.");
+        setSelected([body.serviceKey]);
+        setPropertyType(body.propertyType ?? "RESIDENTIAL");
+        setAddress((current) => ({
+          ...current,
+          serviceAreaKey: body.serviceAreaKey ?? "",
+          city:
+            body.serviceAreaKey
+              ?.split("-")
+              .map((word) => word[0]?.toUpperCase() + word.slice(1))
+              .join(" ") ?? "",
+        }));
+        setAnswers({ [body.serviceKey]: body.serviceAnswers ?? {} });
+        setEstimateNotice(
+          "Your preliminary estimate details were securely prefilled. You may change them; CTPS will record whether the submitted scope still matches.",
+        );
+      })
+      .catch((cause: Error) => setEstimateNotice(cause.message));
+  }, [transferToken]);
   useEffect(() => {
     sessionStorage.setItem(
       "ctps_quote_nonsensitive",
@@ -235,6 +280,7 @@ export function QuoteRequestForm() {
         body: JSON.stringify({
           draftToken,
           idempotencyKey,
+          ...(transferToken ? { estimateTransferToken: transferToken } : {}),
           honeypot: "",
           propertyType,
           services: selected,
@@ -261,6 +307,11 @@ export function QuoteRequestForm() {
   }
   return (
     <div className="mx-auto max-w-4xl rounded-xl border border-border bg-card p-5 shadow-sm sm:p-8">
+      {estimateNotice ? (
+        <p className="mb-5 rounded-md border border-primary/25 bg-primary/5 p-3 text-sm">
+          {estimateNotice}
+        </p>
+      ) : null}
       <div aria-label="Quote request progress" className="mb-8">
         <p className="text-sm font-semibold text-primary">
           Step {step + 1} of {titles.length}

@@ -11,7 +11,6 @@ import {
   BeforeAfterPage,
   BlogPage,
   ContactPage,
-  EstimatePage,
   FaqPage,
   ServicesOverviewPage,
 } from "../src/components/public-pages";
@@ -69,14 +68,11 @@ describe("Phase 4 public marketing", () => {
     }
   });
 
-  it("activates quote requests while keeping later workflows explicitly inactive", () => {
+  it("keeps the quote workflow active without implying booking or final pricing", () => {
     const quote = markup(<RequestQuotePage />);
     expect(quote).toContain("Step 1 of 8");
     expect(quote).toContain("Property type");
     expect(quote).toContain("This is not a price, appointment, or booking");
-    const estimate = markup(<EstimatePage />);
-    expect(estimate).toContain("Estimator coming in Phase 7");
-    expect(estimate).not.toMatch(/\$\d/);
     expect(markup(<ContactPage />)).toContain("Contact submission not active");
   });
 

@@ -43,9 +43,11 @@ Additional identifiers should use stable `domain.resource.action[Scope]` naming.
 - Cache permissions only with reliable invalidation/session revocation after role changes.
 - Audit user lifecycle, role/permission assignments, publishing, pricing changes, quote status/notes, private media access where appropriate, and security events.
 
-## Phase 3, Phase 5, and Phase 6 implementation
+## Phase 3, Phase 5, Phase 6, and Phase 7 implementation
 
 The foundational catalogue contains admin access; user, role, audit, and own-session keys documented in `authentication-authorization-implementation.md`. Phase 5 adds six `projects.beforeAfter.*` and four `media.beforeAfter.*` keys documented in `before-after-implementation.md`. Phase 6 adds `quoteRequests.read`, `quoteRequests.update`, `quoteRequests.changeStatus`, `quoteRequests.assign`, `quoteRequests.addInternalNotes`, `quoteRequests.readPrivateMedia`, `quoteRequests.archive`, and `quoteRequests.delete`. `SUPER_ADMIN` always resolves to every known permission. `ADMIN` and `AUTHOR` initially receive only `admin.access`; quote permissions are never granted to them by default. Multiple roles combine permissions. Final-active-Super-Admin protections use serializable transactions.
+
+Phase 7 adds `pricingVersions.read/create/update/publish/archive/delete`, `pricingRules.read/create/update/delete`, and `estimatorResults.read/readCalculationTrace/archive`. Super Admin receives all known keys. Admin and Author receive no Phase 7 permission by default; a Super Admin may grant selected keys. Pricing publication and trace access remain distinct high-impact permissions.
 
 ## Unresolved policy
 

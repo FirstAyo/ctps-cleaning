@@ -32,4 +32,4 @@ Unavailable services, missing/invalid configuration, impossible inputs, effectiv
 
 ## Unresolved decisions
 
-Supported rule catalogue, currency/storage scale, tax treatment, rounding increment, combination order, cap/floor policy, rule approval threshold, estimate expiry, and what breakdown labels are public must be approved before implementation.
+Phase 7 fixes the implemented technical contract: CAD integer cents, typed rules, stable ordering, basis points, outward configurable rounding, configured floor/cap, seven-day default expiry, approved public labels only, and manual review without a fabricated range. CTPS still must approve real pricing values, legal wording, retention policy, production rule combinations, and any two-person publication threshold. See `estimator-implementation.md`.

@@ -102,6 +102,9 @@ importers:
       '@ctps/permissions':
         specifier: workspace:*
         version: link:../../packages/permissions
+      '@ctps/pricing':
+        specifier: workspace:*
+        version: link:../../packages/pricing
       '@ctps/types':
         specifier: workspace:*
         version: link:../../packages/types

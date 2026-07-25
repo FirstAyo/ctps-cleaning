@@ -96,6 +96,19 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
               </p>
             ) : null}
           </section>
+          {quote.estimateResult ? (
+            <section className="rounded-lg border border-border bg-card p-5">
+              <h3 className="text-lg font-semibold">Linked preliminary estimate</h3>
+              <p className="mt-2 text-sm">
+                Match state: <strong>{quote.estimateMatchStatus}</strong> ·{" "}
+                {quote.estimateResult.serviceKey} · {quote.estimateResult.outcome}
+              </p>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Pricing version {quote.estimateResult.pricingVersionCode}. This historical range is
+                informational and is not the formal quote.
+              </p>
+            </section>
+          ) : null}
           <section className="rounded-lg border border-border bg-card p-5">
             <h3 className="text-lg font-semibold">Private customer photos</h3>
             {can(identity, "quoteRequests.readPrivateMedia") ? (

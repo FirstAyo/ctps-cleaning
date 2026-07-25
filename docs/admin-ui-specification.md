@@ -76,6 +76,8 @@ Provide inline validation and a focusable linked summary after submit; distingui
 
 ## 13. Admin states
 
+Phase 7 adds permission-aware Pricing and Estimator Results navigation. Pricing versions use structured service and rule fields—never a formula editor—with immutable Published/Archived states and explicit publish/archive/delete boundaries. Calculation traces appear only with their dedicated permission.
+
 - **Loading:** stable shell/table/form skeleton and announced busy region.
 - **Empty/no data:** explain whether the system has no records or filters excluded them, then offer a permitted action.
 - **Error:** actionable retry and safe correlation reference; no stack trace.

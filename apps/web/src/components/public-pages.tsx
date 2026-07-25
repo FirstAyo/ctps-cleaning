@@ -257,52 +257,6 @@ export function BlogPage() {
   );
 }
 
-export function EstimatePage() {
-  return (
-    <PublicLayout>
-      <PageHero
-        description="The future estimator will ask service-specific questions and produce a preliminary, non-binding range. It does not calculate or display prices in Phase 4."
-        eyebrow="Estimator foundation"
-        title="Understand the plan before a number appears."
-      />
-      <Section>
-        <Container>
-          <div className="grid gap-10 lg:grid-cols-[1fr_.8fr]">
-            <div>
-              <SectionHeading
-                copy="Window cleaning, pressure washing, gutter cleaning, moss removal, and supported vent-cleaning types are planned for configurable estimator availability."
-                eyebrow="Planned experience"
-                title="Service-specific questions. A range with context."
-              />
-              <p className="mt-5 text-muted-foreground">
-                A future result can convert into a quote request while retaining validated answers.
-                No automatic price approval or booking will be provided.
-              </p>
-            </div>
-            <aside className="rounded-xl border border-warning/40 bg-card p-7">
-              <h2 className="text-xl font-semibold">Non-binding by design</h2>
-              <p className="mt-3 text-sm text-muted-foreground">
-                A preliminary estimate may change after CTPS reviews property details, measurements,
-                condition, access requirements, photos, and requested services.
-              </p>
-              <Button className="mt-6 w-full" disabled>
-                Estimator coming in Phase 7
-              </Button>
-              <Link
-                className="mt-4 block text-center text-sm font-semibold text-primary"
-                href="/request-a-quote"
-              >
-                Request a quote
-              </Link>
-            </aside>
-          </div>
-        </Container>
-      </Section>
-      <QuoteCta />
-    </PublicLayout>
-  );
-}
-
 export function QuoteRequestPage() {
   return (
     <PublicLayout>
@@ -501,7 +455,7 @@ export function FaqPage() {
   return (
     <PublicLayout>
       <PageHero
-        description="Answers about CTPS service presentation, service areas, quote review, the future estimator, planned photo uploads, and current workflow limits."
+        description="Answers about CTPS service presentation, service areas, quote review, preliminary estimates, photo uploads, and current workflow limits."
         eyebrow="Frequently asked questions"
         title="Clear answers without unsupported promises."
       />

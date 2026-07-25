@@ -190,7 +190,7 @@ export default async function HomePage() {
           <ol className="mt-12 grid gap-6 md:grid-cols-4">
             {[
               "Explore services",
-              "Request a quote or explore the future estimator",
+              "Request a quote or calculate a preliminary estimate",
               "CTPS reviews property details",
               "CTPS contacts the customer",
             ].map((step, index) => (
@@ -209,15 +209,14 @@ export default async function HomePage() {
         <Container>
           <div className="grid items-center gap-10 rounded-[var(--radius-xl)] border border-border bg-card p-7 shadow-[var(--shadow-md)] lg:grid-cols-[1fr_auto] lg:p-10">
             <div>
-              <p className="eyebrow">Price estimator preview</p>
+              <p className="eyebrow">Preliminary price estimator</p>
               <h2 className="public-heading mt-3">A preliminary range, never a final quote.</h2>
               <p className="mt-4 max-w-2xl text-muted-foreground">
-                The future estimator will ask service-specific questions, provide a non-binding
-                range, and offer a path into a quote request. No prices or calculations are active
-                now.
+                Choose one service, answer service-specific questions, and receive a non-binding
+                range or a manual-review outcome using the currently published pricing version.
               </p>
             </div>
-            <LinkButton href="/estimate">See what is planned</LinkButton>
+            <LinkButton href="/estimate">Get a preliminary estimate</LinkButton>
           </div>
         </Container>
       </Section>
