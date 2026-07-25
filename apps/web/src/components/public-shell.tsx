@@ -212,7 +212,7 @@ const footerGroups = [
     title: "Resources",
     links: [
       { label: "Before & After", href: "/before-after" },
-      { label: "Planned blog", href: "/blog" },
+      { label: "Blog", href: "/blog" },
       { label: "Estimate", href: "/estimate" },
       { label: "Privacy placeholder", href: "/contact#privacy" },
     ],

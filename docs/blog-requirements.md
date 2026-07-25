@@ -1,5 +1,7 @@
 # Blog Requirements
 
+> Phase 8 implementation status: the database-backed ownership/lifecycle/editor/media/public-discovery system is implemented as described in `blog-implementation.md`. Revision restore, autosave, and production scheduler infrastructure remain explicitly deferred.
+
 ## Purpose
 
 This document defines a planned, self-hosted publishing system. Public comments, comment moderation, and discussion threads are explicitly excluded.

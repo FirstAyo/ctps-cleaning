@@ -28,6 +28,8 @@ Phase 6 applies the same content-signature, MIME/extension, byte/pixel, Sharp re
 
 Phase 7 uses independent 256-bit opaque result and quote-transfer credentials stored only as SHA-256 hashes, strict server validation, same-origin mutation checks, durable throttling, hashed idempotency keys, short transfer expiry, and seven-day result expiry by default. Public responses never contain rule values, traces, hashes, internal IDs, or source identifiers. Quote linkage is re-derived from server records and never trusts a client-supplied price or version.
 
+Phase 8 stores only strict structured blocks and managed-media identifiers. Unknown fields, raw executable HTML patterns, unsafe URL schemes, external image fields, invalid slugs, and unsupported blocks are rejected at the trusted API boundary. Post/media/profile ownership and own/all permissions are rechecked server-side; Draft/Scheduled content and media have no public API. Optimistic versions reject stale saves, public queries force Published status, and audit metadata excludes article bodies and filesystem keys. See `blog-implementation.md`.
+
 Inject secrets at deployment, grant least privilege, rotate them, and never commit or expose them to browsers/logs. PostgreSQL accounts and networks use least privilege. Logs are structured and correlated but exclude passwords, tokens, secrets, upload content, private pricing, and unnecessary personal data. Audit sensitive actor/action/resource/time/outcome and safe change summaries; make audit records read-only to ordinary admins.
 
 ## Infrastructure and recovery

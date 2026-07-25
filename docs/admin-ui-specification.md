@@ -52,6 +52,8 @@ Use a desktop-first responsive layout: main canvas for title, slug, excerpt, and
 
 Show save state (saving/saved/error), field validation, sanitized preview, schedule timezone, and unsaved-change protection on navigation/close. Revision comparison is readable and restores only after confirmation. Primary editing should not depend on excessive dialogs. The editor never trusts raw rendered HTML.
 
+Phase 8 implements a focused responsive structured-block canvas with lifecycle, slug, taxonomy, featured/inline managed images, SEO, and separately loaded revision history. Media includes multi-file local preview, per-file upload state/retry, ordering, alt text, captions, insertion, detach, and referenced-deletion safeguards. Explicit save/error/conflict states and browser unsaved-change protection are present; authenticated Draft preview is noindex and no-store. Revision restore and a general media library remain deferred.
+
 ## 9. Media library
 
 Support grid and list views, upload, search, filters, file type, size, dimensions, uploader/date, purpose, public/private classification, preview, alt text, caption, usage references, and justified bulk selection. Private thumbnails use authorized access and obvious privacy labels.

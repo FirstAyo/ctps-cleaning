@@ -20,7 +20,7 @@ const roleDefinitions = [
   {
     key: ROLE_KEYS.AUTHOR,
     displayName: "Author",
-    description: "Staff author foundation; blog permissions arrive in Phase 8.",
+    description: "Staff author with ownership-scoped blog publishing access.",
   },
 ] as const;
 
@@ -64,7 +64,26 @@ export async function initializeSystemAccess(
     const defaults: Record<string, readonly string[]> = {
       [ROLE_KEYS.SUPER_ADMIN]: ALL_PERMISSION_KEYS,
       [ROLE_KEYS.ADMIN]: [PERMISSION_KEYS.ADMIN_ACCESS],
-      [ROLE_KEYS.AUTHOR]: [PERMISSION_KEYS.ADMIN_ACCESS],
+      [ROLE_KEYS.AUTHOR]: [
+        PERMISSION_KEYS.ADMIN_ACCESS,
+        PERMISSION_KEYS.BLOG_POSTS_READ_OWN,
+        PERMISSION_KEYS.BLOG_POSTS_CREATE,
+        PERMISSION_KEYS.BLOG_POSTS_UPDATE_OWN,
+        PERMISSION_KEYS.BLOG_POSTS_PUBLISH_OWN,
+        PERMISSION_KEYS.BLOG_POSTS_SCHEDULE_OWN,
+        PERMISSION_KEYS.BLOG_POSTS_ARCHIVE_OWN,
+        PERMISSION_KEYS.BLOG_POSTS_DELETE_OWN,
+        PERMISSION_KEYS.BLOG_MEDIA_UPLOAD_OWN,
+        PERMISSION_KEYS.BLOG_MEDIA_READ_OWN,
+        PERMISSION_KEYS.BLOG_MEDIA_UPDATE_OWN,
+        PERMISSION_KEYS.BLOG_MEDIA_DELETE_OWN,
+        PERMISSION_KEYS.BLOG_CATEGORIES_READ,
+        PERMISSION_KEYS.BLOG_TAGS_READ,
+        PERMISSION_KEYS.AUTHOR_PROFILES_READ,
+        PERMISSION_KEYS.AUTHOR_PROFILES_UPDATE_OWN,
+        PERMISSION_KEYS.BLOG_REVISIONS_READ_OWN,
+        PERMISSION_KEYS.BLOG_REVISIONS_RESTORE_OWN,
+      ],
     };
     for (const [roleKey, permissionKeys] of Object.entries(defaults)) {
       const roleId = roles.get(roleKey);

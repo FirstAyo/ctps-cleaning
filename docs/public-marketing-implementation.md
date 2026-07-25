@@ -4,6 +4,8 @@
 
 Phase 4 implements the static, customer-facing CTPS marketing website. It uses the Phase 2 design system and preserves the Phase 3 protected administration system. Public marketing pages are rendered without the API or database. Quote submission, estimator calculations, uploads, project records, blog publishing, customer accounts, email, and scheduling remain deferred.
 
+> Later-phase status: Phases 5–8 subsequently replaced the portfolio, quote, estimator, and blog placeholders with their documented database-backed systems. The Phase 8 `/blog` replacement is described in `blog-implementation.md`; the statements below remain the historical Phase 4 handoff.
+
 ## Routes
 
 The implementation includes `/`; `/services` and five service routes; `/residential`; `/commercial`; `/before-after`; `/service-areas` and six area routes; `/about`; `/contact`; `/faq`; `/blog`; `/estimate`; and `/request-a-quote`. `/design-system` remains available as the Phase 2 preview and is excluded from production indexing.

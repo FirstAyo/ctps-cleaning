@@ -90,6 +90,8 @@ Each page includes a genuine location introduction, available service list, appr
 
 The index provides a featured published article, responsive article grid, category filters, and search with query/status/empty states. Author/category/tag pages identify their scope and avoid thin indexing. Cards show approved image, title, excerpt, author/date where configured, and reading time generated consistently.
 
+Phase 8 implements the database-backed Published-only index, search/filter/pagination, article details, related cards, meaningful category/tag/author archives, managed responsive images, captions, canonical/social metadata, BlogPosting and breadcrumb data, dynamic sitemap entries, and `/blog/feed.xml`. Empty results remain honest; Draft/Scheduled/Archived content and private previews never appear publicly.
+
 Article pages use a readable centered measure with optional wide media, breadcrumb, title/deck, publication metadata, reading progress, keyboard-navigable table of contents, sanitized content, author card, related articles, and contextual service CTA. Reading progress is nonessential and hidden/reduced when appropriate. Mobile prioritizes text, makes the TOC collapsible, prevents code/media overflow, and preserves zoom.
 
 ## 12. Forms

@@ -7,6 +7,7 @@ import { AdminModule } from "./admin/admin.module";
 import { BeforeAfterModule } from "./before-after/before-after.module";
 import { QuoteRequestsModule } from "./quote-requests/quote-requests.module";
 import { EstimatorModule } from "./estimator/estimator.module";
+import { BlogModule } from "./blog/blog.module";
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { EstimatorModule } from "./estimator/estimator.module";
     BeforeAfterModule,
     QuoteRequestsModule,
     EstimatorModule,
+    BlogModule,
     HealthModule,
   ],
 })

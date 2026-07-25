@@ -32,7 +32,7 @@ Authorized staff opens a filtered request list, views only permitted customer da
 
 ## Author publishing
 
-An Author creates a draft, edits title/content/taxonomy/featured image/SEO, previews it, and may publish their own post. Scheduling may be added with server-controlled time handling. Ownership checks occur on every read and mutation. Revision history and publishing history remain visible to the author. Other staff content requires a separate permission.
+An Author creates a Draft, edits strict structured content/taxonomy/managed images/SEO, previews it through authenticated private delivery, and may publish, schedule, or archive their own post. The server validates ownership and optimistic version on every read and mutation. Due Scheduled posts are processed by the repeat-safe `pnpm blog:publish-due` CLI. Revision and publishing history remain visible; other staff content requires a separate all-content permission.
 
 ## Super Admin access management
 

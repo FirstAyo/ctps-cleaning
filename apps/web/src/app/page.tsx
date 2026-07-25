@@ -3,17 +3,13 @@ import { LinkButton } from "@ctps/ui/primitives";
 import Image from "next/image";
 import Link from "next/link";
 
-import {
-  AreaGrid,
-  PlannedArticleGrid,
-  QuoteCta,
-  SectionHeading,
-  ServiceGrid,
-} from "@/components/marketing";
+import { AreaGrid, QuoteCta, SectionHeading, ServiceGrid } from "@/components/marketing";
 import { PublicLayout } from "@/components/public-shell";
 import { JsonLd, metadataFor, organizationSchema } from "@/lib/seo";
 import { getPublishedProjects } from "@/lib/before-after-api";
 import { FeaturedProject } from "@/components/portfolio";
+import { BlogCard } from "@/components/blog";
+import { getBlogPosts } from "@/lib/blog-api";
 
 export const metadata = metadataFor(
   "Residential & Commercial Property Care",
@@ -28,8 +24,11 @@ const trust = [
 ];
 
 export default async function HomePage() {
-  const featured =
-    (await getPublishedProjects({ featured: "true", pageSize: "1" })).items[0] ?? null;
+  const [featuredProjects, latestBlog] = await Promise.all([
+    getPublishedProjects({ featured: "true", pageSize: "1" }),
+    getBlogPosts({ pageSize: "3" }),
+  ]);
+  const featured = featuredProjects.items[0] ?? null;
   return (
     <PublicLayout>
       <JsonLd
@@ -246,13 +245,23 @@ export default async function HomePage() {
       <Section className="bg-surface-muted/55">
         <Container size="wide">
           <SectionHeading
-            copy="These are planned editorial topics—not published articles, author profiles, or dated CTPS advice."
-            eyebrow="From the planned blog"
-            title="Useful guidance, with publishing still ahead."
+            copy="Only reviewed and published CTPS editorial guidance appears here."
+            eyebrow="From the CTPS journal"
+            title="Practical property-care guidance."
           />
-          <PlannedArticleGrid limit={3} />
+          {latestBlog.items.length ? (
+            <div className="grid gap-7 md:grid-cols-3">
+              {latestBlog.items.map((post) => (
+                <BlogCard key={post.slug} post={post} />
+              ))}
+            </div>
+          ) : (
+            <p className="rounded-lg border border-dashed p-7 text-center text-muted-foreground">
+              No articles have been published yet.
+            </p>
+          )}
           <Link className="mt-7 inline-block font-semibold text-primary" href="/blog">
-            View the blog foundation →
+            View the blog →
           </Link>
         </Container>
       </Section>

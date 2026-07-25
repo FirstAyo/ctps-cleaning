@@ -16,6 +16,8 @@
     "verify:quote-request-runtime": "dotenv -e ../../.env -- tsx src/cli/verify-quote-request-runtime.ts",
     "estimator:initialize-development": "dotenv -e ../../.env -- tsx src/cli/initialize-estimator-development.ts",
     "verify:estimator-runtime": "dotenv -e ../../.env -- tsx src/cli/verify-estimator-runtime.ts",
+    "blog:publish-due": "dotenv -e ../../.env -- tsx src/cli/publish-due-blog-posts.ts",
+    "verify:blog-runtime": "dotenv -e ../../.env -- tsx src/cli/verify-blog-runtime.ts",
     "clean": "rimraf dist coverage"
   },
   "dependencies": {

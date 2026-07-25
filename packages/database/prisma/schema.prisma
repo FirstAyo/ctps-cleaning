@@ -112,6 +112,36 @@ enum EstimateMatchStatus {
   EXPIRED
 }
 
+enum BlogPostStatus {
+  DRAFT
+  IN_REVIEW
+  SCHEDULED
+  PUBLISHED
+  ARCHIVED
+}
+
+enum BlogContentFormat {
+  STRUCTURED_BLOCKS
+}
+
+enum BlogMediaVisibility {
+  PRIVATE
+  PUBLIC
+}
+
+enum BlogMediaStatus {
+  READY
+  ARCHIVED
+}
+
+enum BlogMediaVariantKind {
+  ORIGINAL
+  FEATURED
+  ARTICLE_LARGE
+  ARTICLE_STANDARD
+  THUMBNAIL
+}
+
 model User {
   id                         String                      @id @default(uuid()) @db.Uuid
   email                      String                      @unique @db.VarChar(254)
@@ -135,9 +165,200 @@ model User {
   quoteStatusChanges         QuoteRequestStatusHistory[]
   createdPricingVersions     PricingVersion[]            @relation("PricingVersionCreatedBy")
   updatedPricingVersions     PricingVersion[]            @relation("PricingVersionUpdatedBy")
+  blogPosts                  BlogPost[]                   @relation("BlogPostAuthor")
+  blogRevisions              BlogPostRevision[]           @relation("BlogRevisionActor")
+  uploadedBlogMedia          BlogMediaAsset[]             @relation("BlogMediaUploader")
+  authorProfile              AuthorProfile?
 
   @@index([status])
   @@index([createdAt])
+}
+
+model AuthorProfile {
+  id             String          @id @default(uuid()) @db.Uuid
+  userId         String          @unique @db.Uuid
+  slug           String          @unique @db.VarChar(100)
+  displayName    String          @db.VarChar(100)
+  bio            String          @default("") @db.VarChar(1000)
+  profileMediaId String?         @db.Uuid
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  profileMedia   BlogMediaAsset? @relation("AuthorProfileMedia", fields: [profileMediaId], references: [id], onDelete: SetNull)
+
+  @@index([profileMediaId])
+}
+
+model BlogPost {
+  id                 String            @id @default(uuid()) @db.Uuid
+  slug               String            @unique @db.VarChar(120)
+  title              String            @db.VarChar(180)
+  excerpt            String            @db.VarChar(500)
+  content            Json
+  searchText         String            @default("") @db.Text
+  contentFormat      BlogContentFormat @default(STRUCTURED_BLOCKS)
+  status             BlogPostStatus    @default(DRAFT)
+  authorUserId       String            @db.Uuid
+  featuredMediaId    String?           @db.Uuid
+  seoTitle           String?           @db.VarChar(70)
+  seoDescription     String?           @db.VarChar(170)
+  publishedAt        DateTime?
+  scheduledFor       DateTime?
+  archivedAt         DateTime?
+  readingTimeMinutes Int               @default(1)
+  version            Int               @default(1)
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  author             User              @relation("BlogPostAuthor", fields: [authorUserId], references: [id], onDelete: Restrict)
+  featuredMedia      BlogMediaAsset?   @relation("BlogFeaturedMedia", fields: [featuredMediaId], references: [id], onDelete: Restrict)
+  categories         BlogPostCategory[]
+  tags               BlogPostTag[]
+  media              BlogPostMedia[]
+  revisions          BlogPostRevision[]
+  redirects          BlogSlugRedirect[]
+
+  @@index([status, publishedAt(sort: Desc)])
+  @@index([status, scheduledFor])
+  @@index([authorUserId, status, updatedAt(sort: Desc)])
+  @@index([featuredMediaId])
+}
+
+model BlogPostRevision {
+  id                   String            @id @default(uuid()) @db.Uuid
+  postId               String            @db.Uuid
+  revisionNumber       Int
+  title                String            @db.VarChar(180)
+  slug                 String            @db.VarChar(120)
+  excerpt              String            @db.VarChar(500)
+  content              Json
+  contentFormat        BlogContentFormat
+  statusSnapshot       BlogPostStatus
+  seoTitle             String?           @db.VarChar(70)
+  seoDescription       String?           @db.VarChar(170)
+  featuredMediaId      String?           @db.Uuid
+  categoryIdsSnapshot  Json
+  tagIdsSnapshot       Json
+  actorUserId          String            @db.Uuid
+  createdAt            DateTime          @default(now())
+  post                 BlogPost          @relation(fields: [postId], references: [id], onDelete: Cascade)
+  actor                User              @relation("BlogRevisionActor", fields: [actorUserId], references: [id], onDelete: Restrict)
+
+  @@unique([postId, revisionNumber])
+  @@index([postId, createdAt(sort: Desc)])
+  @@index([actorUserId])
+}
+
+model BlogCategory {
+  id             String             @id @default(uuid()) @db.Uuid
+  slug           String             @unique @db.VarChar(100)
+  name           String             @db.VarChar(100)
+  normalizedName String             @unique @db.VarChar(100)
+  description    String             @default("") @db.VarChar(500)
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  posts          BlogPostCategory[]
+}
+
+model BlogTag {
+  id             String        @id @default(uuid()) @db.Uuid
+  slug           String        @unique @db.VarChar(100)
+  name           String        @db.VarChar(100)
+  normalizedName String        @unique @db.VarChar(100)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  posts          BlogPostTag[]
+}
+
+model BlogPostCategory {
+  id         String       @id @default(uuid()) @db.Uuid
+  postId     String       @db.Uuid
+  categoryId String       @db.Uuid
+  createdAt  DateTime     @default(now())
+  post       BlogPost     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  category   BlogCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+
+  @@unique([postId, categoryId])
+  @@index([categoryId, postId])
+}
+
+model BlogPostTag {
+  id        String   @id @default(uuid()) @db.Uuid
+  postId    String   @db.Uuid
+  tagId     String   @db.Uuid
+  createdAt DateTime @default(now())
+  post      BlogPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tag       BlogTag  @relation(fields: [tagId], references: [id], onDelete: Restrict)
+
+  @@unique([postId, tagId])
+  @@index([tagId, postId])
+}
+
+model BlogMediaAsset {
+  id               String                 @id @default(uuid()) @db.Uuid
+  storageKey       String                 @unique @db.VarChar(240)
+  visibility       BlogMediaVisibility    @default(PRIVATE)
+  status           BlogMediaStatus        @default(READY)
+  originalFilename String                 @db.VarChar(255)
+  mimeType         String                 @db.VarChar(100)
+  sizeBytes        Int
+  width            Int
+  height           Int
+  altText          String                 @default("") @db.VarChar(300)
+  caption          String?                @db.VarChar(500)
+  checksum         String                 @db.Char(64)
+  uploadedByUserId String                 @db.Uuid
+  createdAt        DateTime               @default(now())
+  updatedAt        DateTime               @updatedAt
+  archivedAt       DateTime?
+  uploader         User                   @relation("BlogMediaUploader", fields: [uploadedByUserId], references: [id], onDelete: Restrict)
+  variants         BlogMediaVariant[]
+  postLinks        BlogPostMedia[]
+  featuredFor      BlogPost[]             @relation("BlogFeaturedMedia")
+  authorProfiles   AuthorProfile[]        @relation("AuthorProfileMedia")
+
+  @@index([uploadedByUserId, visibility, createdAt(sort: Desc)])
+  @@index([visibility, status])
+  @@index([checksum])
+}
+
+model BlogMediaVariant {
+  id         String               @id @default(uuid()) @db.Uuid
+  mediaId    String               @db.Uuid
+  kind       BlogMediaVariantKind
+  storageKey String               @unique @db.VarChar(260)
+  mimeType   String               @db.VarChar(100)
+  sizeBytes  Int
+  width      Int
+  height     Int
+  createdAt  DateTime             @default(now())
+  media      BlogMediaAsset       @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+  @@unique([mediaId, kind])
+  @@index([mediaId])
+}
+
+model BlogPostMedia {
+  id        String         @id @default(uuid()) @db.Uuid
+  postId    String         @db.Uuid
+  mediaId   String         @db.Uuid
+  sortOrder Int
+  createdAt DateTime       @default(now())
+  post      BlogPost       @relation(fields: [postId], references: [id], onDelete: Cascade)
+  media     BlogMediaAsset @relation(fields: [mediaId], references: [id], onDelete: Restrict)
+
+  @@unique([postId, mediaId])
+  @@unique([postId, sortOrder])
+  @@index([mediaId])
+}
+
+model BlogSlugRedirect {
+  id        String   @id @default(uuid()) @db.Uuid
+  oldSlug   String   @unique @db.VarChar(120)
+  postId    String   @db.Uuid
+  createdAt DateTime @default(now())
+  post      BlogPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([postId])
 }
 
 model QuoteRequestDraft {

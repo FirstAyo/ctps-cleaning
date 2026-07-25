@@ -34,6 +34,10 @@ The public Next.js application hosts the accessible multi-step guest experience 
 
 ## Deployment topology
 
+## Phase 8 blog boundary
+
+The API owns strict structured-content validation, post ownership, lifecycle transitions, revisions, taxonomy, managed blog-media visibility, simple Published-only search, related-post selection, and due-publication processing. The admin is an authenticated BFF/client of that policy; the public web reads a separate Published-only API and renders structured React elements without executing stored HTML. PostgreSQL stores editorial metadata and revision snapshots while bytes remain behind distinct private/public storage roots. See `blog-implementation.md`.
+
 Recommended VPS topology: Nginx terminates HTTPS and proxies host/path traffic to containerized web, admin, and API services; PostgreSQL is reachable only on a private Docker network; persistent volumes hold database and initial media data; an SMTP service is external or separately operated. Health checks and controlled startup ordering are Phase 1 concerns. Secrets enter at deployment and are not built into images.
 
 Backups should include encrypted PostgreSQL dumps/base backups plus public/private media and deployment metadata, copied off-host with retention and periodic restore tests. Deployments must coordinate migrations and application versions.
@@ -57,4 +61,4 @@ Root workspace, Docker, and infrastructure files are deferred to Phase 1 or late
 
 Phase 7 keeps the estimator boundary explicit: PostgreSQL owns versioned business configuration and immutable result snapshots; `packages/pricing` owns the pure deterministic integer-cents engine; the API owns calculation, persistence, transfer validation, and protected administration; public web and admin remain separate consumers. See `estimator-implementation.md`.
 
-MFA, email-based recovery, audit retention, job queue, cache, rich editor, analytics, observability stack, storage cutover criteria, backup schedule/RPO/RTO, multi-VPS needs, and whether web/admin deploy as separate processes remain future decisions. Phase 5 local media paths and limits are recorded in `before-after-implementation.md`.
+MFA, email-based recovery, audit retention, general job queue, cache, richer inline editing, analytics, observability stack, storage cutover criteria, backup schedule/RPO/RTO, multi-VPS needs, and whether web/admin deploy as separate processes remain future decisions. Phase 5 local media paths and limits are recorded in `before-after-implementation.md`; Phase 8 blog scheduling uses the bounded `blog:publish-due` CLI rather than a hosted cron dependency.

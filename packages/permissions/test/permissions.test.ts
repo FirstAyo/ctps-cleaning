@@ -10,13 +10,18 @@ import {
 } from "../src";
 
 describe("permission contract", () => {
-  it("contains unique foundational, Phase 5, and Phase 6 keys", () => {
+  it("contains unique foundational and implemented feature permissions", () => {
     expect(new Set(ALL_PERMISSION_KEYS).size).toBe(ALL_PERMISSION_KEYS.length);
     expect(ALL_PERMISSION_KEYS.every(isPermissionKey)).toBe(true);
     expect(ALL_PERMISSION_KEYS).toContain(PERMISSION_KEYS.PROJECTS_BEFORE_AFTER_PUBLISH);
     expect(ALL_PERMISSION_KEYS).toContain(PERMISSION_KEYS.MEDIA_BEFORE_AFTER_UPLOAD);
     expect(ALL_PERMISSION_KEYS).toContain(PERMISSION_KEYS.QUOTE_REQUESTS_READ_PRIVATE_MEDIA);
-    expect(ALL_PERMISSION_KEYS.some((key) => /price|blog|schedule/.test(key))).toBe(false);
+    expect(ALL_PERMISSION_KEYS).toContain(PERMISSION_KEYS.PRICING_VERSIONS_PUBLISH);
+    expect(ALL_PERMISSION_KEYS).toContain(PERMISSION_KEYS.BLOG_POSTS_READ_OWN);
+    expect(ALL_PERMISSION_KEYS).toContain(PERMISSION_KEYS.BLOG_POSTS_READ_ALL);
+    expect(ALL_PERMISSION_KEYS).toContain(PERMISSION_KEYS.BLOG_POSTS_SCHEDULE_OWN);
+    expect(ALL_PERMISSION_KEYS).toContain(PERMISSION_KEYS.BLOG_MEDIA_UPLOAD_OWN);
+    expect(ALL_PERMISSION_KEYS).toContain(PERMISSION_KEYS.AUTHOR_PROFILES_UPDATE_OWN);
   });
 
   it("combines multiple roles without accepting unknown keys", () => {

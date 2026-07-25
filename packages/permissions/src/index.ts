@@ -51,6 +51,37 @@ export const PERMISSION_KEYS = {
   ESTIMATOR_RESULTS_READ: "estimatorResults.read",
   ESTIMATOR_RESULTS_READ_CALCULATION_TRACE: "estimatorResults.readCalculationTrace",
   ESTIMATOR_RESULTS_ARCHIVE: "estimatorResults.archive",
+  BLOG_POSTS_READ_OWN: "blogPosts.readOwn",
+  BLOG_POSTS_READ_ALL: "blogPosts.readAll",
+  BLOG_POSTS_CREATE: "blogPosts.create",
+  BLOG_POSTS_UPDATE_OWN: "blogPosts.updateOwn",
+  BLOG_POSTS_UPDATE_ALL: "blogPosts.updateAll",
+  BLOG_POSTS_PUBLISH_OWN: "blogPosts.publishOwn",
+  BLOG_POSTS_PUBLISH_ALL: "blogPosts.publishAll",
+  BLOG_POSTS_SCHEDULE_OWN: "blogPosts.scheduleOwn",
+  BLOG_POSTS_SCHEDULE_ALL: "blogPosts.scheduleAll",
+  BLOG_POSTS_ARCHIVE_OWN: "blogPosts.archiveOwn",
+  BLOG_POSTS_ARCHIVE_ALL: "blogPosts.archiveAll",
+  BLOG_POSTS_DELETE_OWN: "blogPosts.deleteOwn",
+  BLOG_POSTS_DELETE_ALL: "blogPosts.deleteAll",
+  BLOG_MEDIA_UPLOAD_OWN: "blogMedia.uploadOwn",
+  BLOG_MEDIA_READ_OWN: "blogMedia.readOwn",
+  BLOG_MEDIA_READ_ALL: "blogMedia.readAll",
+  BLOG_MEDIA_UPDATE_OWN: "blogMedia.updateOwn",
+  BLOG_MEDIA_UPDATE_ALL: "blogMedia.updateAll",
+  BLOG_MEDIA_DELETE_OWN: "blogMedia.deleteOwn",
+  BLOG_MEDIA_DELETE_ALL: "blogMedia.deleteAll",
+  BLOG_CATEGORIES_READ: "blogCategories.read",
+  BLOG_CATEGORIES_MANAGE: "blogCategories.manage",
+  BLOG_TAGS_READ: "blogTags.read",
+  BLOG_TAGS_MANAGE: "blogTags.manage",
+  AUTHOR_PROFILES_READ: "authorProfiles.read",
+  AUTHOR_PROFILES_UPDATE_OWN: "authorProfiles.updateOwn",
+  AUTHOR_PROFILES_UPDATE_ALL: "authorProfiles.updateAll",
+  BLOG_REVISIONS_READ_OWN: "blogRevisions.readOwn",
+  BLOG_REVISIONS_READ_ALL: "blogRevisions.readAll",
+  BLOG_REVISIONS_RESTORE_OWN: "blogRevisions.restoreOwn",
+  BLOG_REVISIONS_RESTORE_ALL: "blogRevisions.restoreAll",
 } as const;
 
 export type PermissionKey = (typeof PERMISSION_KEYS)[keyof typeof PERMISSION_KEYS];
@@ -63,7 +94,12 @@ export type PermissionGroup =
   | "Media"
   | "Quote Requests"
   | "Pricing"
-  | "Estimator Results";
+  | "Estimator Results"
+  | "Blog Posts"
+  | "Blog Media"
+  | "Blog Taxonomy"
+  | "Authors"
+  | "Blog Revisions";
 
 export interface PermissionDefinition {
   readonly key: PermissionKey;
@@ -332,6 +368,187 @@ export const PERMISSION_DEFINITIONS: readonly PermissionDefinition[] = [
     label,
     description,
     group: "Estimator Results" as const,
+  })),
+  ...(
+    [
+      [
+        PERMISSION_KEYS.BLOG_POSTS_READ_OWN,
+        "Read own blog posts",
+        "View blog posts owned by the current author.",
+      ],
+      [
+        PERMISSION_KEYS.BLOG_POSTS_READ_ALL,
+        "Read all blog posts",
+        "View posts owned by any author.",
+      ],
+      [
+        PERMISSION_KEYS.BLOG_POSTS_CREATE,
+        "Create blog posts",
+        "Create a new owned Draft blog post.",
+      ],
+      [
+        PERMISSION_KEYS.BLOG_POSTS_UPDATE_OWN,
+        "Update own blog posts",
+        "Edit owned blog posts and structured content.",
+      ],
+      [
+        PERMISSION_KEYS.BLOG_POSTS_UPDATE_ALL,
+        "Update all blog posts",
+        "Edit posts owned by any author.",
+      ],
+      [
+        PERMISSION_KEYS.BLOG_POSTS_PUBLISH_OWN,
+        "Publish own blog posts",
+        "Publish or unpublish an owned post.",
+      ],
+      [
+        PERMISSION_KEYS.BLOG_POSTS_PUBLISH_ALL,
+        "Publish all blog posts",
+        "Publish or unpublish posts owned by any author.",
+      ],
+      [
+        PERMISSION_KEYS.BLOG_POSTS_SCHEDULE_OWN,
+        "Schedule own blog posts",
+        "Schedule an owned post for durable publication.",
+      ],
+      [
+        PERMISSION_KEYS.BLOG_POSTS_SCHEDULE_ALL,
+        "Schedule all blog posts",
+        "Schedule posts owned by any author.",
+      ],
+      [
+        PERMISSION_KEYS.BLOG_POSTS_ARCHIVE_OWN,
+        "Archive own blog posts",
+        "Archive an owned blog post.",
+      ],
+      [
+        PERMISSION_KEYS.BLOG_POSTS_ARCHIVE_ALL,
+        "Archive all blog posts",
+        "Archive posts owned by any author.",
+      ],
+      [
+        PERMISSION_KEYS.BLOG_POSTS_DELETE_OWN,
+        "Delete own blog drafts",
+        "Delete an eligible owned Draft post.",
+      ],
+      [
+        PERMISSION_KEYS.BLOG_POSTS_DELETE_ALL,
+        "Delete all blog drafts",
+        "Delete eligible Draft posts owned by any author.",
+      ],
+    ] as const
+  ).map(([key, label, description]) => ({ key, label, description, group: "Blog Posts" as const })),
+  ...(
+    [
+      [
+        PERMISSION_KEYS.BLOG_MEDIA_UPLOAD_OWN,
+        "Upload own blog media",
+        "Upload managed images for owned blog content.",
+      ],
+      [
+        PERMISSION_KEYS.BLOG_MEDIA_READ_OWN,
+        "Read own blog media",
+        "Preview blog media uploaded by the current author.",
+      ],
+      [
+        PERMISSION_KEYS.BLOG_MEDIA_READ_ALL,
+        "Read all blog media",
+        "Preview blog media uploaded by any author.",
+      ],
+      [
+        PERMISSION_KEYS.BLOG_MEDIA_UPDATE_OWN,
+        "Update own blog media",
+        "Edit alt text and captions on owned blog media.",
+      ],
+      [
+        PERMISSION_KEYS.BLOG_MEDIA_UPDATE_ALL,
+        "Update all blog media",
+        "Edit blog media owned by any author.",
+      ],
+      [
+        PERMISSION_KEYS.BLOG_MEDIA_DELETE_OWN,
+        "Delete own blog media",
+        "Delete unreferenced owned blog media.",
+      ],
+      [
+        PERMISSION_KEYS.BLOG_MEDIA_DELETE_ALL,
+        "Delete all blog media",
+        "Delete unreferenced blog media owned by any author.",
+      ],
+    ] as const
+  ).map(([key, label, description]) => ({ key, label, description, group: "Blog Media" as const })),
+  ...(
+    [
+      [
+        PERMISSION_KEYS.BLOG_CATEGORIES_READ,
+        "Read blog categories",
+        "View and select curated blog categories.",
+      ],
+      [
+        PERMISSION_KEYS.BLOG_CATEGORIES_MANAGE,
+        "Manage blog categories",
+        "Create, update, and safely delete blog categories.",
+      ],
+      [PERMISSION_KEYS.BLOG_TAGS_READ, "Read blog tags", "View and select controlled blog tags."],
+      [
+        PERMISSION_KEYS.BLOG_TAGS_MANAGE,
+        "Manage blog tags",
+        "Create, update, and safely delete blog tags.",
+      ],
+    ] as const
+  ).map(([key, label, description]) => ({
+    key,
+    label,
+    description,
+    group: "Blog Taxonomy" as const,
+  })),
+  ...(
+    [
+      [
+        PERMISSION_KEYS.AUTHOR_PROFILES_READ,
+        "Read author profiles",
+        "View public blog-author profile fields.",
+      ],
+      [
+        PERMISSION_KEYS.AUTHOR_PROFILES_UPDATE_OWN,
+        "Update own author profile",
+        "Edit the current author's public profile.",
+      ],
+      [
+        PERMISSION_KEYS.AUTHOR_PROFILES_UPDATE_ALL,
+        "Update all author profiles",
+        "Edit public profiles for any blog author.",
+      ],
+    ] as const
+  ).map(([key, label, description]) => ({ key, label, description, group: "Authors" as const })),
+  ...(
+    [
+      [
+        PERMISSION_KEYS.BLOG_REVISIONS_READ_OWN,
+        "Read own blog revisions",
+        "View revision history for owned posts.",
+      ],
+      [
+        PERMISSION_KEYS.BLOG_REVISIONS_READ_ALL,
+        "Read all blog revisions",
+        "View revision history for any post.",
+      ],
+      [
+        PERMISSION_KEYS.BLOG_REVISIONS_RESTORE_OWN,
+        "Restore own blog revisions",
+        "Restore an owned revision into a new Draft revision.",
+      ],
+      [
+        PERMISSION_KEYS.BLOG_REVISIONS_RESTORE_ALL,
+        "Restore all blog revisions",
+        "Restore revisions for posts owned by any author.",
+      ],
+    ] as const
+  ).map(([key, label, description]) => ({
+    key,
+    label,
+    description,
+    group: "Blog Revisions" as const,
   })),
 ] as const;
 

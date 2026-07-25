@@ -84,6 +84,23 @@ export const apiEnvironmentSchema = z
     ESTIMATOR_TRANSFER_TTL_SECONDS: positiveSecondsSchema.min(60).default(1_800),
     ESTIMATOR_RATE_LIMIT_MAX_ATTEMPTS: positiveIntegerSchema.max(100).default(20),
     ESTIMATOR_RATE_LIMIT_WINDOW_SECONDS: positiveSecondsSchema.min(30).default(900),
+    BLOG_ENABLED: booleanEnvironmentSchema.default(true),
+    BLOG_LOCAL_PUBLIC_ROOT: z.string().trim().min(1).default("../../storage/public/blog"),
+    BLOG_LOCAL_PRIVATE_ROOT: z.string().trim().min(1).default("../../storage/private/blog"),
+    BLOG_MAX_UPLOAD_FILES: positiveIntegerSchema.max(20).default(10),
+    BLOG_MAX_FILE_BYTES: positiveIntegerSchema.max(25 * 1024 * 1024).default(10 * 1024 * 1024),
+    BLOG_MAX_TOTAL_UPLOAD_BYTES: positiveIntegerSchema
+      .max(100 * 1024 * 1024)
+      .default(50 * 1024 * 1024),
+    BLOG_MIN_IMAGE_WIDTH: positiveIntegerSchema.max(4000).default(600),
+    BLOG_MIN_IMAGE_HEIGHT: positiveIntegerSchema.max(4000).default(400),
+    BLOG_MAX_IMAGE_WIDTH: positiveIntegerSchema.max(20000).default(12000),
+    BLOG_MAX_IMAGE_HEIGHT: positiveIntegerSchema.max(20000).default(12000),
+    BLOG_IMAGE_QUALITY: z.coerce.number().int().min(40).max(95).default(82),
+    BLOG_SCHEDULE_BATCH_SIZE: positiveIntegerSchema.max(100).default(20),
+    BLOG_SEARCH_MAX_QUERY_LENGTH: positiveIntegerSchema.max(200).default(100),
+    BLOG_PUBLIC_PAGE_SIZE: positiveIntegerSchema.max(50).default(12),
+    BLOG_ADMIN_PAGE_SIZE: positiveIntegerSchema.max(100).default(20),
     QUOTE_MAX_UPLOAD_FILES: positiveIntegerSchema.max(20).default(8),
     QUOTE_MAX_FILE_BYTES: positiveIntegerSchema.max(25 * 1024 * 1024).default(8 * 1024 * 1024),
     QUOTE_MAX_TOTAL_UPLOAD_BYTES: positiveIntegerSchema
@@ -132,6 +149,23 @@ export const apiEnvironmentSchema = z
         code: "custom",
         path: ["QUOTE_MAX_TOTAL_UPLOAD_BYTES"],
         message: "Total quote upload limit must be at least the per-file limit",
+      });
+    }
+    if (value.BLOG_MAX_TOTAL_UPLOAD_BYTES < value.BLOG_MAX_FILE_BYTES) {
+      context.addIssue({
+        code: "custom",
+        path: ["BLOG_MAX_TOTAL_UPLOAD_BYTES"],
+        message: "Total blog upload limit must be at least the per-file limit",
+      });
+    }
+    if (
+      value.BLOG_MAX_IMAGE_WIDTH < value.BLOG_MIN_IMAGE_WIDTH ||
+      value.BLOG_MAX_IMAGE_HEIGHT < value.BLOG_MIN_IMAGE_HEIGHT
+    ) {
+      context.addIssue({
+        code: "custom",
+        path: ["BLOG_MAX_IMAGE_WIDTH"],
+        message: "Maximum blog image dimensions must exceed minimum dimensions",
       });
     }
     if (value.EMAIL_DELIVERY_MODE === "smtp" && !value.SMTP_HOST) {
@@ -695,3 +729,166 @@ export type QuoteListQuery = z.infer<typeof quoteListQuerySchema>;
 export type QuoteStatusUpdateInput = z.infer<typeof quoteStatusUpdateSchema>;
 export type QuoteAssignmentInput = z.infer<typeof quoteAssignmentSchema>;
 export type QuoteInternalNoteInput = z.infer<typeof quoteInternalNoteSchema>;
+
+const blogPlainTextSchema = (maximum: number) =>
+  z
+    .string()
+    .trim()
+    .max(maximum)
+    .refine((value) => !/<\/?(?:script|iframe|object|embed|form|html|style)\b/i.test(value), {
+      message: "Raw HTML and executable content are not supported",
+    });
+const blogLinkSchema = z
+  .string()
+  .trim()
+  .max(500)
+  .refine((value) => {
+    if (value.startsWith("/")) return !value.startsWith("//");
+    try {
+      return ["http:", "https:"].includes(new URL(value).protocol);
+    } catch {
+      return false;
+    }
+  }, "Use an internal path or an HTTP/HTTPS link");
+export const blogSlugSchema = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .min(3)
+  .max(120)
+  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
+  .refine(
+    (slug) =>
+      !["category", "tag", "author", "search", "feed", "feed-xml", "preview", "new"].includes(slug),
+    "This blog slug is reserved",
+  );
+export const blogStatusSchema = z.enum([
+  "DRAFT",
+  "IN_REVIEW",
+  "SCHEDULED",
+  "PUBLISHED",
+  "ARCHIVED",
+]);
+const textBlockSchema = z
+  .object({
+    type: z.enum(["paragraph", "heading2", "heading3", "blockquote"]),
+    text: blogPlainTextSchema(5000).min(1),
+    emphasis: z.boolean().default(false),
+  })
+  .strict();
+const listBlockSchema = z
+  .object({
+    type: z.enum(["bulletList", "numberedList"]),
+    items: z.array(blogPlainTextSchema(500).min(1)).min(1).max(30),
+  })
+  .strict();
+const linkBlockSchema = z
+  .object({
+    type: z.literal("link"),
+    text: blogPlainTextSchema(300).min(1),
+    href: blogLinkSchema,
+    emphasis: z.boolean().default(false),
+  })
+  .strict();
+const imageBlockSchema = z.object({ type: z.literal("image"), mediaId: identifierSchema }).strict();
+const calloutBlockSchema = z
+  .object({
+    type: z.literal("callout"),
+    title: blogPlainTextSchema(160).optional(),
+    text: blogPlainTextSchema(2000).min(1),
+  })
+  .strict();
+const dividerBlockSchema = z.object({ type: z.literal("divider") }).strict();
+export const blogContentBlockSchema = z.discriminatedUnion("type", [
+  textBlockSchema,
+  listBlockSchema,
+  linkBlockSchema,
+  imageBlockSchema,
+  calloutBlockSchema,
+  dividerBlockSchema,
+]);
+export const blogContentSchema = z.array(blogContentBlockSchema).max(200);
+const blogPostMediaSchema = z
+  .array(z.object({ mediaId: identifierSchema, sortOrder: z.number().int().min(0).max(100) }))
+  .max(30)
+  .superRefine((items, context) => {
+    if (new Set(items.map(({ mediaId }) => mediaId)).size !== items.length)
+      context.addIssue({ code: "custom", message: "Blog media identifiers must be unique" });
+    if (new Set(items.map(({ sortOrder }) => sortOrder)).size !== items.length)
+      context.addIssue({ code: "custom", message: "Blog media positions must be unique" });
+  });
+export const createBlogPostSchema = z
+  .object({
+    title: blogPlainTextSchema(180).min(3),
+    slug: blogSlugSchema,
+    excerpt: blogPlainTextSchema(500).default(""),
+    content: blogContentSchema.default([]),
+    featuredMediaId: identifierSchema.optional().nullable(),
+    media: blogPostMediaSchema.default([]),
+    categoryIds: z.array(identifierSchema).max(8).default([]),
+    tagIds: z.array(identifierSchema).max(20).default([]),
+    seoTitle: blogPlainTextSchema(70).optional().nullable(),
+    seoDescription: blogPlainTextSchema(170).optional().nullable(),
+  })
+  .strict();
+export const updateBlogPostSchema = createBlogPostSchema
+  .partial()
+  .extend({ version: z.number().int().positive() })
+  .refine((value) => Object.keys(value).length > 1, "At least one field must be updated");
+export const scheduleBlogPostSchema = z.object({
+  version: z.number().int().positive(),
+  scheduledFor: z.iso.datetime({ offset: true }),
+});
+export const blogPostVersionActionSchema = z.object({ version: z.number().int().positive() });
+export const blogPostListQuerySchema = paginationSchema.extend({
+  search: blogPlainTextSchema(100).optional(),
+  status: blogStatusSchema.optional(),
+  authorUserId: identifierSchema.optional(),
+  categoryId: identifierSchema.optional(),
+  tagId: identifierSchema.optional(),
+  publishedFrom: z.iso.date().optional(),
+  publishedTo: z.iso.date().optional(),
+  scheduledFrom: z.iso.date().optional(),
+  scheduledTo: z.iso.date().optional(),
+});
+export const publicBlogPostListQuerySchema = paginationSchema.extend({
+  pageSize: z.coerce.number().int().min(1).max(24).default(12),
+  search: blogPlainTextSchema(100).optional(),
+  category: blogSlugSchema.optional(),
+  tag: blogSlugSchema.optional(),
+  author: blogSlugSchema.optional(),
+});
+export const blogTaxonomySchema = z.object({
+  name: blogPlainTextSchema(100).min(2),
+  slug: blogSlugSchema,
+  description: blogPlainTextSchema(500).optional().default(""),
+});
+export const blogTagSchema = blogTaxonomySchema.omit({ description: true });
+export const authorProfileSchema = z.object({
+  displayName: blogPlainTextSchema(100).min(2),
+  slug: blogSlugSchema,
+  bio: blogPlainTextSchema(1000).default(""),
+  profileMediaId: identifierSchema.optional().nullable(),
+});
+export const blogMediaUpdateSchema = z
+  .object({
+    altText: blogPlainTextSchema(300).optional(),
+    caption: blogPlainTextSchema(500).optional().nullable(),
+  })
+  .refine((value) => value.altText !== undefined || value.caption !== undefined, {
+    message: "At least one field must be updated",
+  });
+export const blogMediaOrderSchema = z.object({
+  version: z.number().int().positive(),
+  media: blogPostMediaSchema,
+});
+export type BlogContentBlockInput = z.infer<typeof blogContentBlockSchema>;
+export type CreateBlogPostInput = z.infer<typeof createBlogPostSchema>;
+export type UpdateBlogPostInput = z.infer<typeof updateBlogPostSchema>;
+export type ScheduleBlogPostInput = z.infer<typeof scheduleBlogPostSchema>;
+export type BlogPostListQuery = z.infer<typeof blogPostListQuerySchema>;
+export type PublicBlogPostListQuery = z.infer<typeof publicBlogPostListQuerySchema>;
+export type BlogTaxonomyInput = z.infer<typeof blogTaxonomySchema>;
+export type BlogTagInput = z.infer<typeof blogTagSchema>;
+export type AuthorProfileInput = z.infer<typeof authorProfileSchema>;
+export type BlogMediaUpdateInput = z.infer<typeof blogMediaUpdateSchema>;

@@ -40,7 +40,7 @@ describe("Phase 4 public marketing", () => {
       "A four-step, quote-based process",
       "Metro Vancouver coverage",
       "A place reserved for verified voices",
-      "Useful guidance, with publishing still ahead",
+      "Practical property-care guidance",
     ])
       expect(html).toContain(section);
   });

@@ -100,5 +100,7 @@ storage, lifecycle, routes, and limits are in `docs/before-after-implementation.
 and customer uploads are described in the Phase 6 guide. The Phase 7 preliminary estimator,
 pricing versions, secure result transfer, and operations are documented in
 `docs/estimator-implementation.md`. Run `pnpm estimator:initialize-development` only to create its
-explicitly unapproved Draft starting configuration. Blog publishing, scheduling, customer
-authentication, and production deployment remain unimplemented.
+explicitly unapproved Draft starting configuration. Phase 8 blog authoring, managed media,
+publishing, scheduling, public discovery, and operations are documented in
+`docs/blog-implementation.md`; run `pnpm blog:publish-due` from a VPS-compatible scheduler to
+publish due posts. Customer authentication and production deployment remain unimplemented.

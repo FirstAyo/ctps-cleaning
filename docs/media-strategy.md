@@ -17,6 +17,8 @@ Phase 5 project uploads begin in `storage/private/before-after`, move to the dis
 
 Phase 6 quote uploads use `storage/private/quote-requests` and a quote-specific metadata model. An expiring request draft owns files before submission; a transaction transfers ready files to the resulting quote request. Removed draft uploads are deleted immediately. Quote files never become public and have no public URL; authorized staff view the generated WebP preview through a no-store route. See `quote-request-implementation.md`.
 
+Phase 8 blog uploads use isolated `storage/private/blog` and `storage/public/blog` roots and blog-specific metadata/references. Draft and Scheduled images remain private. Publication creates public visibility; unpublish/archive returns an asset to private storage only when no other Published post or meaningful public author profile references it. Variants are normalized WebP `original`, `featured`, `article-large`, `article-standard`, and `thumbnail` files under generated UUID directories. Blog assets are never sourced from quote requests or before-and-after storage. See `blog-implementation.md`.
+
 Metadata should record owner/uploader, classification, purpose, original name (safely handled), detected MIME type, byte size, dimensions, checksum, storage key/provider, alt text/caption where relevant, variants, references, timestamps, and lifecycle status. Do not expose internal storage keys as authorization.
 
 ## Upload pipeline

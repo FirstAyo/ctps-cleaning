@@ -29,9 +29,20 @@ export default async function ProtectedLayout({
     navigation.splice(2, 0, { href: "/pricing/versions", label: "Pricing" });
   if (identity.permissions.includes("estimatorResults.read"))
     navigation.splice(3, 0, { href: "/estimator-results", label: "Estimator Results" });
+  if (
+    identity.permissions.includes("blogPosts.readOwn") ||
+    identity.permissions.includes("blogPosts.readAll")
+  )
+    navigation.splice(2, 0, { href: "/blog/posts", label: "Blog Posts" });
+  if (identity.permissions.includes("blogCategories.manage"))
+    navigation.splice(3, 0, { href: "/blog/categories", label: "Blog Categories" });
+  if (identity.permissions.includes("blogTags.manage"))
+    navigation.splice(4, 0, { href: "/blog/tags", label: "Blog Tags" });
+  if (identity.permissions.includes("authorProfiles.read"))
+    navigation.splice(5, 0, { href: "/blog/authors", label: "Blog Authors" });
   return (
     <AdminShell
-      description="Protected Phase 3 staff administration. The API rechecks every permission."
+      description="Protected staff administration. The API rechecks every permission."
       identity={identity}
       navigationItems={navigation}
       pageTitle="Administration"

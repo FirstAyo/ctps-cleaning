@@ -38,7 +38,7 @@ Implemented configurable version/service/rule models, a deterministic integer-ce
 
 ## Phase 8 — Blogging system
 
-Implement permission-protected authoring and administration for authors/profiles, posts, categories/tags, editor, media, SEO, scheduling, revisions, and preview; extend the Phase 3 audit foundation for publishing changes; and implement public search, RSS, sitemaps, and article pages. Do not add comments.
+Implemented permission- and ownership-protected authoring for posts, profiles, categories/tags, strict structured content, managed private/public media, SEO, revisions, authenticated preview, explicit publishing, and durable scheduled publication. Public routes now provide Published-only search, article/category/tag/author pages, related posts, RSS, and dynamic sitemap discovery. No comments were added. See `blog-implementation.md`.
 
 ## Phase 9 — Possible future job and scheduling management
 
