@@ -3,7 +3,8 @@ import type { Prisma } from "@ctps/database";
 
 import { DatabaseService } from "../database/database.service";
 
-const forbiddenMetadataKey = /password|token|secret|cookie|authorization|csrf|hash/i;
+const forbiddenMetadataKey =
+  /password|token|secret|cookie|authorization|csrf|hash|storageKey|filesystem|filePath|privateRoot|publicRoot/i;
 
 export function sanitizeAuditMetadata(value: unknown): Prisma.InputJsonValue | undefined {
   if (value === undefined) return undefined;

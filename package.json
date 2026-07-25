@@ -25,6 +25,7 @@
     "auth:initialize": "pnpm --filter @ctps/api auth:initialize",
     "auth:bootstrap-super-admin": "pnpm --filter @ctps/api auth:bootstrap-super-admin",
     "verify:auth-runtime": "pnpm --filter @ctps/api verify:auth-runtime",
+    "verify:before-after-runtime": "pnpm --filter @ctps/api verify:before-after-runtime",
     "db:start": "docker compose up -d postgres",
     "db:stop": "docker compose down",
     "db:logs": "docker compose logs -f postgres"

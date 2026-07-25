@@ -21,6 +21,8 @@ export default async function ProtectedLayout({
     navigation.push({ href: "/roles", label: "Roles & permissions" });
   if (identity.permissions.includes("audit.read"))
     navigation.push({ href: "/audit-logs", label: "Audit logs" });
+  if (identity.permissions.includes("projects.beforeAfter.read"))
+    navigation.splice(2, 0, { href: "/before-after", label: "Before & After" });
   return (
     <AdminShell
       description="Protected Phase 3 staff administration. The API rechecks every permission."

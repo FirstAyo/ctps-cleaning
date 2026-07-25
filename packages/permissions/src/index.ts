@@ -20,10 +20,21 @@ export const PERMISSION_KEYS = {
   AUDIT_READ: "audit.read",
   SESSIONS_READ_OWN: "sessions.readOwn",
   SESSIONS_REVOKE_OWN: "sessions.revokeOwn",
+  PROJECTS_BEFORE_AFTER_READ: "projects.beforeAfter.read",
+  PROJECTS_BEFORE_AFTER_CREATE: "projects.beforeAfter.create",
+  PROJECTS_BEFORE_AFTER_UPDATE: "projects.beforeAfter.update",
+  PROJECTS_BEFORE_AFTER_PUBLISH: "projects.beforeAfter.publish",
+  PROJECTS_BEFORE_AFTER_ARCHIVE: "projects.beforeAfter.archive",
+  PROJECTS_BEFORE_AFTER_DELETE: "projects.beforeAfter.delete",
+  MEDIA_BEFORE_AFTER_UPLOAD: "media.beforeAfter.upload",
+  MEDIA_BEFORE_AFTER_READ: "media.beforeAfter.read",
+  MEDIA_BEFORE_AFTER_UPDATE: "media.beforeAfter.update",
+  MEDIA_BEFORE_AFTER_DELETE: "media.beforeAfter.delete",
 } as const;
 
 export type PermissionKey = (typeof PERMISSION_KEYS)[keyof typeof PERMISSION_KEYS];
-export type PermissionGroup = "Administration" | "Users" | "Roles" | "Security";
+export type PermissionGroup =
+  "Administration" | "Users" | "Roles" | "Security" | "Projects" | "Media";
 
 export interface PermissionDefinition {
   readonly key: PermissionKey;
@@ -110,6 +121,66 @@ export const PERMISSION_DEFINITIONS: readonly PermissionDefinition[] = [
     label: "Revoke own sessions",
     description: "Revoke the current user's other sessions.",
     group: "Security",
+  },
+  {
+    key: PERMISSION_KEYS.PROJECTS_BEFORE_AFTER_READ,
+    label: "Read before-and-after projects",
+    description: "View project records and managed project media.",
+    group: "Projects",
+  },
+  {
+    key: PERMISSION_KEYS.PROJECTS_BEFORE_AFTER_CREATE,
+    label: "Create before-and-after projects",
+    description: "Create draft before-and-after projects.",
+    group: "Projects",
+  },
+  {
+    key: PERMISSION_KEYS.PROJECTS_BEFORE_AFTER_UPDATE,
+    label: "Update before-and-after projects",
+    description: "Edit project content, associations, and media order.",
+    group: "Projects",
+  },
+  {
+    key: PERMISSION_KEYS.PROJECTS_BEFORE_AFTER_PUBLISH,
+    label: "Publish before-and-after projects",
+    description: "Publish and unpublish portfolio projects and their media.",
+    group: "Projects",
+  },
+  {
+    key: PERMISSION_KEYS.PROJECTS_BEFORE_AFTER_ARCHIVE,
+    label: "Archive before-and-after projects",
+    description: "Archive portfolio projects while preserving records and media.",
+    group: "Projects",
+  },
+  {
+    key: PERMISSION_KEYS.PROJECTS_BEFORE_AFTER_DELETE,
+    label: "Delete before-and-after projects",
+    description: "Delete eligible draft projects after explicit confirmation.",
+    group: "Projects",
+  },
+  {
+    key: PERMISSION_KEYS.MEDIA_BEFORE_AFTER_UPLOAD,
+    label: "Upload before-and-after media",
+    description: "Upload and process private project images.",
+    group: "Media",
+  },
+  {
+    key: PERMISSION_KEYS.MEDIA_BEFORE_AFTER_READ,
+    label: "Read before-and-after media",
+    description: "Preview managed public and private project media.",
+    group: "Media",
+  },
+  {
+    key: PERMISSION_KEYS.MEDIA_BEFORE_AFTER_UPDATE,
+    label: "Update before-and-after media",
+    description: "Edit project-media alt text and captions.",
+    group: "Media",
+  },
+  {
+    key: PERMISSION_KEYS.MEDIA_BEFORE_AFTER_DELETE,
+    label: "Delete before-and-after media",
+    description: "Delete unreferenced managed project media and variants.",
+    group: "Media",
   },
 ] as const;
 

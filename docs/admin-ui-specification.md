@@ -26,6 +26,10 @@ Align text left, numeric values consistently, and actions at the trailing edge. 
 
 Tables need captions or equivalent accessible names, semantic headers, keyboard-operable controls, selected-row announcements, and status text/icons in addition to color. Loading uses stable rows; empty distinguishes “no records” from “no filter matches”; error allows retry. On narrow screens, preserve meaning with horizontal scroll plus cues or deliberate record cards—never hide critical columns silently. Bulk actions state count/scope and require permission and confirmation proportional to impact.
 
+## Phase 5 before-and-after administration
+
+The implemented `/before-after` list is permission-gated and supports search, lifecycle, service, area, featured filters, protected thumbnails, totals, and an empty state. Create/edit routes support Draft content, multiple local previews, removal before upload, ordering, Primary Before/After roles, supporting categories, alt text, captions, protected comparison preview, SEO, optimistic conflicts, and explicit publish/unpublish/archive/delete actions. Published media/slug edits require unpublishing. Lifecycle mutations are confirmed and unsaved browser unload is warned. API permission and CSRF enforcement remain authoritative.
+
 ## 5. Quote-request management
 
 The list supports reference, received date, customer summary only where permitted, requested services, area, status, assignee if later approved, and filters. Detail view separates customer/contact, property, services/answers, estimator context, private uploaded photos, preferred dates, consent, status timeline, internal notes, activity, and contact actions.

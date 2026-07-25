@@ -186,7 +186,7 @@ export function BeforeAfterPage() {
       <Section className="bg-surface-muted/55">
         <Container size="wide">
           <SectionHeading
-            copy="Filters below are visual category labels only. Database-backed filtering, project records, and media management belong to Phase 5."
+            copy="This retained design demonstration uses visual labels only. The live /before-after route now uses published database records and server-side filters."
             eyebrow="Portfolio preview"
             title="Three demonstration compositions."
           />

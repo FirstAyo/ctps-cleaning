@@ -1,13 +1,13 @@
 # CTPS Cleaning Website
 
-CTPS Cleaning is a VPS-portable public website, protected staff application, and API. Phases 1–4
+CTPS Cleaning is a VPS-portable public website, protected staff application, and API. Phases 1–5
 provide the monorepo foundation, premium design system, PostgreSQL-backed staff authentication,
-server authorization, user/role administration, audit foundation, and static public marketing
-website. Later business workflows are not implemented.
+server authorization, user/role administration, audit foundation, public marketing website, and
+the managed before-and-after portfolio. Later business workflows are not implemented.
 
 ## Workspace
 
-- `apps/web` — static public CTPS marketing website on port 3000; `/design-system` preserves the Phase 2 preview
+- `apps/web` — public CTPS marketing and published portfolio website on port 3000; `/design-system` preserves the Phase 2 preview
 - `apps/admin` — protected staff administration on port 3001; `/design-system` retains the Phase 2 demonstration
 - `apps/api` — authoritative NestJS authentication and administration API on port 4000
 - `packages/*` — database and minimal shared foundations
@@ -44,8 +44,8 @@ pnpm auth:bootstrap-super-admin
 pnpm dev
 ```
 
-The database is deliberately started separately from `pnpm dev`. Apply the reviewed Phase 3
-migration, initialize idempotent system access, and create the initial Super Admin through the
+The database is deliberately started separately from `pnpm dev`. Apply the reviewed migrations,
+initialize idempotent system and Phase 5 feature access, and create the initial Super Admin through the
 masked trusted-terminal command. `db:push` is only for disposable local development and does not
 replace reviewed migrations.
 
@@ -95,6 +95,7 @@ both status pages, then shuts the application processes down.
 
 Stop local PostgreSQL with `pnpm db:stop`. See
 `docs/authentication-authorization-implementation.md` for the Phase 3 security design and
-`docs/public-marketing-implementation.md` for the Phase 4 public architecture. Quote,
-estimator, blog, project, media, email-delivery, customer-authentication, and production deployment
-features remain unimplemented.
+`docs/public-marketing-implementation.md` for the Phase 4 public architecture. The Phase 5 model,
+storage, lifecycle, routes, and limits are in `docs/before-after-implementation.md`. Quote requests,
+customer uploads, estimator calculations, blog publishing, scheduling, email delivery, customer
+authentication, and production deployment remain unimplemented.

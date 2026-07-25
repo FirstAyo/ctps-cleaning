@@ -5,7 +5,6 @@ import Link from "next/link";
 
 import {
   AreaGrid,
-  DemonstrationComparison,
   PlannedArticleGrid,
   QuoteCta,
   SectionHeading,
@@ -13,6 +12,8 @@ import {
 } from "@/components/marketing";
 import { PublicLayout } from "@/components/public-shell";
 import { JsonLd, metadataFor, organizationSchema } from "@/lib/seo";
+import { getPublishedProjects } from "@/lib/before-after-api";
+import { FeaturedProject } from "@/components/portfolio";
 
 export const metadata = metadataFor(
   "Residential & Commercial Property Care",
@@ -26,7 +27,9 @@ const trust = [
   "Quote-based workflow",
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  const featured =
+    (await getPublishedProjects({ featured: "true", pageSize: "1" })).items[0] ?? null;
   return (
     <PublicLayout>
       <JsonLd
@@ -117,11 +120,7 @@ export default function HomePage() {
           <ServiceGrid />
         </Container>
       </Section>
-      <Section className="bg-surface-muted/55">
-        <Container>
-          <DemonstrationComparison />
-        </Container>
-      </Section>
+      <FeaturedProject project={featured} />
       <Section>
         <Container>
           <div className="grid gap-10 lg:grid-cols-[.8fr_1.2fr]">
@@ -204,40 +203,6 @@ export default function HomePage() {
           <p className="mx-auto mt-8 max-w-2xl text-center text-sm text-muted-foreground">
             This process does not confirm a booking or automatically approve pricing.
           </p>
-        </Container>
-      </Section>
-      <Section className="bg-surface-muted/55">
-        <Container size="wide">
-          <SectionHeading
-            copy="Original local illustrations reserve a responsive gallery structure for the database-backed project system planned in Phase 5."
-            eyebrow="Featured project gallery"
-            title="Honest demonstrations, ready for real work."
-          />
-          <div className="mt-10 grid gap-4 md:grid-cols-3">
-            {[
-              "/images/services/window-cleaning.svg",
-              "/images/services/pressure-washing.svg",
-              "/images/services/gutter-cleaning.svg",
-            ].map((src, index) => (
-              <figure className="overflow-hidden rounded-lg border border-border bg-card" key={src}>
-                <div className="relative aspect-[4/3]">
-                  <Image
-                    alt={`Development demonstration gallery visual ${index + 1}`}
-                    className="object-cover"
-                    fill
-                    sizes="(min-width: 768px) 33vw, 100vw"
-                    src={src}
-                  />
-                </div>
-                <figcaption className="p-4 text-sm">
-                  <strong>Development demonstration</strong>
-                  <span className="mt-1 block text-muted-foreground">
-                    Not a CTPS customer or completed project.
-                  </span>
-                </figcaption>
-              </figure>
-            ))}
-          </div>
         </Container>
       </Section>
       <Section>

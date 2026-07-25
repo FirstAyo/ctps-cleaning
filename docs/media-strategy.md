@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document defines a provider-neutral plan for service, blog, author, project, Open Graph, and customer-upload media. Phase 4 uses only original committed development illustrations for static public presentation; no storage service or upload workflow is implemented.
+This document defines a provider-neutral plan for service, blog, author, project, Open Graph, and customer-upload media. Phase 4 introduced committed development illustrations. Phase 5 adds a narrowly scoped managed before-and-after storage and upload workflow; customer uploads and a general media library remain unimplemented.
 
 ## Phase 4 local assets
 
@@ -11,13 +11,15 @@ Public marketing illustrations are organized under `apps/web/public/images` and 
 ## Classification boundary
 
 - **Public media:** approved marketing/content assets intended for public delivery.
-- **Private media:** customer quote-request uploads and any restricted staff assets. These are private by default and never placed beneath a publicly served path.
+- **Private media:** Draft/Archived project media, future customer quote-request uploads, and restricted staff assets. These are private by default and never placed beneath a publicly served path.
+
+Phase 5 project uploads begin in `storage/private/before-after`, move to the distinct public root only on publication, and return to private storage on unpublish/archive. Admin preview and public delivery are application routes that recheck authorization/visibility. See `before-after-implementation.md` for exact variants and limits.
 
 Metadata should record owner/uploader, classification, purpose, original name (safely handled), detected MIME type, byte size, dimensions, checksum, storage key/provider, alt text/caption where relevant, variants, references, timestamps, and lifecycle status. Do not expose internal storage keys as authorization.
 
 ## Upload pipeline
 
-Authorize purpose and owner, limit count/size, inspect content rather than trusting extensions or headers, decode images safely, validate dimensions, generate randomized keys, strip risky metadata where appropriate, and isolate processing. Reject unsupported/polyglot/malformed files. Malware scanning requirements and exact limits remain unresolved.
+Authorize purpose and owner, limit count/size, inspect content rather than trusting extensions or headers, decode images safely, validate dimensions, generate randomized keys, strip risky metadata where appropriate, and isolate processing. Phase 5 implements these controls for staff before-and-after JPEG/PNG/WebP uploads. Malware scanning remains unresolved before any customer-upload phase.
 
 Generate responsive sizes and WebP/AVIF where practical while retaining an appropriate source. Prevent decompression bombs and unbounded processing. Public output needs width/height, suitable loading priority, and alt-text workflows; before/after pairs require separate accurate alt text.
 
@@ -29,7 +31,7 @@ Track usage before deletion. Referenced assets should be blocked from deletion o
 
 ## Storage evolution
 
-Initial VPS storage may use separate persistent public/private volumes if reliability, backup, and deployment needs are met. Keep a storage adapter so metadata and application URLs do not depend on disk paths. Migration to Cloudflare R2, Backblaze B2, MinIO, or another S3-compatible provider should copy by checksum, verify, switch reads gradually, retain rollback, then retire old bytes after reconciliation. Object storage is not required in Phase 1 without justification.
+Initial development/VPS storage uses separate configurable public/private roots behind an adapter; production volume, backup, and permissions design remains Phase 10 work. Metadata and application URLs do not depend on disk paths. Migration to Cloudflare R2, Backblaze B2, MinIO, or another S3-compatible provider should copy by checksum, verify, switch reads gradually, retain rollback, then retire old bytes after reconciliation.
 
 ## Operations
 

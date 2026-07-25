@@ -32,11 +32,11 @@ function sourceFiles(path: string): string[] {
 }
 
 describe("Phase 4 public marketing", () => {
-  it("renders the complete homepage conversion architecture", () => {
-    const html = markup(<HomePage />);
+  it("renders the complete homepage conversion architecture", async () => {
+    const html = markup(await HomePage());
     for (const section of [
       "Property care without template thinking",
-      "A comparison built for every input",
+      "Approved project stories are on the way",
       "Clarity is part of the service",
       "A four-step, quote-based process",
       "Metro Vancouver coverage",
@@ -97,8 +97,8 @@ describe("Phase 4 public marketing", () => {
     for (const service of services) expect(service.image.startsWith("/images/")).toBe(true);
   });
 
-  it("publishes all marketing routes while excluding development/admin routes", () => {
-    const urls = sitemap().map((item) => item.url);
+  it("publishes all marketing routes while excluding development/admin routes", async () => {
+    const urls = (await sitemap()).map((item) => item.url);
     expect(urls).toHaveLength(23);
     expect(urls.some((url) => url.endsWith("/services/window-cleaning"))).toBe(true);
     expect(urls.some((url) => url.endsWith("/service-areas/north-vancouver"))).toBe(true);

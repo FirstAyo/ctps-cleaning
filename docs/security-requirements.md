@@ -20,6 +20,8 @@ Enforce Users -> Roles -> Permissions on the server with deny-by-default and own
 
 Validate upload purpose, count, size, detected MIME, decoded dimensions, and file integrity; use generated keys and private storage for customer photos. Isolate processing, prevent path traversal and decompression attacks, and consider malware scanning. Sanitize rich content with an allowlist before public rendering; validate links and embeds.
 
+Phase 5 applies these controls to staff-only before-and-after images: matching JPEG/PNG/WebP signature, MIME, and extension; bounded bytes/pixels/dimensions; Sharp re-encoding and metadata removal; generated keys; distinct private/public roots; protected private delivery; and visibility checks for public delivery. SVG is rejected. Customer uploads and malware scanning are not implemented. Storage keys and filesystem paths are excluded from responses and audit metadata.
+
 ## Secrets, data, and logging
 
 Inject secrets at deployment, grant least privilege, rotate them, and never commit or expose them to browsers/logs. PostgreSQL accounts and networks use least privilege. Logs are structured and correlated but exclude passwords, tokens, secrets, upload content, private pricing, and unnecessary personal data. Audit sensitive actor/action/resource/time/outcome and safe change summaries; make audit records read-only to ordinary admins.
@@ -34,4 +36,4 @@ Before release: dependency/container scanning, authorization matrix tests, input
 
 ## Unresolved decisions
 
-MFA policy, password breach screening, upload limits/scanning, encryption-at-rest approach, retention, audit retention, backup RPO/RTO, incident process, and privacy/legal wording require future approval. Phase 3 fixes the password, session, CSRF, and login-throttle baselines documented in the implementation record.
+MFA policy, password breach screening, malware scanning, encryption-at-rest approach, retention, audit retention, backup RPO/RTO, incident process, and privacy/legal wording require future approval. Phase 3 fixes the password, session, CSRF, and login-throttle baselines; Phase 5 upload limits are recorded in `before-after-implementation.md`.

@@ -41,13 +41,15 @@ describe("password and token security", () => {
 });
 
 describe("audit metadata", () => {
-  it("recursively removes credentials, cookie, token, CSRF, secret, and hash fields", async () => {
+  it("recursively removes credentials, secrets, and managed-storage paths", async () => {
     const safe = sanitizeAuditMetadata({
       email: "staff@example.com",
       password: "bad",
       nested: { csrfToken: "bad", outcome: "ok" },
       cookieHeader: "bad",
       tokenHash: "bad",
+      storageKey: "private/internal.webp",
+      filePath: "C:\\private\\internal.webp",
     });
     expect(safe).toEqual({ email: "staff@example.com", nested: { outcome: "ok" } });
     const create = vi.fn().mockResolvedValue({});

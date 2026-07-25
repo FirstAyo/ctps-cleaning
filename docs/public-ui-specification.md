@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This specification defines the public screen structure, responsive behavior, states, and interactions. Phase 4 implements its static marketing scope as recorded in `public-marketing-implementation.md`; later database-backed workflows remain planned.
+This specification defines the public screen structure, responsive behavior, states, and interactions. Phase 4 implements its marketing scope as recorded in `public-marketing-implementation.md`; Phase 5 implements the database-backed before-and-after experience recorded in `before-after-implementation.md`. Other business workflows remain planned.
 
 ## 1. Global public layout
 
@@ -57,6 +57,8 @@ The primary component layers matched, equally cropped images with persistent Bef
 Adjacent content gives project title, location, service type, summary, thumbnails, and category tabs. Tabs follow accessible tab semantics and filters update an announced result count. On mobile, comparison precedes metadata and uses a touch-safe handle without blocking page scroll unnecessarily.
 
 Provide a non-slider fallback that presents two complete labeled images side by side or stacked. Reduced motion disables demonstration/animated settling. Loading uses a fixed-ratio skeleton; one missing image switches to a labeled single-image/fallback state; both missing show an honest unavailable state, never a broken control.
+
+Phase 5 renders only Published database records, uses an honest empty state when none exist, supports service/service-area filters with an announced result count, and provides detail pages with lazy supporting galleries. Draft/Archived records and private storage metadata never enter public responses. The homepage uses one featured Published project or the honest managed empty state.
 
 ## 7. Quote-request UI
 

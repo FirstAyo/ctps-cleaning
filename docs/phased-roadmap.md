@@ -26,7 +26,7 @@ Implemented the static home, service and area pages, About, Contact foundation, 
 
 ## Phase 5 — Before-and-after system
 
-Implement model, media handling, permission-protected admin management, accessible comparison slider/fallback, filters, gallery, details, and SEO. Extend the Phase 3 audit foundation for project publishing and media changes.
+Implemented the PostgreSQL project/media model, private/public local storage abstraction, validated and processed multi-image uploads, permission-protected admin list/editor/lifecycle controls, accessible comparisons, published gallery/detail routes, filters, homepage featured-project behavior, SEO metadata, dynamic sitemap entries, and audit events. Draft and Archived projects and their media remain private. See `before-after-implementation.md`.
 
 ## Phase 6 — Quote-request system
 

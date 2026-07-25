@@ -5,6 +5,7 @@ const nodeEnvironmentSchema = z.enum(["development", "test", "production"]);
 const portSchema = z.coerce.number().int().min(1).max(65_535);
 const positiveSecondsSchema = z.coerce.number().int().positive();
 const booleanEnvironmentSchema = z.enum(["true", "false"]).transform((value) => value === "true");
+const positiveIntegerSchema = z.coerce.number().int().positive();
 const httpUrlSchema = z
   .url()
   .refine((url) => url.startsWith("http://") || url.startsWith("https://"), {
@@ -50,6 +51,25 @@ export const apiEnvironmentSchema = z
     DATABASE_URL: z.string().min(1).startsWith("postgresql://"),
     LOGIN_THROTTLE_MAX_ATTEMPTS: z.coerce.number().int().min(2).max(100).default(8),
     LOGIN_THROTTLE_WINDOW_SECONDS: positiveSecondsSchema.min(30).default(900),
+    MEDIA_STORAGE_DRIVER: z.literal("local").default("local"),
+    MEDIA_LOCAL_PUBLIC_ROOT: z.string().trim().min(1).default("../../storage/public/before-after"),
+    MEDIA_LOCAL_PRIVATE_ROOT: z
+      .string()
+      .trim()
+      .min(1)
+      .default("../../storage/private/before-after"),
+    MEDIA_MAX_FILE_BYTES: positiveIntegerSchema.max(25 * 1024 * 1024).default(10 * 1024 * 1024),
+    MEDIA_MAX_UPLOAD_FILES: positiveIntegerSchema.max(20).default(10),
+    MEDIA_MAX_PROJECT_SUPPORTING_IMAGES: positiveIntegerSchema.max(30).default(12),
+    MEDIA_MAX_TOTAL_UPLOAD_BYTES: positiveIntegerSchema
+      .max(100 * 1024 * 1024)
+      .default(50 * 1024 * 1024),
+    MEDIA_MIN_WIDTH: positiveIntegerSchema.max(4000).default(600),
+    MEDIA_MIN_HEIGHT: positiveIntegerSchema.max(4000).default(400),
+    MEDIA_MAX_WIDTH: positiveIntegerSchema.max(20000).default(12000),
+    MEDIA_MAX_HEIGHT: positiveIntegerSchema.max(20000).default(12000),
+    MEDIA_IMAGE_QUALITY: z.coerce.number().int().min(40).max(95).default(82),
+    MEDIA_PUBLIC_BASE_PATH: z.string().trim().startsWith("/").default("/media/before-after"),
     NODE_ENV: nodeEnvironmentSchema.default("development"),
   })
   .superRefine((value, context) => {
@@ -58,6 +78,23 @@ export const apiEnvironmentSchema = z
         code: "custom",
         path: ["AUTH_COOKIE_SECURE"],
         message: "Secure authentication cookies are required in production",
+      });
+    }
+    if (value.MEDIA_MAX_TOTAL_UPLOAD_BYTES < value.MEDIA_MAX_FILE_BYTES) {
+      context.addIssue({
+        code: "custom",
+        path: ["MEDIA_MAX_TOTAL_UPLOAD_BYTES"],
+        message: "Total media upload limit must be at least the per-file limit",
+      });
+    }
+    if (
+      value.MEDIA_MAX_WIDTH < value.MEDIA_MIN_WIDTH ||
+      value.MEDIA_MAX_HEIGHT < value.MEDIA_MIN_HEIGHT
+    ) {
+      context.addIssue({
+        code: "custom",
+        path: ["MEDIA_MAX_WIDTH"],
+        message: "Maximum media dimensions must exceed minimum dimensions",
       });
     }
   });
@@ -180,6 +217,106 @@ export const auditListQuerySchema = paginationSchema.extend({
   to: z.iso.datetime({ offset: true }).optional(),
 });
 
+export const beforeAfterServiceKeySchema = z.enum([
+  "window-cleaning",
+  "pressure-washing",
+  "gutter-cleaning",
+  "moss-removal",
+  "vent-cleaning",
+]);
+export const beforeAfterServiceAreaKeySchema = z.enum([
+  "vancouver",
+  "richmond",
+  "burnaby",
+  "surrey",
+  "coquitlam",
+  "north-vancouver",
+]);
+export const beforeAfterStatusSchema = z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]);
+export const beforeAfterCategorySchema = z.enum(["BEFORE", "AFTER", "GALLERY"]);
+export const beforeAfterSlugSchema = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .min(3)
+  .max(100)
+  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
+  .refine(
+    (slug) => !["new", "admin", "api", "design-system"].includes(slug),
+    "This slug is reserved",
+  );
+const optionalNullableDateSchema = z
+  .union([z.iso.datetime({ offset: true }), z.literal(""), z.null()])
+  .optional();
+const beforeAfterSupportingMediaSchema = z
+  .array(
+    z.object({
+      mediaId: identifierSchema,
+      category: beforeAfterCategorySchema,
+      sortOrder: z.number().int().min(0).max(100),
+      caption: z.string().trim().max(500).optional().nullable(),
+    }),
+  )
+  .max(12)
+  .superRefine((items, context) => {
+    if (new Set(items.map(({ mediaId }) => mediaId)).size !== items.length)
+      context.addIssue({ code: "custom", message: "Supporting media identifiers must be unique" });
+    if (new Set(items.map(({ sortOrder }) => sortOrder)).size !== items.length)
+      context.addIssue({ code: "custom", message: "Supporting media positions must be unique" });
+  });
+
+export const createBeforeAfterProjectSchema = z.object({
+  title: z.string().trim().min(3).max(160),
+  slug: beforeAfterSlugSchema,
+  summary: z.string().trim().max(500).default(""),
+  description: z.string().trim().max(10_000).default(""),
+  serviceKey: beforeAfterServiceKeySchema,
+  serviceAreaKey: beforeAfterServiceAreaKeySchema,
+  completedAt: optionalNullableDateSchema,
+  seoTitle: z.string().trim().max(70).optional().nullable(),
+  seoDescription: z.string().trim().max(170).optional().nullable(),
+  featured: z.boolean().default(false),
+  primaryBeforeMediaId: identifierSchema.optional().nullable(),
+  primaryAfterMediaId: identifierSchema.optional().nullable(),
+  supportingMedia: beforeAfterSupportingMediaSchema.default([]),
+});
+export const updateBeforeAfterProjectSchema = createBeforeAfterProjectSchema
+  .partial()
+  .extend({ version: z.number().int().positive() })
+  .refine((value) => Object.keys(value).length > 1, "At least one field must be updated");
+export const beforeAfterProjectListQuerySchema = paginationSchema.extend({
+  search: z.string().trim().max(100).optional(),
+  status: beforeAfterStatusSchema.optional(),
+  serviceKey: beforeAfterServiceKeySchema.optional(),
+  serviceAreaKey: beforeAfterServiceAreaKeySchema.optional(),
+  featured: z
+    .enum(["true", "false"])
+    .transform((value) => value === "true")
+    .optional(),
+});
+export const publicBeforeAfterProjectListQuerySchema = paginationSchema.extend({
+  pageSize: z.coerce.number().int().min(1).max(24).default(12),
+  serviceKey: beforeAfterServiceKeySchema.optional(),
+  serviceAreaKey: beforeAfterServiceAreaKeySchema.optional(),
+  featured: z
+    .enum(["true", "false"])
+    .transform((value) => value === "true")
+    .optional(),
+});
+export const beforeAfterMediaUpdateSchema = z
+  .object({
+    altText: z.string().trim().max(300).optional(),
+    caption: z.string().trim().max(500).optional().nullable(),
+  })
+  .refine(
+    (value) => value.altText !== undefined || value.caption !== undefined,
+    "At least one field must be updated",
+  );
+export const beforeAfterMediaOrderSchema = z.object({
+  version: z.number().int().positive(),
+  items: beforeAfterSupportingMediaSchema,
+});
+
 export type LoginInput = z.infer<typeof loginSchema>;
 export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
 export type CreateUserInput = z.infer<typeof createUserSchema>;
@@ -188,3 +325,7 @@ export type AssignRolesInput = z.infer<typeof assignRolesSchema>;
 export type CreateRoleInput = z.infer<typeof createRoleSchema>;
 export type UpdateRoleInput = z.infer<typeof updateRoleSchema>;
 export type AssignPermissionsInput = z.infer<typeof assignPermissionsSchema>;
+export type CreateBeforeAfterProjectInput = z.infer<typeof createBeforeAfterProjectSchema>;
+export type UpdateBeforeAfterProjectInput = z.infer<typeof updateBeforeAfterProjectSchema>;
+export type BeforeAfterMediaUpdateInput = z.infer<typeof beforeAfterMediaUpdateSchema>;
+export type BeforeAfterMediaOrderInput = z.infer<typeof beforeAfterMediaOrderSchema>;

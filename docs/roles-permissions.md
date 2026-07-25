@@ -43,10 +43,10 @@ Additional identifiers should use stable `domain.resource.action[Scope]` naming.
 - Cache permissions only with reliable invalidation/session revocation after role changes.
 - Audit user lifecycle, role/permission assignments, publishing, pricing changes, quote status/notes, private media access where appropriate, and security events.
 
-## Phase 3 implementation
+## Phase 3 and Phase 5 implementation
 
-The foundational catalogue contains only admin access; user, role, audit, and own-session keys documented in `authentication-authorization-implementation.md`. `SUPER_ADMIN` always resolves to every known permission. `ADMIN` and `AUTHOR` initially receive only `admin.access`; future blog and business permissions are added with their feature phases. Multiple roles combine permissions. Final-active-Super-Admin protections use serializable transactions.
+The foundational catalogue contains admin access; user, role, audit, and own-session keys documented in `authentication-authorization-implementation.md`. Phase 5 adds six `projects.beforeAfter.*` and four `media.beforeAfter.*` keys documented in `before-after-implementation.md`. `SUPER_ADMIN` always resolves to every known permission. `ADMIN` and `AUTHOR` initially receive only `admin.access`; feature permissions require deliberate assignment. Multiple roles combine permissions. Final-active-Super-Admin protections use serializable transactions.
 
 ## Unresolved policy
 
-Later-feature permission catalogues, approval requirements, audit retention, support access, and whether certain pricing or publishing actions need two-person review remain future decisions.
+Later-feature permission catalogues, approval requirements, audit retention, support access, and whether certain pricing or publishing actions need two-person review remain future decisions. Phase 5 project and media permissions are no longer unresolved.

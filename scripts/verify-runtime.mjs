@@ -97,8 +97,10 @@ try {
     );
 
     const webResponse = await waitForResponse("http://127.0.0.1:3000");
+    const portfolioResponse = await waitForResponse("http://127.0.0.1:3000/before-after");
     const adminResponse = await waitForResponse("http://127.0.0.1:3001");
     const webHtml = await webResponse.text();
+    const portfolioHtml = await portfolioResponse.text();
     const adminHtml = await adminResponse.text();
 
     const result = {
@@ -109,16 +111,16 @@ try {
       api: health,
       database,
       web: {
-        apiReady: webHtml.includes("API reachable"),
-        foundationPage: webHtml.includes("Premium public design foundation"),
+        homeMarketing: webHtml.includes("A cleaner exterior starts with a precise plan"),
+        portfolio: portfolioHtml.includes("Approved project stories, compared accessibly"),
         status: webResponse.status,
       },
     };
 
     console.log(JSON.stringify(result, null, 2));
 
-    if (!result.admin.staffLogin || !result.web.apiReady || !result.web.foundationPage) {
-      throw new Error("A foundation page did not render its expected safe status content");
+    if (!result.admin.staffLogin || !result.web.homeMarketing || !result.web.portfolio) {
+      throw new Error("A built application did not render its expected runtime content");
     }
   }
 } catch (error) {
