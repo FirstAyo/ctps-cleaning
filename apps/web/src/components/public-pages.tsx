@@ -251,7 +251,7 @@ export function BlogPage() {
       </Section>
       <QuoteCta
         title="Need service information now?"
-        copy="Explore the current service pages or visit the non-functional quote-request foundation."
+        copy="Explore the current service pages or send the team a private quote request."
       />
     </PublicLayout>
   );
@@ -292,7 +292,7 @@ export function EstimatePage() {
                 className="mt-4 block text-center text-sm font-semibold text-primary"
                 href="/request-a-quote"
               >
-                View quote-request foundation
+                Request a quote
               </Link>
             </aside>
           </div>
@@ -307,8 +307,8 @@ export function QuoteRequestPage() {
   return (
     <PublicLayout>
       <PageHero
-        description="A polished preview of the future guest quote workflow. It does not submit information, create records, upload photos, generate references, or send email."
-        eyebrow="Quote-request foundation"
+        description="The live guest quote workflow gathers service and property context before secure submission."
+        eyebrow="Quote request"
         title="Describe the property. Keep expectations clear."
       />
       <Section>
@@ -316,8 +316,8 @@ export function QuoteRequestPage() {
           <div className="grid gap-10 lg:grid-cols-[.7fr_1.3fr]">
             <div>
               <SectionHeading
-                copy="The planned flow gathers services, property context, contact details, optional photos, timing preferences, review, and consent."
-                eyebrow="Planned steps"
+                copy="The flow gathers services, property context, contact details, optional photos, timing preferences, review, and consent."
+                eyebrow="Request steps"
                 title="A receipt request—not a booking."
               />
               <ol className="mt-7 grid gap-3">
@@ -326,7 +326,7 @@ export function QuoteRequestPage() {
                   "Add property information",
                   "Provide contact details",
                   "Add optional photos and preferences",
-                  "Review and submit in Phase 6",
+                  "Review and submit securely",
                 ].map((item, index) => (
                   <li className="flex gap-3" key={item}>
                     <span className="text-primary">0{index + 1}</span>
@@ -344,12 +344,12 @@ export function QuoteRequestPage() {
                 className="rounded-md bg-surface-muted p-3 text-sm font-semibold"
                 id="quote-preview-note"
               >
-                Static workflow preview. Fields are disabled and no submission is active.
+                Workflow overview. Use the live form above to submit a request.
               </p>
               <FieldGroup>
                 <Label htmlFor="preview-service">Service</Label>
                 <Select disabled id="preview-service">
-                  <option>Choose a service in Phase 6</option>
+                  <option>Choose one or more services</option>
                 </Select>
               </FieldGroup>
               <FieldGroup>
@@ -364,7 +364,7 @@ export function QuoteRequestPage() {
                 </FormDescription>
               </FieldGroup>
               <Button disabled type="submit">
-                Quote submission not active
+                Use the live quote form
               </Button>
             </form>
           </div>
@@ -378,8 +378,8 @@ export function QuoteRequestPage() {
       <Section id="privacy">
         <Container className="max-w-3xl">
           <SectionHeading
-            copy="Future contact and property details will be used to review and respond to the quote request. Final privacy wording, retention, and consent text require approval before activation."
-            eyebrow="Privacy foundation"
+            copy="Contact and property details are used to review and respond to the private quote request. Production retention and final legal wording remain approval gates."
+            eyebrow="Privacy"
             title="Collect only what the workflow needs."
           />
         </Container>

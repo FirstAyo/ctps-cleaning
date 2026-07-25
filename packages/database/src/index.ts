@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 
-export { Prisma, PrismaClient, UserStatus } from "@prisma/client";
+export * from "@prisma/client";
 
 interface PrismaGlobal {
   __ctpsPrisma?: PrismaClient;

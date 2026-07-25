@@ -70,6 +70,32 @@ export const apiEnvironmentSchema = z
     MEDIA_MAX_HEIGHT: positiveIntegerSchema.max(20000).default(12000),
     MEDIA_IMAGE_QUALITY: z.coerce.number().int().min(40).max(95).default(82),
     MEDIA_PUBLIC_BASE_PATH: z.string().trim().startsWith("/").default("/media/before-after"),
+    WEB_URL: httpUrlSchema,
+    QUOTE_PRIVATE_MEDIA_ROOT: z
+      .string()
+      .trim()
+      .min(1)
+      .default("../../storage/private/quote-requests"),
+    QUOTE_DRAFT_TTL_SECONDS: positiveSecondsSchema.min(900).default(86_400),
+    QUOTE_MIN_COMPLETION_SECONDS: positiveSecondsSchema.min(1).max(3600).default(8),
+    QUOTE_RATE_LIMIT_MAX_ATTEMPTS: positiveIntegerSchema.max(100).default(12),
+    QUOTE_RATE_LIMIT_WINDOW_SECONDS: positiveSecondsSchema.min(30).default(900),
+    QUOTE_MAX_UPLOAD_FILES: positiveIntegerSchema.max(20).default(8),
+    QUOTE_MAX_FILE_BYTES: positiveIntegerSchema.max(25 * 1024 * 1024).default(8 * 1024 * 1024),
+    QUOTE_MAX_TOTAL_UPLOAD_BYTES: positiveIntegerSchema
+      .max(100 * 1024 * 1024)
+      .default(32 * 1024 * 1024),
+    EMAIL_DELIVERY_MODE: z.enum(["smtp", "log-safe", "disabled"]).default("log-safe"),
+    EMAIL_FROM: z.string().trim().pipe(z.email().max(254)).default("quotes@example.invalid"),
+    QUOTE_STAFF_EMAIL: z.string().trim().pipe(z.email().max(254)).default("quotes@example.invalid"),
+    SMTP_HOST: z.preprocess(
+      (value) => (value === "" ? undefined : value),
+      z.string().trim().min(1).optional(),
+    ),
+    SMTP_PORT: portSchema.default(587),
+    SMTP_SECURE: booleanEnvironmentSchema.default(false),
+    SMTP_USER: z.string().optional(),
+    SMTP_PASSWORD: z.string().optional(),
     NODE_ENV: nodeEnvironmentSchema.default("development"),
   })
   .superRefine((value, context) => {
@@ -95,6 +121,20 @@ export const apiEnvironmentSchema = z
         code: "custom",
         path: ["MEDIA_MAX_WIDTH"],
         message: "Maximum media dimensions must exceed minimum dimensions",
+      });
+    }
+    if (value.QUOTE_MAX_TOTAL_UPLOAD_BYTES < value.QUOTE_MAX_FILE_BYTES) {
+      context.addIssue({
+        code: "custom",
+        path: ["QUOTE_MAX_TOTAL_UPLOAD_BYTES"],
+        message: "Total quote upload limit must be at least the per-file limit",
+      });
+    }
+    if (value.EMAIL_DELIVERY_MODE === "smtp" && !value.SMTP_HOST) {
+      context.addIssue({
+        code: "custom",
+        path: ["SMTP_HOST"],
+        message: "SMTP_HOST is required in SMTP mode",
       });
     }
   });
@@ -329,3 +369,212 @@ export type CreateBeforeAfterProjectInput = z.infer<typeof createBeforeAfterProj
 export type UpdateBeforeAfterProjectInput = z.infer<typeof updateBeforeAfterProjectSchema>;
 export type BeforeAfterMediaUpdateInput = z.infer<typeof beforeAfterMediaUpdateSchema>;
 export type BeforeAfterMediaOrderInput = z.infer<typeof beforeAfterMediaOrderSchema>;
+
+export const QUOTE_SERVICE_DEFINITIONS = [
+  {
+    key: "window-cleaning",
+    label: "Window cleaning",
+    questions: [
+      { key: "storeys", label: "How many storeys?", type: "number", required: true },
+      { key: "interior", label: "Include interior windows?", type: "boolean", required: true },
+    ],
+  },
+  {
+    key: "pressure-washing",
+    label: "Pressure washing",
+    questions: [
+      { key: "surfaces", label: "Which surfaces need cleaning?", type: "text", required: true },
+      {
+        key: "approximateArea",
+        label: "Approximate area (sq. ft.)",
+        type: "number",
+        required: false,
+      },
+    ],
+  },
+  {
+    key: "gutter-cleaning",
+    label: "Gutter cleaning",
+    questions: [{ key: "storeys", label: "How many storeys?", type: "number", required: true }],
+  },
+  {
+    key: "moss-removal",
+    label: "Moss removal",
+    questions: [
+      { key: "roofType", label: "What type of roof is it?", type: "text", required: true },
+    ],
+  },
+  {
+    key: "vent-cleaning",
+    label: "Vent cleaning",
+    questions: [
+      {
+        key: "ventType",
+        label: "Which vent type?",
+        type: "select",
+        required: true,
+        options: ["dryer", "bathroom-exhaust", "hvac-duct", "commercial"],
+      },
+      { key: "ventCount", label: "How many vents?", type: "number", required: true },
+    ],
+  },
+] as const;
+
+export const QUOTE_SERVICE_AREA_DEFINITIONS = [
+  { key: "vancouver", label: "Vancouver" },
+  { key: "richmond", label: "Richmond" },
+  { key: "burnaby", label: "Burnaby" },
+  { key: "surrey", label: "Surrey" },
+  { key: "coquitlam", label: "Coquitlam" },
+  { key: "north-vancouver", label: "North Vancouver" },
+] as const;
+
+export const quoteServiceKeySchema = z.enum(
+  QUOTE_SERVICE_DEFINITIONS.map(({ key }) => key) as [
+    (typeof QUOTE_SERVICE_DEFINITIONS)[number]["key"],
+    ...(typeof QUOTE_SERVICE_DEFINITIONS)[number]["key"][],
+  ],
+);
+export const quoteServiceAreaKeySchema = z.enum(
+  QUOTE_SERVICE_AREA_DEFINITIONS.map(({ key }) => key) as [
+    (typeof QUOTE_SERVICE_AREA_DEFINITIONS)[number]["key"],
+    ...(typeof QUOTE_SERVICE_AREA_DEFINITIONS)[number]["key"][],
+  ],
+);
+export const quoteStatusSchema = z.enum([
+  "NEW",
+  "UNDER_REVIEW",
+  "MORE_INFORMATION_REQUIRED",
+  "ESTIMATE_REVIEWED",
+  "QUOTE_PREPARED",
+  "CONTACTED",
+  "ACCEPTED",
+  "DECLINED",
+  "CLOSED",
+  "CANCELLED",
+]);
+const safeText = (maximum: number) => z.string().trim().max(maximum);
+export const quoteDraftCreateSchema = z.object({ honeypot: z.string().max(0).default("") });
+export const quoteSubmissionSchema = z
+  .object({
+    draftToken: z.string().min(43).max(200),
+    idempotencyKey: z.uuid(),
+    honeypot: z.string().max(0).default(""),
+    propertyType: z.enum(["RESIDENTIAL", "COMMERCIAL"]),
+    services: z.array(quoteServiceKeySchema).min(1).max(5),
+    serviceAnswers: z.record(
+      z.string().max(64),
+      z.record(z.string().max(64), z.union([z.string().max(500), z.number(), z.boolean()])),
+    ),
+    propertyDetails: z.object({
+      accessNotes: safeText(1000).optional(),
+      approximateSize: safeText(100).optional(),
+    }),
+    address: z.object({
+      line1: safeText(160).min(3),
+      line2: safeText(160).optional(),
+      city: safeText(80).min(2),
+      province: z.literal("British Columbia"),
+      postalCode: z
+        .string()
+        .trim()
+        .toUpperCase()
+        .regex(/^[A-Z]\d[A-Z][ -]?\d[A-Z]\d$/),
+      serviceAreaKey: quoteServiceAreaKeySchema,
+    }),
+    preferredDates: z.array(z.iso.date()).max(3).default([]),
+    notes: safeText(3000).optional(),
+    contact: z.object({
+      fullName: safeText(120).min(2),
+      email: normalizedEmailSchema,
+      phone: z
+        .string()
+        .trim()
+        .min(7)
+        .max(32)
+        .regex(/^[+()\- .0-9]+$/),
+      preferredMethod: z.enum(["EMAIL", "PHONE", "TEXT"]),
+      companyName: safeText(160).optional(),
+    }),
+    consent: z.literal(true),
+  })
+  .strict()
+  .superRefine((value, context) => {
+    if (new Set(value.services).size !== value.services.length)
+      context.addIssue({ code: "custom", path: ["services"], message: "Services must be unique" });
+    for (const serviceKey of value.services) {
+      const definition = QUOTE_SERVICE_DEFINITIONS.find(({ key }) => key === serviceKey)!;
+      const answers = value.serviceAnswers[serviceKey] ?? {};
+      for (const question of definition.questions) {
+        const answer = answers[question.key];
+        if (question.required && (answer === undefined || answer === ""))
+          context.addIssue({
+            code: "custom",
+            path: ["serviceAnswers", serviceKey, question.key],
+            message: `${question.label} is required`,
+          });
+        if (
+          answer !== undefined &&
+          question.type === "number" &&
+          (typeof answer !== "number" || !Number.isFinite(answer) || answer < 0)
+        )
+          context.addIssue({
+            code: "custom",
+            path: ["serviceAnswers", serviceKey, question.key],
+            message: "Enter a valid number",
+          });
+        if (answer !== undefined && question.type === "boolean" && typeof answer !== "boolean")
+          context.addIssue({
+            code: "custom",
+            path: ["serviceAnswers", serviceKey, question.key],
+            message: "Choose yes or no",
+          });
+        if (
+          answer !== undefined &&
+          question.type === "select" &&
+          !(question.options as readonly unknown[]).includes(answer)
+        )
+          context.addIssue({
+            code: "custom",
+            path: ["serviceAnswers", serviceKey, question.key],
+            message: "Choose an approved option",
+          });
+      }
+    }
+    const area = QUOTE_SERVICE_AREA_DEFINITIONS.find(
+      ({ key }) => key === value.address.serviceAreaKey,
+    );
+    if (!area || area.label.toLowerCase() !== value.address.city.trim().toLowerCase())
+      context.addIssue({
+        code: "custom",
+        path: ["address", "city"],
+        message: "City must match the approved service area",
+      });
+    const today = new Date().toISOString().slice(0, 10);
+    for (const [index, date] of value.preferredDates.entries())
+      if (date < today)
+        context.addIssue({
+          code: "custom",
+          path: ["preferredDates", index],
+          message: "Preferred dates cannot be in the past",
+        });
+  });
+export const quoteListQuerySchema = paginationSchema.extend({
+  search: safeText(120).optional(),
+  status: quoteStatusSchema.optional(),
+  assignedToUserId: identifierSchema.optional(),
+  archived: z
+    .enum(["true", "false"])
+    .transform((v) => v === "true")
+    .default(false),
+});
+export const quoteStatusUpdateSchema = z.object({ status: quoteStatusSchema });
+export const quoteAssignmentSchema = z.object({ assignedToUserId: identifierSchema.nullable() });
+export const quoteInternalNoteSchema = z.object({ body: safeText(3000).min(2) });
+export const quoteArchiveSchema = z.object({ archive: z.boolean() });
+export const quoteUploadOrderSchema = z.object({ uploadIds: z.array(identifierSchema).max(8) });
+export type QuoteSubmissionInput = z.infer<typeof quoteSubmissionSchema>;
+export type QuoteListQuery = z.infer<typeof quoteListQuerySchema>;
+export type QuoteStatusUpdateInput = z.infer<typeof quoteStatusUpdateSchema>;
+export type QuoteAssignmentInput = z.infer<typeof quoteAssignmentSchema>;
+export type QuoteInternalNoteInput = z.infer<typeof quoteInternalNoteSchema>;

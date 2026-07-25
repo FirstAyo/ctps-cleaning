@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest";
 
 import sitemap from "../src/app/sitemap";
 import HomePage from "../src/app/page";
+import RequestQuotePage from "../src/app/request-a-quote/page";
 import { ServicePageContent, AreaPageContent } from "../src/components/marketing";
 import {
   BeforeAfterPage,
@@ -12,7 +13,6 @@ import {
   ContactPage,
   EstimatePage,
   FaqPage,
-  QuoteRequestPage,
   ServicesOverviewPage,
 } from "../src/components/public-pages";
 import { getService, getServiceArea, serviceAreas, services } from "../src/content/site";
@@ -69,11 +69,11 @@ describe("Phase 4 public marketing", () => {
     }
   });
 
-  it("keeps future workflows explicitly inactive", () => {
-    const quote = markup(<QuoteRequestPage />);
-    expect(quote).toContain("Quote submission not active");
-    expect(quote).toContain("Nothing here opens a file picker, uploads, or saves data");
-    expect(quote).not.toContain('type="file"');
+  it("activates quote requests while keeping later workflows explicitly inactive", () => {
+    const quote = markup(<RequestQuotePage />);
+    expect(quote).toContain("Step 1 of 8");
+    expect(quote).toContain("Property type");
+    expect(quote).toContain("This is not a price, appointment, or booking");
     const estimate = markup(<EstimatePage />);
     expect(estimate).toContain("Estimator coming in Phase 7");
     expect(estimate).not.toMatch(/\$\d/);

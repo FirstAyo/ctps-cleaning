@@ -6,7 +6,7 @@ This document establishes minimum controls for the planned system. Specific libr
 
 ## Identity and sessions
 
-Staff authentication only is implemented for the admin scope; guest quote submission will need no account. Phase 3 uses Argon2id, 256-bit opaque PostgreSQL sessions stored only as hashes, secure/HttpOnly/SameSite cookies, absolute and idle expiry, revocation and rotation, durable time-limited login throttling, and a non-public masked Super Admin CLI. Production environment validation refuses insecure authentication cookies. Details and parameters are recorded in `authentication-authorization-implementation.md`.
+Staff authentication only is implemented for the admin scope; Phase 6 guest quote submission requires no account. Phase 3 uses Argon2id, 256-bit opaque PostgreSQL sessions stored only as hashes, secure/HttpOnly/SameSite cookies, absolute and idle expiry, revocation and rotation, durable time-limited login throttling, and a non-public masked Super Admin CLI. Production environment validation refuses insecure authentication cookies. Details and parameters are recorded in `authentication-authorization-implementation.md`.
 
 ## Request protection
 
@@ -22,6 +22,8 @@ Validate upload purpose, count, size, detected MIME, decoded dimensions, and fil
 
 Phase 5 applies these controls to staff-only before-and-after images: matching JPEG/PNG/WebP signature, MIME, and extension; bounded bytes/pixels/dimensions; Sharp re-encoding and metadata removal; generated keys; distinct private/public roots; protected private delivery; and visibility checks for public delivery. SVG is rejected. Customer uploads and malware scanning are not implemented. Storage keys and filesystem paths are excluded from responses and audit metadata.
 
+Phase 6 applies the same content-signature, MIME/extension, byte/pixel, Sharp re-encoding, metadata-removal, generated-key, and traversal defenses to optional guest quote images. They remain under `storage/private/quote-requests`, never move to public storage, and are streamed only through a permission-protected no-store admin route. Guest mutations also require a verified public origin, an expiring one-time draft token stored only as a SHA-256 hash, honeypot validation, minimum completion time, durable source/action throttling, strict schemas, and a unique idempotency key. Confirmation uses a separate 256-bit token stored only as a hash. Public references use a server-generated, cryptographically random 40-bit suffix and are never accepted as public lookup credentials. Malware scanning and the production retention period remain approval gates.
+
 ## Secrets, data, and logging
 
 Inject secrets at deployment, grant least privilege, rotate them, and never commit or expose them to browsers/logs. PostgreSQL accounts and networks use least privilege. Logs are structured and correlated but exclude passwords, tokens, secrets, upload content, private pricing, and unnecessary personal data. Audit sensitive actor/action/resource/time/outcome and safe change summaries; make audit records read-only to ordinary admins.
@@ -36,4 +38,4 @@ Before release: dependency/container scanning, authorization matrix tests, input
 
 ## Unresolved decisions
 
-MFA policy, password breach screening, malware scanning, encryption-at-rest approach, retention, audit retention, backup RPO/RTO, incident process, and privacy/legal wording require future approval. Phase 3 fixes the password, session, CSRF, and login-throttle baselines; Phase 5 upload limits are recorded in `before-after-implementation.md`.
+MFA policy, password breach screening, malware scanning, encryption-at-rest approach, retention, audit retention, backup RPO/RTO, incident process, and final privacy/legal wording require future approval. Phase 3 fixes the password, session, CSRF, and login-throttle baselines; Phase 5 upload limits are recorded in `before-after-implementation.md`; Phase 6 guest controls and limits are recorded in `quote-request-implementation.md`.

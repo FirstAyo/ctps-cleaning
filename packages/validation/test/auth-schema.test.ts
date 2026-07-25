@@ -45,6 +45,7 @@ describe("authentication validation", () => {
   it("applies conservative session and throttle defaults", () => {
     const value = apiEnvironmentSchema.parse({
       ADMIN_URL: "http://localhost:3001",
+      WEB_URL: "http://localhost:3000",
       API_PORT: "4000",
       CORS_ALLOWED_ORIGINS: "http://localhost:3001",
       DATABASE_URL: "postgresql://local",
@@ -58,6 +59,7 @@ describe("authentication validation", () => {
   it("refuses insecure cookies in production", () => {
     const result = apiEnvironmentSchema.safeParse({
       ADMIN_URL: "https://admin.example.com",
+      WEB_URL: "https://example.com",
       API_PORT: "4000",
       AUTH_COOKIE_SECURE: "false",
       CORS_ALLOWED_ORIGINS: "https://admin.example.com",

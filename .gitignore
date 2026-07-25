@@ -19,8 +19,10 @@ packages/database/src/generated/
 postgres-data/
 storage/public/before-after/*
 storage/private/before-after/*
+storage/private/quote-requests/*
 !storage/public/before-after/.gitkeep
 !storage/private/before-after/.gitkeep
+!storage/private/quote-requests/.gitkeep
 
 # Editors and operating systems
 .DS_Store

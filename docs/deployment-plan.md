@@ -36,6 +36,8 @@ Back up PostgreSQL and public/private media off-host with encryption and version
 
 Monitor availability, health, errors, resource saturation, disk/database growth, certificate expiry, backup success, mail failures, and suspicious auth/rate-limit activity. Central logging and alert provider remain choices. Keep deployment/runbook access least-privileged.
 
+Phase 6 requires a persistent, non-web-served `QUOTE_PRIVATE_MEDIA_ROOT`, SMTP settings or an explicitly selected non-production delivery mode, a monitored durable email outbox, and upload/body limits aligned across Nginx and the API. Backups must include quote records and private quote media. Production approval still requires a retention/deletion schedule, malware-scanning decision, privacy wording review, restore test, and delivery-failure alerting.
+
 ## Future scaling
 
 Possible later steps include separate database/storage hosts, S3-compatible media, background workers, multiple stateless app replicas, managed SMTP, and external monitoring. Adopt them only from measured needs.

@@ -30,11 +30,19 @@ export const PERMISSION_KEYS = {
   MEDIA_BEFORE_AFTER_READ: "media.beforeAfter.read",
   MEDIA_BEFORE_AFTER_UPDATE: "media.beforeAfter.update",
   MEDIA_BEFORE_AFTER_DELETE: "media.beforeAfter.delete",
+  QUOTE_REQUESTS_READ: "quoteRequests.read",
+  QUOTE_REQUESTS_UPDATE: "quoteRequests.update",
+  QUOTE_REQUESTS_CHANGE_STATUS: "quoteRequests.changeStatus",
+  QUOTE_REQUESTS_ASSIGN: "quoteRequests.assign",
+  QUOTE_REQUESTS_ADD_INTERNAL_NOTES: "quoteRequests.addInternalNotes",
+  QUOTE_REQUESTS_READ_PRIVATE_MEDIA: "quoteRequests.readPrivateMedia",
+  QUOTE_REQUESTS_ARCHIVE: "quoteRequests.archive",
+  QUOTE_REQUESTS_DELETE: "quoteRequests.delete",
 } as const;
 
 export type PermissionKey = (typeof PERMISSION_KEYS)[keyof typeof PERMISSION_KEYS];
 export type PermissionGroup =
-  "Administration" | "Users" | "Roles" | "Security" | "Projects" | "Media";
+  "Administration" | "Users" | "Roles" | "Security" | "Projects" | "Media" | "Quote Requests";
 
 export interface PermissionDefinition {
   readonly key: PermissionKey;
@@ -181,6 +189,54 @@ export const PERMISSION_DEFINITIONS: readonly PermissionDefinition[] = [
     label: "Delete before-and-after media",
     description: "Delete unreferenced managed project media and variants.",
     group: "Media",
+  },
+  {
+    key: PERMISSION_KEYS.QUOTE_REQUESTS_READ,
+    label: "Read quote requests",
+    description: "View customer quote requests and their submitted details.",
+    group: "Quote Requests",
+  },
+  {
+    key: PERMISSION_KEYS.QUOTE_REQUESTS_UPDATE,
+    label: "Update quote requests",
+    description: "Update operational quote-request details.",
+    group: "Quote Requests",
+  },
+  {
+    key: PERMISSION_KEYS.QUOTE_REQUESTS_CHANGE_STATUS,
+    label: "Change quote status",
+    description: "Move quote requests through approved workflow states.",
+    group: "Quote Requests",
+  },
+  {
+    key: PERMISSION_KEYS.QUOTE_REQUESTS_ASSIGN,
+    label: "Assign quote requests",
+    description: "Assign or unassign quote requests to staff.",
+    group: "Quote Requests",
+  },
+  {
+    key: PERMISSION_KEYS.QUOTE_REQUESTS_ADD_INTERNAL_NOTES,
+    label: "Add internal quote notes",
+    description: "Add staff-only notes to quote requests.",
+    group: "Quote Requests",
+  },
+  {
+    key: PERMISSION_KEYS.QUOTE_REQUESTS_READ_PRIVATE_MEDIA,
+    label: "Read private quote media",
+    description: "View customer-uploaded private quote images.",
+    group: "Quote Requests",
+  },
+  {
+    key: PERMISSION_KEYS.QUOTE_REQUESTS_ARCHIVE,
+    label: "Archive quote requests",
+    description: "Archive completed quote requests while preserving history.",
+    group: "Quote Requests",
+  },
+  {
+    key: PERMISSION_KEYS.QUOTE_REQUESTS_DELETE,
+    label: "Delete quote requests",
+    description: "Permanently delete eligible quote requests after confirmation.",
+    group: "Quote Requests",
   },
 ] as const;
 

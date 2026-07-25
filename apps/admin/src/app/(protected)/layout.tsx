@@ -23,6 +23,8 @@ export default async function ProtectedLayout({
     navigation.push({ href: "/audit-logs", label: "Audit logs" });
   if (identity.permissions.includes("projects.beforeAfter.read"))
     navigation.splice(2, 0, { href: "/before-after", label: "Before & After" });
+  if (identity.permissions.includes("quoteRequests.read"))
+    navigation.splice(2, 0, { href: "/quote-requests", label: "Quote Requests" });
   return (
     <AdminShell
       description="Protected Phase 3 staff administration. The API rechecks every permission."

@@ -10,12 +10,13 @@ import {
 } from "../src";
 
 describe("permission contract", () => {
-  it("contains unique foundational and Phase 5 before-and-after keys", () => {
+  it("contains unique foundational, Phase 5, and Phase 6 keys", () => {
     expect(new Set(ALL_PERMISSION_KEYS).size).toBe(ALL_PERMISSION_KEYS.length);
     expect(ALL_PERMISSION_KEYS.every(isPermissionKey)).toBe(true);
     expect(ALL_PERMISSION_KEYS).toContain(PERMISSION_KEYS.PROJECTS_BEFORE_AFTER_PUBLISH);
     expect(ALL_PERMISSION_KEYS).toContain(PERMISSION_KEYS.MEDIA_BEFORE_AFTER_UPLOAD);
-    expect(ALL_PERMISSION_KEYS.some((key) => /quote|price|blog|schedule/.test(key))).toBe(false);
+    expect(ALL_PERMISSION_KEYS).toContain(PERMISSION_KEYS.QUOTE_REQUESTS_READ_PRIVATE_MEDIA);
+    expect(ALL_PERMISSION_KEYS.some((key) => /price|blog|schedule/.test(key))).toBe(false);
   });
 
   it("combines multiple roles without accepting unknown keys", () => {

@@ -43,10 +43,10 @@ Additional identifiers should use stable `domain.resource.action[Scope]` naming.
 - Cache permissions only with reliable invalidation/session revocation after role changes.
 - Audit user lifecycle, role/permission assignments, publishing, pricing changes, quote status/notes, private media access where appropriate, and security events.
 
-## Phase 3 and Phase 5 implementation
+## Phase 3, Phase 5, and Phase 6 implementation
 
-The foundational catalogue contains admin access; user, role, audit, and own-session keys documented in `authentication-authorization-implementation.md`. Phase 5 adds six `projects.beforeAfter.*` and four `media.beforeAfter.*` keys documented in `before-after-implementation.md`. `SUPER_ADMIN` always resolves to every known permission. `ADMIN` and `AUTHOR` initially receive only `admin.access`; feature permissions require deliberate assignment. Multiple roles combine permissions. Final-active-Super-Admin protections use serializable transactions.
+The foundational catalogue contains admin access; user, role, audit, and own-session keys documented in `authentication-authorization-implementation.md`. Phase 5 adds six `projects.beforeAfter.*` and four `media.beforeAfter.*` keys documented in `before-after-implementation.md`. Phase 6 adds `quoteRequests.read`, `quoteRequests.update`, `quoteRequests.changeStatus`, `quoteRequests.assign`, `quoteRequests.addInternalNotes`, `quoteRequests.readPrivateMedia`, `quoteRequests.archive`, and `quoteRequests.delete`. `SUPER_ADMIN` always resolves to every known permission. `ADMIN` and `AUTHOR` initially receive only `admin.access`; quote permissions are never granted to them by default. Multiple roles combine permissions. Final-active-Super-Admin protections use serializable transactions.
 
 ## Unresolved policy
 
-Later-feature permission catalogues, approval requirements, audit retention, support access, and whether certain pricing or publishing actions need two-person review remain future decisions. Phase 5 project and media permissions are no longer unresolved.
+Later-feature permission catalogues, approval requirements, audit retention, support access, and whether certain pricing or publishing actions need two-person review remain future decisions. Phase 5 project/media and Phase 6 quote-request permissions are no longer unresolved.

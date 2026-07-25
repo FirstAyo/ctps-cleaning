@@ -272,7 +272,7 @@ export const generalFaqs = [
   {
     title: "Can I upload property photos?",
     content:
-      "Multiple-photo uploads are planned for the later quote-request phase. The Phase 4 preview does not select, upload, or save files.",
+      "The quote request accepts multiple optional JPEG, PNG, or WebP property photos. They remain private and are available only to authorized staff reviewing the request.",
   },
   {
     title: "Are the before-and-after images real CTPS projects?",

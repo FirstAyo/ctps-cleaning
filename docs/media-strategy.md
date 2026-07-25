@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document defines a provider-neutral plan for service, blog, author, project, Open Graph, and customer-upload media. Phase 4 introduced committed development illustrations. Phase 5 adds a narrowly scoped managed before-and-after storage and upload workflow; customer uploads and a general media library remain unimplemented.
+This document defines a provider-neutral plan for service, blog, author, project, Open Graph, and customer-upload media. Phase 4 introduced committed development illustrations. Phase 5 adds managed before-and-after storage. Phase 6 adds a separate, private-only customer quote upload workflow; a general media library remains unimplemented.
 
 ## Phase 4 local assets
 
@@ -11,15 +11,17 @@ Public marketing illustrations are organized under `apps/web/public/images` and 
 ## Classification boundary
 
 - **Public media:** approved marketing/content assets intended for public delivery.
-- **Private media:** Draft/Archived project media, future customer quote-request uploads, and restricted staff assets. These are private by default and never placed beneath a publicly served path.
+- **Private media:** Draft/Archived project media, customer quote-request uploads, and restricted staff assets. These are private by default and never placed beneath a publicly served path.
 
 Phase 5 project uploads begin in `storage/private/before-after`, move to the distinct public root only on publication, and return to private storage on unpublish/archive. Admin preview and public delivery are application routes that recheck authorization/visibility. See `before-after-implementation.md` for exact variants and limits.
+
+Phase 6 quote uploads use `storage/private/quote-requests` and a quote-specific metadata model. An expiring request draft owns files before submission; a transaction transfers ready files to the resulting quote request. Removed draft uploads are deleted immediately. Quote files never become public and have no public URL; authorized staff view the generated WebP preview through a no-store route. See `quote-request-implementation.md`.
 
 Metadata should record owner/uploader, classification, purpose, original name (safely handled), detected MIME type, byte size, dimensions, checksum, storage key/provider, alt text/caption where relevant, variants, references, timestamps, and lifecycle status. Do not expose internal storage keys as authorization.
 
 ## Upload pipeline
 
-Authorize purpose and owner, limit count/size, inspect content rather than trusting extensions or headers, decode images safely, validate dimensions, generate randomized keys, strip risky metadata where appropriate, and isolate processing. Phase 5 implements these controls for staff before-and-after JPEG/PNG/WebP uploads. Malware scanning remains unresolved before any customer-upload phase.
+Authorize purpose and owner, limit count/size, inspect content rather than trusting extensions or headers, decode images safely, validate dimensions, generate randomized keys, strip risky metadata where appropriate, and isolate processing. Phase 5 implements these controls for staff before-and-after JPEG/PNG/WebP uploads. Phase 6 implements them for guest quote images, but malware scanning remains unresolved before production approval.
 
 Generate responsive sizes and WebP/AVIF where practical while retaining an appropriate source. Prevent decompression bombs and unbounded processing. Public output needs width/height, suitable loading priority, and alt-text workflows; before/after pairs require separate accurate alt text.
 

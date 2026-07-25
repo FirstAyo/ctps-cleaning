@@ -41,51 +41,210 @@ enum BeforeAfterMediaCategory {
   GALLERY
 }
 
+enum QuoteRequestStatus {
+  NEW
+  UNDER_REVIEW
+  MORE_INFORMATION_REQUIRED
+  ESTIMATE_REVIEWED
+  QUOTE_PREPARED
+  CONTACTED
+  ACCEPTED
+  DECLINED
+  CLOSED
+  CANCELLED
+}
+
+enum QuotePropertyType {
+  RESIDENTIAL
+  COMMERCIAL
+}
+
+enum QuoteUploadStatus {
+  READY
+  REMOVED
+}
+
+enum EmailOutboxStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
 model User {
-  id                 String     @id @default(uuid()) @db.Uuid
-  email              String     @unique @db.VarChar(254)
-  displayName        String     @db.VarChar(100)
-  passwordHash       String     @db.Text
-  status             UserStatus @default(ACTIVE)
-  mustChangePassword Boolean    @default(true)
-  lastLoginAt        DateTime?
-  passwordChangedAt  DateTime?
-  disabledAt         DateTime?
-  createdAt          DateTime   @default(now())
-  updatedAt          DateTime   @updatedAt
-  roles              UserRole[]
-  sessions           Session[]
-  auditLogs          AuditLog[] @relation("AuditActor")
-  uploadedMedia      MediaAsset[] @relation("MediaUploader")
-  createdBeforeAfterProjects BeforeAfterProject[] @relation("BeforeAfterCreatedBy")
-  updatedBeforeAfterProjects BeforeAfterProject[] @relation("BeforeAfterUpdatedBy")
+  id                         String                      @id @default(uuid()) @db.Uuid
+  email                      String                      @unique @db.VarChar(254)
+  displayName                String                      @db.VarChar(100)
+  passwordHash               String                      @db.Text
+  status                     UserStatus                  @default(ACTIVE)
+  mustChangePassword         Boolean                     @default(true)
+  lastLoginAt                DateTime?
+  passwordChangedAt          DateTime?
+  disabledAt                 DateTime?
+  createdAt                  DateTime                    @default(now())
+  updatedAt                  DateTime                    @updatedAt
+  roles                      UserRole[]
+  sessions                   Session[]
+  auditLogs                  AuditLog[]                  @relation("AuditActor")
+  uploadedMedia              MediaAsset[]                @relation("MediaUploader")
+  createdBeforeAfterProjects BeforeAfterProject[]        @relation("BeforeAfterCreatedBy")
+  updatedBeforeAfterProjects BeforeAfterProject[]        @relation("BeforeAfterUpdatedBy")
+  assignedQuoteRequests      QuoteRequest[]              @relation("QuoteRequestAssignee")
+  quoteRequestNotes          QuoteRequestNote[]
+  quoteStatusChanges         QuoteRequestStatusHistory[]
 
   @@index([status])
   @@index([createdAt])
 }
 
-model MediaAsset {
-  id               String          @id @default(uuid()) @db.Uuid
-  storageKey       String          @unique @db.VarChar(240)
-  visibility       MediaVisibility @default(PRIVATE)
-  status           MediaStatus     @default(READY)
-  originalFilename String          @db.VarChar(255)
-  storedFilename   String          @db.VarChar(100)
-  mimeType         String          @db.VarChar(100)
+model QuoteRequestDraft {
+  id          String               @id @default(uuid()) @db.Uuid
+  tokenHash   String               @unique @db.Char(64)
+  sourceHash  String               @db.Char(64)
+  startedAt   DateTime             @default(now())
+  expiresAt   DateTime
+  submittedAt DateTime?
+  uploads     QuoteRequestUpload[]
+
+  @@index([expiresAt, submittedAt])
+}
+
+model QuoteRequest {
+  id                     String                      @id @default(uuid()) @db.Uuid
+  reference              String                      @unique @db.VarChar(20)
+  confirmationTokenHash  String                      @unique @db.Char(64)
+  idempotencyKeyHash     String                      @unique @db.Char(64)
+  propertyType           QuotePropertyType
+  services               Json
+  serviceAnswers         Json
+  propertyDetails        Json
+  addressLine1           String                      @db.VarChar(160)
+  addressLine2           String?                     @db.VarChar(160)
+  city                   String                      @db.VarChar(80)
+  province               String                      @db.VarChar(40)
+  postalCode             String                      @db.VarChar(16)
+  serviceAreaKey         String                      @db.VarChar(64)
+  preferredDates         Json
+  notes                  String?                     @db.VarChar(3000)
+  customerName           String                      @db.VarChar(120)
+  customerEmail          String                      @db.VarChar(254)
+  customerPhone          String                      @db.VarChar(32)
+  preferredContactMethod String                      @db.VarChar(16)
+  companyName            String?                     @db.VarChar(160)
+  consentAcceptedAt      DateTime
+  status                 QuoteRequestStatus          @default(NEW)
+  assignedToUserId       String?                     @db.Uuid
+  createdAt              DateTime                    @default(now())
+  updatedAt              DateTime                    @updatedAt
+  archivedAt             DateTime?
+  assignedTo             User?                       @relation("QuoteRequestAssignee", fields: [assignedToUserId], references: [id], onDelete: SetNull)
+  uploads                QuoteRequestUpload[]
+  internalNotes          QuoteRequestNote[]
+  statusHistory          QuoteRequestStatusHistory[]
+  emailMessages          EmailOutbox[]
+
+  @@index([status, createdAt(sort: Desc)])
+  @@index([assignedToUserId, status])
+  @@index([customerEmail])
+  @@index([archivedAt])
+}
+
+model QuoteRequestUpload {
+  id               String             @id @default(uuid()) @db.Uuid
+  draftId          String?            @db.Uuid
+  quoteRequestId   String?            @db.Uuid
+  storageKey       String             @unique @db.VarChar(260)
+  originalFilename String             @db.VarChar(255)
+  mimeType         String             @db.VarChar(100)
   sizeBytes        Int
   width            Int
   height           Int
-  altText          String          @default("") @db.VarChar(300)
-  caption          String?         @db.VarChar(500)
-  checksum         String          @db.Char(64)
-  uploadedByUserId String          @db.Uuid
-  createdAt        DateTime        @default(now())
-  updatedAt        DateTime        @updatedAt
+  checksum         String             @db.Char(64)
+  sortOrder        Int
+  status           QuoteUploadStatus  @default(READY)
+  createdAt        DateTime           @default(now())
+  removedAt        DateTime?
+  draft            QuoteRequestDraft? @relation(fields: [draftId], references: [id], onDelete: Cascade)
+  quoteRequest     QuoteRequest?      @relation(fields: [quoteRequestId], references: [id], onDelete: Cascade)
+
+  @@index([draftId, status, sortOrder])
+  @@index([quoteRequestId, status, sortOrder])
+}
+
+model QuoteRequestNote {
+  id             String       @id @default(uuid()) @db.Uuid
+  quoteRequestId String       @db.Uuid
+  authorUserId   String       @db.Uuid
+  body           String       @db.VarChar(3000)
+  createdAt      DateTime     @default(now())
+  quoteRequest   QuoteRequest @relation(fields: [quoteRequestId], references: [id], onDelete: Cascade)
+  author         User         @relation(fields: [authorUserId], references: [id], onDelete: Restrict)
+
+  @@index([quoteRequestId, createdAt(sort: Desc)])
+}
+
+model QuoteRequestStatusHistory {
+  id             String             @id @default(uuid()) @db.Uuid
+  quoteRequestId String             @db.Uuid
+  actorUserId    String             @db.Uuid
+  fromStatus     QuoteRequestStatus
+  toStatus       QuoteRequestStatus
+  createdAt      DateTime           @default(now())
+  quoteRequest   QuoteRequest       @relation(fields: [quoteRequestId], references: [id], onDelete: Cascade)
+  actor          User               @relation(fields: [actorUserId], references: [id], onDelete: Restrict)
+
+  @@index([quoteRequestId, createdAt(sort: Desc)])
+}
+
+model PublicRequestThrottle {
+  keyHash         String    @id @db.Char(64)
+  attempts        Int       @default(0)
+  windowStartedAt DateTime  @default(now())
+  blockedUntil    DateTime?
+  updatedAt       DateTime  @updatedAt
+
+  @@index([blockedUntil])
+}
+
+model EmailOutbox {
+  id             String            @id @default(uuid()) @db.Uuid
+  quoteRequestId String            @db.Uuid
+  templateKey    String            @db.VarChar(64)
+  recipient      String            @db.VarChar(254)
+  payload        Json
+  status         EmailOutboxStatus @default(PENDING)
+  attempts       Int               @default(0)
+  lastErrorCode  String?           @db.VarChar(100)
+  sentAt         DateTime?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  quoteRequest   QuoteRequest      @relation(fields: [quoteRequestId], references: [id], onDelete: Cascade)
+
+  @@index([status, createdAt])
+  @@index([quoteRequestId])
+}
+
+model MediaAsset {
+  id               String                    @id @default(uuid()) @db.Uuid
+  storageKey       String                    @unique @db.VarChar(240)
+  visibility       MediaVisibility           @default(PRIVATE)
+  status           MediaStatus               @default(READY)
+  originalFilename String                    @db.VarChar(255)
+  storedFilename   String                    @db.VarChar(100)
+  mimeType         String                    @db.VarChar(100)
+  sizeBytes        Int
+  width            Int
+  height           Int
+  altText          String                    @default("") @db.VarChar(300)
+  caption          String?                   @db.VarChar(500)
+  checksum         String                    @db.Char(64)
+  uploadedByUserId String                    @db.Uuid
+  createdAt        DateTime                  @default(now())
+  updatedAt        DateTime                  @updatedAt
   archivedAt       DateTime?
-  uploader         User            @relation("MediaUploader", fields: [uploadedByUserId], references: [id], onDelete: Restrict)
+  uploader         User                      @relation("MediaUploader", fields: [uploadedByUserId], references: [id], onDelete: Restrict)
   variants         MediaVariant[]
-  primaryBeforeFor BeforeAfterProject[] @relation("ProjectPrimaryBefore")
-  primaryAfterFor  BeforeAfterProject[] @relation("ProjectPrimaryAfter")
+  primaryBeforeFor BeforeAfterProject[]      @relation("ProjectPrimaryBefore")
+  primaryAfterFor  BeforeAfterProject[]      @relation("ProjectPrimaryAfter")
   projectLinks     BeforeAfterProjectMedia[]
 
   @@index([visibility, status])
@@ -110,32 +269,32 @@ model MediaVariant {
 }
 
 model BeforeAfterProject {
-  id                   String                   @id @default(uuid()) @db.Uuid
-  slug                 String                   @unique @db.VarChar(100)
-  title                String                   @db.VarChar(160)
-  summary              String                   @db.VarChar(500)
-  description          String                   @db.Text
-  status               BeforeAfterProjectStatus @default(DRAFT)
-  featured             Boolean                  @default(false)
+  id                   String                    @id @default(uuid()) @db.Uuid
+  slug                 String                    @unique @db.VarChar(100)
+  title                String                    @db.VarChar(160)
+  summary              String                    @db.VarChar(500)
+  description          String                    @db.Text
+  status               BeforeAfterProjectStatus  @default(DRAFT)
+  featured             Boolean                   @default(false)
   publishedAt          DateTime?
   completedAt          DateTime?
-  serviceKey           String                   @db.VarChar(64)
-  serviceAreaKey       String                   @db.VarChar(64)
-  primaryBeforeMediaId String?                  @db.Uuid
-  primaryAfterMediaId  String?                  @db.Uuid
-  seoTitle             String?                  @db.VarChar(70)
-  seoDescription       String?                  @db.VarChar(170)
-  displayOrder         Int                      @default(0)
-  version              Int                      @default(1)
-  createdByUserId      String                   @db.Uuid
-  updatedByUserId      String                   @db.Uuid
-  createdAt            DateTime                 @default(now())
-  updatedAt            DateTime                 @updatedAt
+  serviceKey           String                    @db.VarChar(64)
+  serviceAreaKey       String                    @db.VarChar(64)
+  primaryBeforeMediaId String?                   @db.Uuid
+  primaryAfterMediaId  String?                   @db.Uuid
+  seoTitle             String?                   @db.VarChar(70)
+  seoDescription       String?                   @db.VarChar(170)
+  displayOrder         Int                       @default(0)
+  version              Int                       @default(1)
+  createdByUserId      String                    @db.Uuid
+  updatedByUserId      String                    @db.Uuid
+  createdAt            DateTime                  @default(now())
+  updatedAt            DateTime                  @updatedAt
   archivedAt           DateTime?
-  createdBy            User                     @relation("BeforeAfterCreatedBy", fields: [createdByUserId], references: [id], onDelete: Restrict)
-  updatedBy            User                     @relation("BeforeAfterUpdatedBy", fields: [updatedByUserId], references: [id], onDelete: Restrict)
-  primaryBeforeMedia   MediaAsset?              @relation("ProjectPrimaryBefore", fields: [primaryBeforeMediaId], references: [id], onDelete: Restrict)
-  primaryAfterMedia    MediaAsset?              @relation("ProjectPrimaryAfter", fields: [primaryAfterMediaId], references: [id], onDelete: Restrict)
+  createdBy            User                      @relation("BeforeAfterCreatedBy", fields: [createdByUserId], references: [id], onDelete: Restrict)
+  updatedBy            User                      @relation("BeforeAfterUpdatedBy", fields: [updatedByUserId], references: [id], onDelete: Restrict)
+  primaryBeforeMedia   MediaAsset?               @relation("ProjectPrimaryBefore", fields: [primaryBeforeMediaId], references: [id], onDelete: Restrict)
+  primaryAfterMedia    MediaAsset?               @relation("ProjectPrimaryAfter", fields: [primaryAfterMediaId], references: [id], onDelete: Restrict)
   supportingMedia      BeforeAfterProjectMedia[]
 
   @@index([status, publishedAt(sort: Desc)])

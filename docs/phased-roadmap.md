@@ -30,7 +30,7 @@ Implemented the PostgreSQL project/media model, private/public local storage abs
 
 ## Phase 6 — Quote-request system
 
-Implement public flow, reference numbers, typed service questions, private photos, confirmation/email, permission-protected admin review/status/internal notes, security, rate limits, and audit events built on the Phase 3 foundation.
+Implemented the guest multi-step public flow, durable request drafts, unique references, typed service questions, approved service areas, private photos, high-entropy confirmation links, SMTP-compatible email delivery with a durable outbox, permission-protected admin review/status/assignment/internal notes/private media/archive/delete controls, abuse controls, and audit events built on the Phase 3 foundation. See `quote-request-implementation.md`.
 
 ## Phase 7 — Price estimator
 

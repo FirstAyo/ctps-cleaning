@@ -28,6 +28,10 @@ Phase 3 implements staff-only authentication in the NestJS API using Argon2id pa
 
 The API owns before-and-after project lifecycle, metadata, image validation/processing, and delivery authorization. PostgreSQL stores project relationships and media metadata; generated WebP bytes use separate local private/public roots through a storage adapter. Admin previews remain cookie-authenticated and no-store. Public queries hardcode Published state, public media delivery rechecks database visibility, and web/admin proxy routes never reveal storage keys or filesystem paths. See `before-after-implementation.md`.
 
+## Phase 6 quote-request boundary
+
+The public Next.js application hosts the accessible multi-step guest experience and a narrow same-origin BFF. The NestJS API remains authoritative for definitions, validation, approved areas, draft possession, abuse controls, image processing, idempotency, reference allocation, confirmation, and workflow state. PostgreSQL stores quote data, hashed draft/confirmation/idempotency identifiers, durable throttles, status history, notes, assignments, audit events, and structured email outbox records. The email package owns safe customer/staff templates and SMTP/log-safe/disabled delivery adapters. Customer images have an isolated private-only store and quote-specific schema. The admin application consumes protected APIs and streams images only through permission-checked no-store routes. See `quote-request-implementation.md`.
+
 ## Deployment topology
 
 Recommended VPS topology: Nginx terminates HTTPS and proxies host/path traffic to containerized web, admin, and API services; PostgreSQL is reachable only on a private Docker network; persistent volumes hold database and initial media data; an SMTP service is external or separately operated. Health checks and controlled startup ordering are Phase 1 concerns. Secrets enter at deployment and are not built into images.

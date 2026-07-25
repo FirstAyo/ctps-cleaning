@@ -241,9 +241,8 @@ export function PhotoPreview() {
         </span>
       </div>
       <p className="mt-4 max-w-2xl text-muted-foreground">
-        The later quote workflow is planned to validate file type, size, and count; support removal
-        and useful reordering; and identify a primary image. Nothing here opens a file picker,
-        uploads, or saves data.
+        The live quote workflow validates file type, size, and count and supports private previews,
+        removal, retry, and useful reordering. This overview itself does not open a file picker.
       </p>
       <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {photos.map((photo, index) => (
@@ -371,7 +370,7 @@ export function AreaPageContent({ area }: { readonly area: ServiceArea }) {
     {
       title: "Can I combine service requests?",
       content:
-        "The future quote flow is planned to support one or more services. Phase 4 does not submit or store requests.",
+        "Yes. The quote request supports one or more approved services in a single private inquiry.",
     },
   ];
   return (
