@@ -1,5 +1,6 @@
 /* eslint-disable @next/next/no-img-element -- private images use an authenticated, no-store BFF route */
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { Forbidden } from "@/components/forbidden";
 import { QuoteRequestActions } from "@/components/quote-request-actions";
 import { AdminApiError, adminApi, can, currentIdentity } from "@/lib/admin-api";
@@ -95,6 +96,33 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
                 <strong>Customer notes:</strong> {quote.notes}
               </p>
             ) : null}
+          </section>
+          <section className="rounded-lg border border-border bg-card p-5">
+            <h3 className="text-lg font-semibold">Operational job</h3>
+            {quote.serviceJobs.length ? (
+              <p className="mt-3 text-sm">
+                Linked job:{" "}
+                <Link
+                  className="font-semibold underline"
+                  href={`/jobs/${quote.serviceJobs[0]!.id}`}
+                >
+                  {quote.serviceJobs[0]!.referenceNumber}
+                </Link>{" "}
+                · {quote.serviceJobs[0]!.status}
+              </p>
+            ) : can(identity, "jobs.createFromQuote") &&
+              ["ACCEPTED", "QUOTE_PREPARED", "CONTACTED"].includes(quote.status) ? (
+              <Link
+                className="mt-3 inline-block rounded-md bg-primary px-4 py-2 font-semibold text-primary-foreground"
+                href={`/jobs/new?quoteId=${quote.id}`}
+              >
+                Create Job
+              </Link>
+            ) : (
+              <p className="mt-3 text-sm text-muted-foreground">
+                No linked job. The request must be eligible and you need job-conversion permission.
+              </p>
+            )}
           </section>
           {quote.estimateResult ? (
             <section className="rounded-lg border border-border bg-card p-5">

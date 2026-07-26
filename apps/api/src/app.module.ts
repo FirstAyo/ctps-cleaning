@@ -8,6 +8,7 @@ import { BeforeAfterModule } from "./before-after/before-after.module";
 import { QuoteRequestsModule } from "./quote-requests/quote-requests.module";
 import { EstimatorModule } from "./estimator/estimator.module";
 import { BlogModule } from "./blog/blog.module";
+import { JobsModule } from "./jobs/jobs.module";
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { BlogModule } from "./blog/blog.module";
     QuoteRequestsModule,
     EstimatorModule,
     BlogModule,
+    JobsModule,
     HealthModule,
   ],
 })

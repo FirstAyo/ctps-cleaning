@@ -46,5 +46,8 @@ describe("Phase 8 permission initialization", () => {
     expect(author).not.toContain(PERMISSION_KEYS.BLOG_POSTS_PUBLISH_ALL);
     expect(author).not.toContain(PERMISSION_KEYS.QUOTE_REQUESTS_READ);
     expect(author).not.toContain(PERMISSION_KEYS.PRICING_VERSIONS_READ);
+    expect(author).not.toContain(PERMISSION_KEYS.JOBS_READ);
+    expect(author).not.toContain(PERMISSION_KEYS.JOBS_READ_ASSIGNED);
+    expect(author).not.toContain(PERMISSION_KEYS.JOBS_UPLOAD_PRIVATE_MEDIA);
   });
 });

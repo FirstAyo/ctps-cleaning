@@ -82,6 +82,30 @@ export const PERMISSION_KEYS = {
   BLOG_REVISIONS_READ_ALL: "blogRevisions.readAll",
   BLOG_REVISIONS_RESTORE_OWN: "blogRevisions.restoreOwn",
   BLOG_REVISIONS_RESTORE_ALL: "blogRevisions.restoreAll",
+  JOBS_READ: "jobs.read",
+  JOBS_READ_ASSIGNED: "jobs.readAssigned",
+  JOBS_CREATE_FROM_QUOTE: "jobs.createFromQuote",
+  JOBS_CREATE_INTERNAL: "jobs.createInternal",
+  JOBS_UPDATE: "jobs.update",
+  JOBS_SCHEDULE: "jobs.schedule",
+  JOBS_RESCHEDULE: "jobs.reschedule",
+  JOBS_ASSIGN: "jobs.assign",
+  JOBS_CHANGE_STATUS: "jobs.changeStatus",
+  JOBS_CANCEL: "jobs.cancel",
+  JOBS_COMPLETE: "jobs.complete",
+  JOBS_CLOSE: "jobs.close",
+  JOBS_ARCHIVE: "jobs.archive",
+  JOBS_DELETE: "jobs.delete",
+  JOBS_ADD_INTERNAL_NOTES: "jobs.addInternalNotes",
+  JOBS_MANAGE_CHECKLIST: "jobs.manageChecklist",
+  JOBS_READ_PRIVATE_MEDIA: "jobs.readPrivateMedia",
+  JOBS_UPLOAD_PRIVATE_MEDIA: "jobs.uploadPrivateMedia",
+  JOBS_DELETE_PRIVATE_MEDIA: "jobs.deletePrivateMedia",
+  JOBS_MANAGE_INCIDENTS: "jobs.manageIncidents",
+  JOBS_VIEW_CALENDAR: "jobs.viewCalendar",
+  JOBS_MANAGE_CUSTOMER_NOTIFICATIONS: "jobs.manageCustomerNotifications",
+  JOBS_OVERRIDE_CONFLICTS: "jobs.overrideConflicts",
+  JOBS_OVERRIDE_COMPLETION: "jobs.overrideCompletion",
 } as const;
 
 export type PermissionKey = (typeof PERMISSION_KEYS)[keyof typeof PERMISSION_KEYS];
@@ -99,7 +123,8 @@ export type PermissionGroup =
   | "Blog Media"
   | "Blog Taxonomy"
   | "Authors"
-  | "Blog Revisions";
+  | "Blog Revisions"
+  | "Jobs";
 
 export interface PermissionDefinition {
   readonly key: PermissionKey;
@@ -550,6 +575,110 @@ export const PERMISSION_DEFINITIONS: readonly PermissionDefinition[] = [
     description,
     group: "Blog Revisions" as const,
   })),
+  ...(
+    [
+      [PERMISSION_KEYS.JOBS_READ, "Read jobs", "View all permitted operational jobs."],
+      [
+        PERMISSION_KEYS.JOBS_READ_ASSIGNED,
+        "Read assigned jobs",
+        "View jobs actively assigned to the current user.",
+      ],
+      [
+        PERMISSION_KEYS.JOBS_CREATE_FROM_QUOTE,
+        "Create jobs from quotes",
+        "Convert an eligible accepted quote into one operational job.",
+      ],
+      [
+        PERMISSION_KEYS.JOBS_CREATE_INTERNAL,
+        "Create internal jobs",
+        "Create a staff-entered job without fabricating a quote request.",
+      ],
+      [
+        PERMISSION_KEYS.JOBS_UPDATE,
+        "Update jobs",
+        "Edit operational scope and approved job snapshots.",
+      ],
+      [PERMISSION_KEYS.JOBS_SCHEDULE, "Schedule jobs", "Record the initial appointment schedule."],
+      [
+        PERMISSION_KEYS.JOBS_RESCHEDULE,
+        "Reschedule jobs",
+        "Change an appointment while preserving schedule history.",
+      ],
+      [
+        PERMISSION_KEYS.JOBS_ASSIGN,
+        "Assign jobs",
+        "Manage lead, crew, and coordinator assignments.",
+      ],
+      [
+        PERMISSION_KEYS.JOBS_CHANGE_STATUS,
+        "Change job status",
+        "Perform approved operational lifecycle transitions.",
+      ],
+      [PERMISSION_KEYS.JOBS_CANCEL, "Cancel jobs", "Cancel a job with a recorded reason."],
+      [
+        PERMISSION_KEYS.JOBS_COMPLETE,
+        "Complete jobs",
+        "Complete jobs after checklist, incident, and summary validation.",
+      ],
+      [PERMISSION_KEYS.JOBS_CLOSE, "Close jobs", "Close completed operational records."],
+      [PERMISSION_KEYS.JOBS_ARCHIVE, "Archive jobs", "Archive terminal operational records."],
+      [
+        PERMISSION_KEYS.JOBS_DELETE,
+        "Delete eligible jobs",
+        "Hard-delete only eligible Draft or Archived jobs.",
+      ],
+      [
+        PERMISSION_KEYS.JOBS_ADD_INTERNAL_NOTES,
+        "Add job notes",
+        "Manage staff-only operational notes.",
+      ],
+      [
+        PERMISSION_KEYS.JOBS_MANAGE_CHECKLIST,
+        "Manage job checklists",
+        "Create, order, and complete operational checklist items.",
+      ],
+      [
+        PERMISSION_KEYS.JOBS_READ_PRIVATE_MEDIA,
+        "Read private job media",
+        "View permission-protected operational photos.",
+      ],
+      [
+        PERMISSION_KEYS.JOBS_UPLOAD_PRIVATE_MEDIA,
+        "Upload private job media",
+        "Upload and process private operational photos.",
+      ],
+      [
+        PERMISSION_KEYS.JOBS_DELETE_PRIVATE_MEDIA,
+        "Delete private job media",
+        "Remove private operational photos safely.",
+      ],
+      [
+        PERMISSION_KEYS.JOBS_MANAGE_INCIDENTS,
+        "Manage job incidents",
+        "Record and resolve operational incidents.",
+      ],
+      [
+        PERMISSION_KEYS.JOBS_VIEW_CALENDAR,
+        "View job calendar",
+        "View protected day, week, and agenda schedules.",
+      ],
+      [
+        PERMISSION_KEYS.JOBS_MANAGE_CUSTOMER_NOTIFICATIONS,
+        "Manage job notifications",
+        "Queue approved customer scheduling notifications.",
+      ],
+      [
+        PERMISSION_KEYS.JOBS_OVERRIDE_CONFLICTS,
+        "Override scheduling conflicts",
+        "Override a detected staff conflict with a written reason.",
+      ],
+      [
+        PERMISSION_KEYS.JOBS_OVERRIDE_COMPLETION,
+        "Override completion requirements",
+        "Complete a job despite a blocking prerequisite with a written reason.",
+      ],
+    ] as const
+  ).map(([key, label, description]) => ({ key, label, description, group: "Jobs" as const })),
 ] as const;
 
 export const ALL_PERMISSION_KEYS = PERMISSION_DEFINITIONS.map(({ key }) => key);

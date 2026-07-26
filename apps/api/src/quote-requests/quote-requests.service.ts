@@ -378,6 +378,10 @@ export class QuoteRequestsService {
             lastErrorCode: true,
           },
         },
+        serviceJobs: {
+          select: { id: true, referenceNumber: true, status: true, scheduledStartAt: true },
+          orderBy: { createdAt: "desc" },
+        },
       },
     });
     if (!quote)

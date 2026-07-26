@@ -67,4 +67,10 @@ export interface QuoteDetail extends QuoteListItem {
     sentAt: string | null;
     lastErrorCode: string | null;
   }[];
+  serviceJobs: {
+    id: string;
+    referenceNumber: string;
+    status: string;
+    scheduledStartAt: string | null;
+  }[];
 }

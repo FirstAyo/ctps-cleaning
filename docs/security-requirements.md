@@ -32,6 +32,8 @@ Phase 8 stores only strict structured blocks and managed-media identifiers. Unkn
 
 Inject secrets at deployment, grant least privilege, rotate them, and never commit or expose them to browsers/logs. PostgreSQL accounts and networks use least privilege. Logs are structured and correlated but exclude passwords, tokens, secrets, upload content, private pricing, and unnecessary personal data. Audit sensitive actor/action/resource/time/outcome and safe change summaries; make audit records read-only to ordinary admins.
 
+Phase 9 job routes are authenticated and permission-scoped, with read-assigned checks, strict schemas, optimistic versions, legal transitions, cryptographically random references, server-derived UTC timestamps, and recorded conflict overrides. Job snapshots, notes, assignments, incidents, activity, and media have no public API. Images remain private-only and every delivery is authorized/no-store. Audit/outbox metadata excludes customer contact/address, internal bodies, paths, and tokens. See `jobs-scheduling-implementation.md`.
+
 ## Infrastructure and recovery
 
 Keep PostgreSQL/private storage off public ports, patch base images/host, run containers without unnecessary privileges, and restrict filesystem/network access. Use encrypted off-host database and media backups, defined retention, restore tests, monitoring, incident contacts, and documented recovery. HTTPS renewal and header checks must be monitored.

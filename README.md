@@ -1,9 +1,8 @@
 # CTPS Cleaning Website
 
-CTPS Cleaning is a VPS-portable public website, protected staff application, and API. Phases 1–7
-provide the monorepo and design foundations, staff authentication and authorization, the public
-marketing website, managed before-and-after and quote-request workflows, and the preliminary
-price estimator. Later business workflows are not implemented.
+CTPS Cleaning is a VPS-portable public website, protected staff application, and API. Phases 1–9
+provide the monorepo/design foundations, staff authentication and authorization, public marketing,
+before-and-after, quote, estimator, blog, and private operational jobs/scheduling workflows.
 
 ## Workspace
 
@@ -75,6 +74,8 @@ pnpm typecheck
 pnpm test
 pnpm build
 pnpm verify:runtime
+pnpm verify:jobs-runtime
+pnpm jobs:send-reminders
 ```
 
 Use `pnpm format` to apply formatting. Database helpers include `db:migrate`, development-only
@@ -104,3 +105,6 @@ explicitly unapproved Draft starting configuration. Phase 8 blog authoring, mana
 publishing, scheduling, public discovery, and operations are documented in
 `docs/blog-implementation.md`; run `pnpm blog:publish-due` from a VPS-compatible scheduler to
 publish due posts. Customer authentication and production deployment remain unimplemented.
+Phase 9 private operational jobs, Vancouver scheduling, assignments, fulfilment, private media,
+and outbox notifications are documented in `docs/jobs-scheduling-implementation.md`; run
+`pnpm jobs:send-reminders` from a VPS-compatible scheduler.

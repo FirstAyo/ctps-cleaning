@@ -34,6 +34,10 @@ Authorized staff opens a filtered request list, views only permitted customer da
 
 An Author creates a Draft, edits strict structured content/taxonomy/managed images/SEO, previews it through authenticated private delivery, and may publish, schedule, or archive their own post. The server validates ownership and optimistic version on every read and mutation. Due Scheduled posts are processed by the repeat-safe `pnpm blog:publish-due` CLI. Revision and publishing history remain visible; other staff content requires a separate all-content permission.
 
+## Staff operational fulfilment
+
+Authorized staff converts one eligible accepted quote—or creates a separately permissioned internal record—into a Draft job. Staff records a Vancouver appointment, resolves assignment conflicts, assigns a lead/crew, manages a private checklist, notes, photos, and incidents, then records arrival, service start, completion, follow-up, closing, and archiving. Customers do not log in, inspect availability, confirm, reschedule, cancel, pay, or track staff through the application.
+
 ## Super Admin access management
 
 The initial Super Admin is provisioned through a secure setup mechanism. A Super Admin creates/disables users, creates roles, groups and assigns permissions, and reviews confirmation/change summaries. The system prevents removal or disablement of the final active Super Admin and records an audit event.

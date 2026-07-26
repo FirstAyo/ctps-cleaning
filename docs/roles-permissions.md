@@ -51,6 +51,10 @@ Phase 7 adds `pricingVersions.read/create/update/publish/archive/delete`, `prici
 
 Phase 8 adds typed `blogPosts.*`, `blogMedia.*`, `blogCategories.*`, `blogTags.*`, `authorProfiles.*`, and `blogRevisions.*` permissions using explicit own/all pairs. Author defaults include `admin.access`; create/read/update/publish/schedule/archive/delete own posts; upload/read/update/delete own blog media; read taxonomy; read/update their own author profile; and read their own revisions. They receive no all-author or taxonomy-management permission. Initialization is additive and idempotent and does not remove existing assignments.
 
+## Phase 9 operational permissions
+
+Phase 9 adds granular `jobs.*` keys covering read/read-assigned, quote/internal creation, update, schedule/reschedule, assignment, lifecycle, completion, cancellation, closing, archiving/deletion, notes, checklist, private media, incidents, calendar, notifications, and conflict override. Super Admin receives all known keys. Admin receives none automatically. Author receives no job or private operational permission. No Worker system role is introduced; least-privilege operational access is assembled through configurable roles.
+
 ## Unresolved policy
 
 Later-feature permission catalogues, approval requirements, audit retention, support access, and whether certain pricing or publishing actions need two-person review remain future decisions. Phase 5 project/media and Phase 6 quote-request permissions are no longer unresolved.

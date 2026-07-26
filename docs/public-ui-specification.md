@@ -1,5 +1,7 @@
 # Public Website UI Specification
 
+Phase 9 adds no public job routes, availability, appointment confirmation, customer login, rescheduling, cancellation, payment, or tracking. Existing quote messaging may continue to explain that CTPS contacts customers after review.
+
 ## Purpose
 
 This specification defines the public screen structure, responsive behavior, states, and interactions. Phase 4 implements its marketing scope as recorded in `public-marketing-implementation.md`; Phase 5 implements the database-backed before-and-after experience recorded in `before-after-implementation.md`. Other business workflows remain planned.

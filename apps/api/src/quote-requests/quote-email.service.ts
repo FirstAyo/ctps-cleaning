@@ -97,11 +97,16 @@ export class QuoteEmailService {
   }
   async dispatchPending() {
     const requests = await this.database.client.emailOutbox.findMany({
-      where: { status: { in: ["PENDING", "FAILED"] }, attempts: { lt: 5 } },
+      where: {
+        quoteRequestId: { not: null },
+        status: { in: ["PENDING", "FAILED"] },
+        attempts: { lt: 5 },
+      },
       distinct: ["quoteRequestId"],
       take: 50,
       select: { quoteRequestId: true },
     });
-    for (const { quoteRequestId } of requests) await this.dispatchForRequest(quoteRequestId);
+    for (const { quoteRequestId } of requests)
+      if (quoteRequestId) await this.dispatchForRequest(quoteRequestId);
   }
 }

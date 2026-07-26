@@ -16,6 +16,7 @@ The planned platform will help visitors understand CTPS services, view credible 
 - Guest quote requests supporting one or more services, property and contact details, optional photos, preferred dates, consent, confirmation, and a unique reference number.
 - A deterministic estimator that returns preliminary minimum/maximum ranges and converts retained answers into a quote request.
 - A self-hosted blog with authors, workflow, taxonomy, media, revisions, scheduling, preview, search, feeds, sitemaps, and SEO. Public comments and discussion are excluded.
+- Private staff operational jobs created from eligible accepted quotes or separate staff entry, with Vancouver scheduling, assignments, fulfilment history, checklists, notes, incidents, and private media. This does not provide public direct booking or customer self-service.
 - Flexible Users -> Roles -> Permissions authorization, including a secure initial Super Admin setup and server enforcement.
 - A private/public media boundary and a migration path from VPS storage to S3-compatible storage.
 - Analytics and reporting are planned capabilities; exact measures and tooling remain unresolved.
@@ -42,4 +43,4 @@ The experience must be responsive, accessible, secure, privacy-preserving, SEO-c
 
 ## Out of scope or unresolved
 
-Public comments are excluded. Direct booking, customer accounts, job scheduling, staff assignment, and completion records are future possibilities. Authentication library, editor, analytics provider, SMTP vendor, storage provider, retention periods, upload limits, estimator rule catalogue, and exact performance targets require later decisions.
+Public comments, public direct booking, customer accounts, customer self-service scheduling, payments, invoicing, and public job tracking are excluded. Private staff job scheduling, assignment, and completion records are implemented in Phase 9. Analytics provider, SMTP vendor, storage provider, retention periods, malware scanning, and exact performance targets require later decisions.

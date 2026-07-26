@@ -15,6 +15,13 @@ export default async function ProtectedLayout({
     { href: "/dashboard", label: "Dashboard" },
     { href: "/account", label: "Account & sessions" },
   ];
+  if (
+    identity.permissions.includes("jobs.read") ||
+    identity.permissions.includes("jobs.readAssigned")
+  )
+    navigation.splice(2, 0, { href: "/jobs", label: "Jobs" });
+  if (identity.permissions.includes("jobs.viewCalendar"))
+    navigation.splice(3, 0, { href: "/jobs/calendar", label: "Job Calendar" });
   if (identity.permissions.includes("users.read"))
     navigation.push({ href: "/users", label: "Users" });
   if (identity.permissions.includes("roles.read"))

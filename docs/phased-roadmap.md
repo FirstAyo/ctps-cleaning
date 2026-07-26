@@ -40,9 +40,9 @@ Implemented configurable version/service/rule models, a deterministic integer-ce
 
 Implemented permission- and ownership-protected authoring for posts, profiles, categories/tags, strict structured content, managed private/public media, SEO, revisions, authenticated preview, explicit publishing, and durable scheduled publication. Public routes now provide Published-only search, article/category/tag/author pages, related posts, RSS, and dynamic sitemap discovery. No comments were added. See `blog-implementation.md`.
 
-## Phase 9 — Possible future job and scheduling management
+## Phase 9 — Operational jobs, scheduling, and service fulfilment (implemented)
 
-Only if later confirmed: jobs from accepted quotes, scheduling, staff assignment, status, completion records, and internal notes. This is not confirmed first-release scope.
+Implemented private staff scope includes eligible quote conversion, staff-created jobs, secure references, operational snapshots, lifecycle/history, Vancouver scheduling and conflicts, assignments, accessible list/calendar views, checklists, timing, separated notes, private media, incidents, completion/follow-up, cancellation/closing/archiving, outbox notifications, auditing, tests, and documentation. No public booking, customer account, payment/invoice, live availability, or public job tracker is included. See `jobs-scheduling-implementation.md`.
 
 ## Phase 10 — Quality assurance and VPS deployment
 
@@ -50,4 +50,4 @@ Complete accessibility, responsive/browser, security, and performance reviews; i
 
 ## Cross-phase gates
 
-Every phase must preserve VPS portability, private/public data boundaries, server authorization, accessibility, deterministic money handling, no fabricated content, tested migration/rollback plans where relevant, and honest documentation of what is actually shipped. Any protected administration added in Phases 5–8 must use the authentication, authorization, protected-route, admin-shell, Super Admin, and audit foundations completed in Phase 3; feature phases may extend those controls but must not defer or bypass them.
+Every phase must preserve VPS portability, private/public data boundaries, server authorization, accessibility, deterministic money handling, no fabricated content, tested migration/rollback plans where relevant, and honest documentation of what is actually shipped. Any protected administration added in Phases 5–9 must use the authentication, authorization, protected-route, admin-shell, Super Admin, and audit foundations completed in Phase 3; feature phases may extend those controls but must not defer or bypass them.

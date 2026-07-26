@@ -101,6 +101,27 @@ export const apiEnvironmentSchema = z
     BLOG_SEARCH_MAX_QUERY_LENGTH: positiveIntegerSchema.max(200).default(100),
     BLOG_PUBLIC_PAGE_SIZE: positiveIntegerSchema.max(50).default(12),
     BLOG_ADMIN_PAGE_SIZE: positiveIntegerSchema.max(100).default(20),
+    JOBS_ENABLED: booleanEnvironmentSchema.default(true),
+    JOBS_TIME_ZONE: z.literal("America/Vancouver").default("America/Vancouver"),
+    JOBS_DEFAULT_DURATION_MINUTES: positiveIntegerSchema.max(1440).default(180),
+    JOBS_MIN_DURATION_MINUTES: positiveIntegerSchema.max(1440).default(30),
+    JOBS_MAX_DURATION_MINUTES: positiveIntegerSchema.max(2880).default(960),
+    JOBS_ADMIN_PAGE_SIZE: positiveIntegerSchema.max(100).default(20),
+    JOBS_CALENDAR_RANGE_DAYS: positiveIntegerSchema.max(93).default(42),
+    JOBS_PRIVATE_MEDIA_ROOT: z.string().trim().min(1).default("../../storage/private/jobs"),
+    JOBS_MAX_UPLOAD_FILES: positiveIntegerSchema.max(20).default(10),
+    JOBS_MAX_FILE_BYTES: positiveIntegerSchema.max(25 * 1024 * 1024).default(10 * 1024 * 1024),
+    JOBS_MAX_TOTAL_UPLOAD_BYTES: positiveIntegerSchema
+      .max(100 * 1024 * 1024)
+      .default(50 * 1024 * 1024),
+    JOBS_MIN_IMAGE_WIDTH: positiveIntegerSchema.max(4000).default(600),
+    JOBS_MIN_IMAGE_HEIGHT: positiveIntegerSchema.max(4000).default(400),
+    JOBS_MAX_IMAGE_WIDTH: positiveIntegerSchema.max(20000).default(12000),
+    JOBS_MAX_IMAGE_HEIGHT: positiveIntegerSchema.max(20000).default(12000),
+    JOBS_IMAGE_QUALITY: z.coerce.number().int().min(40).max(95).default(82),
+    JOBS_REFERENCE_PREFIX: z.literal("JOB").default("JOB"),
+    JOBS_REMINDER_HOURS_BEFORE: positiveIntegerSchema.max(168).default(24),
+    JOBS_REMINDER_BATCH_SIZE: positiveIntegerSchema.max(100).default(25),
     QUOTE_MAX_UPLOAD_FILES: positiveIntegerSchema.max(20).default(8),
     QUOTE_MAX_FILE_BYTES: positiveIntegerSchema.max(25 * 1024 * 1024).default(8 * 1024 * 1024),
     QUOTE_MAX_TOTAL_UPLOAD_BYTES: positiveIntegerSchema
@@ -156,6 +177,30 @@ export const apiEnvironmentSchema = z
         code: "custom",
         path: ["BLOG_MAX_TOTAL_UPLOAD_BYTES"],
         message: "Total blog upload limit must be at least the per-file limit",
+      });
+    }
+    if (value.JOBS_MAX_TOTAL_UPLOAD_BYTES < value.JOBS_MAX_FILE_BYTES) {
+      context.addIssue({
+        code: "custom",
+        path: ["JOBS_MAX_TOTAL_UPLOAD_BYTES"],
+        message: "Total job-media upload limit must be at least the per-file limit",
+      });
+    }
+    if (value.JOBS_MAX_DURATION_MINUTES < value.JOBS_MIN_DURATION_MINUTES) {
+      context.addIssue({
+        code: "custom",
+        path: ["JOBS_MAX_DURATION_MINUTES"],
+        message: "Maximum job duration must exceed minimum duration",
+      });
+    }
+    if (
+      value.JOBS_MAX_IMAGE_WIDTH < value.JOBS_MIN_IMAGE_WIDTH ||
+      value.JOBS_MAX_IMAGE_HEIGHT < value.JOBS_MIN_IMAGE_HEIGHT
+    ) {
+      context.addIssue({
+        code: "custom",
+        path: ["JOBS_MAX_IMAGE_WIDTH"],
+        message: "Maximum job-image dimensions must exceed minimum dimensions",
       });
     }
     if (
@@ -892,3 +937,247 @@ export type BlogTaxonomyInput = z.infer<typeof blogTaxonomySchema>;
 export type BlogTagInput = z.infer<typeof blogTagSchema>;
 export type AuthorProfileInput = z.infer<typeof authorProfileSchema>;
 export type BlogMediaUpdateInput = z.infer<typeof blogMediaUpdateSchema>;
+
+export const serviceJobStatusSchema = z.enum([
+  "DRAFT",
+  "READY_TO_SCHEDULE",
+  "SCHEDULED",
+  "CONFIRMED",
+  "EN_ROUTE",
+  "ARRIVED",
+  "IN_PROGRESS",
+  "PAUSED",
+  "COMPLETED",
+  "FOLLOW_UP_REQUIRED",
+  "CANCELLED",
+  "CLOSED",
+  "ARCHIVED",
+]);
+export const serviceJobAssignmentRoleSchema = z.enum(["LEAD", "CREW_MEMBER", "COORDINATOR"]);
+export const serviceJobChecklistCategorySchema = z.enum([
+  "PREPARATION",
+  "ARRIVAL",
+  "SERVICE",
+  "SAFETY",
+  "CLEANUP",
+  "COMPLETION",
+]);
+export const serviceJobMediaCategorySchema = z.enum([
+  "BEFORE",
+  "DURING",
+  "AFTER",
+  "ACCESS",
+  "ISSUE",
+  "COMPLETION",
+  "OTHER",
+]);
+export const serviceJobIncidentSeveritySchema = z.enum(["LOW", "MEDIUM", "HIGH", "CRITICAL"]);
+const vancouverLocalDateTimeSchema = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/, "Use an unambiguous Vancouver local date and time");
+const jobServiceSchema = z
+  .object({
+    serviceKey: quoteServiceKeySchema,
+    scopeSummary: safeText(2000).optional().default(""),
+  })
+  .strict();
+const jobCustomerSchema = z
+  .object({
+    customerType: z.enum(["RESIDENTIAL", "COMMERCIAL"]),
+    customerName: safeText(120).min(2),
+    customerEmail: z.email().max(254),
+    customerPhone: safeText(32).min(7),
+    companyName: safeText(160).optional().nullable(),
+    propertyAddressLine1: safeText(160).min(3),
+    propertyAddressLine2: safeText(160).optional().nullable(),
+    city: safeText(80).min(2),
+    serviceAreaKey: quoteServiceAreaKeySchema,
+    province: z.literal("British Columbia"),
+    postalCode: safeText(16).min(3),
+    propertyType: safeText(80).min(2),
+  })
+  .strict();
+export const createInternalServiceJobSchema = jobCustomerSchema
+  .extend({
+    services: z.array(jobServiceSchema).min(1).max(10),
+    serviceScopeSummary: safeText(4000).min(3),
+    accessNotes: safeText(3000).optional().nullable(),
+    customerSchedulingNotes: safeText(3000).optional().nullable(),
+    internalOperationalNotes: safeText(5000).optional().nullable(),
+  })
+  .strict();
+export const convertQuoteToServiceJobSchema = z
+  .object({
+    confirmExternalAcceptance: z.boolean().default(false),
+    serviceScopeSummary: safeText(4000).min(3),
+  })
+  .strict();
+export const updateServiceJobSchema = z
+  .object({
+    version: z.number().int().positive(),
+    serviceScopeSummary: safeText(4000).optional(),
+    accessNotes: safeText(3000).optional().nullable(),
+    customerSchedulingNotes: safeText(3000).optional().nullable(),
+    internalOperationalNotes: safeText(5000).optional().nullable(),
+    followUpRequired: z.boolean().optional(),
+    followUpNotes: safeText(3000).optional().nullable(),
+  })
+  .strict();
+export const serviceJobScheduleSchema = z
+  .object({
+    version: z.number().int().positive(),
+    startLocal: vancouverLocalDateTimeSchema,
+    estimatedDurationMinutes: z.number().int().min(30).max(960),
+    reason: safeText(1000).min(3),
+    disambiguation: z.enum(["earlier", "later"]).optional(),
+    overrideConflict: z.boolean().default(false),
+    conflictOverrideReason: safeText(1000).optional(),
+  })
+  .strict()
+  .superRefine((value, context) => {
+    if (value.overrideConflict && !value.conflictOverrideReason)
+      context.addIssue({
+        code: "custom",
+        path: ["conflictOverrideReason"],
+        message: "A written conflict-override reason is required",
+      });
+  });
+export const serviceJobAssignmentSchema = z
+  .object({
+    userId: identifierSchema,
+    assignmentRole: serviceJobAssignmentRoleSchema,
+    notes: safeText(1000).optional(),
+  })
+  .strict();
+export const serviceJobStatusTransitionSchema = z
+  .object({
+    version: z.number().int().positive(),
+    status: serviceJobStatusSchema,
+    reason: safeText(1000).optional(),
+    overrideReason: safeText(1000).optional(),
+  })
+  .strict();
+export const serviceJobCompletionSchema = z
+  .object({
+    version: z.number().int().positive(),
+    completionSummary: safeText(4000).min(10),
+    followUpRequired: z.boolean().default(false),
+    followUpNotes: safeText(3000).optional(),
+    overrideReason: safeText(1000).optional(),
+  })
+  .strict();
+export const serviceJobCancellationSchema = z
+  .object({
+    version: z.number().int().positive(),
+    reason: safeText(1000).min(5),
+    customerNote: safeText(3000).optional(),
+    notifyCustomer: z.boolean().default(false),
+  })
+  .strict();
+export const serviceJobChecklistItemSchema = z
+  .object({
+    label: safeText(200).min(2),
+    description: safeText(1000).optional(),
+    category: serviceJobChecklistCategorySchema,
+    required: z.boolean().default(false),
+    notes: safeText(1000).optional(),
+  })
+  .strict();
+export const serviceJobChecklistUpdateSchema = z
+  .object({
+    version: z.number().int().positive(),
+    completed: z.boolean().optional(),
+    label: safeText(200).min(2).optional(),
+    description: safeText(1000).optional().nullable(),
+    required: z.boolean().optional(),
+    notes: safeText(1000).optional().nullable(),
+    direction: z.enum(["up", "down"]).optional(),
+  })
+  .strict();
+export const serviceJobNoteSchema = z
+  .object({ visibility: z.enum(["INTERNAL", "CUSTOMER_FACING"]), body: safeText(3000).min(2) })
+  .strict();
+export const serviceJobNoteUpdateSchema = z.object({ body: safeText(3000).min(2) }).strict();
+export const serviceJobIncidentSchema = z
+  .object({
+    title: safeText(200).min(2),
+    description: safeText(3000).min(2),
+    severity: serviceJobIncidentSeveritySchema,
+    blocksCompletion: z.boolean().default(false),
+  })
+  .strict();
+export const serviceJobIncidentUpdateSchema = z
+  .object({ resolutionNotes: safeText(2000).min(3), resolved: z.boolean() })
+  .strict();
+export const serviceJobMediaMetadataSchema = z
+  .object({
+    category: serviceJobMediaCategorySchema,
+    altText: safeText(300).default(""),
+    caption: safeText(500).optional().nullable(),
+  })
+  .strict();
+export const serviceJobMediaUpdateSchema = z
+  .object({
+    category: serviceJobMediaCategorySchema.optional(),
+    altText: safeText(300).optional(),
+    caption: safeText(500).optional().nullable(),
+    direction: z.enum(["up", "down"]).optional(),
+  })
+  .strict()
+  .refine(
+    (value) => Object.values(value).some((entry) => entry !== undefined),
+    "At least one media field must be updated",
+  );
+export const serviceJobListQuerySchema = paginationSchema.extend({
+  search: safeText(100).optional(),
+  status: serviceJobStatusSchema.optional(),
+  serviceKey: quoteServiceKeySchema.optional(),
+  serviceAreaKey: quoteServiceAreaKeySchema.optional(),
+  assignedUserId: identifierSchema.optional(),
+  scheduledFrom: z.iso.datetime({ offset: true }).optional(),
+  scheduledTo: z.iso.datetime({ offset: true }).optional(),
+  followUpRequired: z
+    .enum(["true", "false"])
+    .transform((value) => value === "true")
+    .optional(),
+  archived: z
+    .enum(["true", "false"])
+    .transform((value) => value === "true")
+    .default(false),
+});
+export const serviceJobCalendarQuerySchema = z
+  .object({
+    from: z.iso.datetime({ offset: true }),
+    to: z.iso.datetime({ offset: true }),
+    status: serviceJobStatusSchema.optional(),
+    assignedUserId: identifierSchema.optional(),
+    serviceKey: quoteServiceKeySchema.optional(),
+    serviceAreaKey: quoteServiceAreaKeySchema.optional(),
+  })
+  .strict();
+export const serviceJobNotificationSchema = z
+  .object({
+    type: z.enum(["SCHEDULED", "RESCHEDULED", "CANCELLED", "COMPLETED"]),
+    idempotencyKey: z.uuid(),
+  })
+  .strict();
+
+export type CreateInternalServiceJobInput = z.infer<typeof createInternalServiceJobSchema>;
+export type ConvertQuoteToServiceJobInput = z.infer<typeof convertQuoteToServiceJobSchema>;
+export type UpdateServiceJobInput = z.infer<typeof updateServiceJobSchema>;
+export type ServiceJobScheduleInput = z.infer<typeof serviceJobScheduleSchema>;
+export type ServiceJobAssignmentInput = z.infer<typeof serviceJobAssignmentSchema>;
+export type ServiceJobStatusTransitionInput = z.infer<typeof serviceJobStatusTransitionSchema>;
+export type ServiceJobCompletionInput = z.infer<typeof serviceJobCompletionSchema>;
+export type ServiceJobCancellationInput = z.infer<typeof serviceJobCancellationSchema>;
+export type ServiceJobChecklistItemInput = z.infer<typeof serviceJobChecklistItemSchema>;
+export type ServiceJobChecklistUpdateInput = z.infer<typeof serviceJobChecklistUpdateSchema>;
+export type ServiceJobNoteInput = z.infer<typeof serviceJobNoteSchema>;
+export type ServiceJobNoteUpdateInput = z.infer<typeof serviceJobNoteUpdateSchema>;
+export type ServiceJobIncidentInput = z.infer<typeof serviceJobIncidentSchema>;
+export type ServiceJobIncidentUpdateInput = z.infer<typeof serviceJobIncidentUpdateSchema>;
+export type ServiceJobMediaMetadataInput = z.infer<typeof serviceJobMediaMetadataSchema>;
+export type ServiceJobMediaUpdateInput = z.infer<typeof serviceJobMediaUpdateSchema>;
+export type ServiceJobListQuery = z.infer<typeof serviceJobListQuerySchema>;
+export type ServiceJobCalendarQuery = z.infer<typeof serviceJobCalendarQuerySchema>;
+export type ServiceJobNotificationInput = z.infer<typeof serviceJobNotificationSchema>;

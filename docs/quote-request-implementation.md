@@ -1,5 +1,7 @@
 # Quote Request Implementation
 
+Phase 9 allows eligible Accepted requests—or Quote Prepared/Contacted requests with explicit staff confirmation of external acceptance—to be converted once into a protected operational job. Conversion preserves the quote and copies only approved snapshots. Quote detail displays the linked job without exposing it publicly.
+
 ## Scope and outcome
 
 Phase 6 implements a guest quote-request workflow for residential and commercial customers. A request may contain multiple approved services, server-validated typed answers, property and contact details, up to three preferred dates, consent, notes, and optional private images. Successful submission creates a durable record and `CTPS-YYYY-XXXXXXXX` reference. It confirms receipt only; no price, estimate, appointment, payment, job, or customer account is created.
@@ -98,4 +100,4 @@ The validated variables are documented in `.env.example`: private root; draft TT
 
 Strict typecheck, lint, unit/functional/security tests, production builds, migration status, and local runtime checks form the Phase 6 verification set. Tests cover typed question validation, invalid areas, honeypot/consent, token/origin controls, throttle behavior, idempotent replay, confirmation-token lookup, invalid image boundaries, permission enforcement, workflow transitions, and email-failure durability.
 
-Before production, CTPS must approve final privacy/legal wording, retention and secure-deletion periods, malware-scanning policy, real sender/recipient/SMTP credentials, delivery retry/alert operations, and backup/restore results. Phase 7 now permits a short-lived opaque estimator transfer to prefill allowlisted compatible fields. The quote API revalidates it, stores an informational immutable estimate snapshot, and records Matched, Inputs Changed, or Expired without blocking submission. Booking, payment, customer authentication, job scheduling, blog management, and public customer-photo behavior remain excluded.
+Before production, CTPS must approve final privacy/legal wording, retention and secure-deletion periods, malware-scanning policy, real sender/recipient/SMTP credentials, delivery retry/alert operations, and backup/restore results. Phase 7 permits a short-lived opaque estimator transfer to prefill allowlisted compatible fields. The quote API revalidates it, stores an informational immutable estimate snapshot, and records Matched, Inputs Changed, or Expired without blocking submission. Phase 9 permits protected staff conversion into an operational job. Public booking, payment, customer authentication, customer self-service scheduling, and public customer-photo behavior remain excluded.

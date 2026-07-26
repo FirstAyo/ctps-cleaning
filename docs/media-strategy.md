@@ -19,6 +19,8 @@ Phase 6 quote uploads use `storage/private/quote-requests` and a quote-specific 
 
 Phase 8 blog uploads use isolated `storage/private/blog` and `storage/public/blog` roots and blog-specific metadata/references. Draft and Scheduled images remain private. Publication creates public visibility; unpublish/archive returns an asset to private storage only when no other Published post or meaningful public author profile references it. Variants are normalized WebP `original`, `featured`, `article-large`, `article-standard`, and `thumbnail` files under generated UUID directories. Blog assets are never sourced from quote requests or before-and-after storage. See `blog-implementation.md`.
 
+Phase 9 operational photos use the separate `storage/private/jobs` namespace. They remain private for every lifecycle state, are re-encoded into managed WebP variants, and are streamed only after job and private-media authorization. There is no public job-media route or automatic portfolio transfer. Future marketing reuse requires a distinct consent-reviewed copy workflow. See `jobs-scheduling-implementation.md`.
+
 Metadata should record owner/uploader, classification, purpose, original name (safely handled), detected MIME type, byte size, dimensions, checksum, storage key/provider, alt text/caption where relevant, variants, references, timestamps, and lifecycle status. Do not expose internal storage keys as authorization.
 
 ## Upload pipeline

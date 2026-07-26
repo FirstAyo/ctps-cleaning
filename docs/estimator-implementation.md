@@ -1,5 +1,7 @@
 # Phase 7 preliminary estimator implementation
 
+Phase 9 may show an existing estimate snapshot on protected job detail only as historical, non-binding context labelled “Preliminary estimate — not a final quote.” It is never treated as a job price, invoice, charge, or payment request.
+
 ## Public workflow and result contract
 
 `/estimate` is a six-step, one-service workflow: service, customer type, approved British Columbia area, service-specific answers, review, and calculation. The API is authoritative. It either returns a CAD range or `MANUAL_REVIEW`; neither outcome is a quote, offer, booking, guarantee, tax calculation, or final price. Result pages expose approved driver labels, assumptions, exclusions, version code, disclaimer, and expiry—not rule values or the internal trace. When no single effective Published version exists, the UI fails closed and links to the quote request.
@@ -38,4 +40,4 @@ Public endpoints are configuration, calculate, tokenized result, quote-transfer 
 
 The UI uses semantic fieldsets/labels, keyboard-operable controls, visible focus inherited from the design system, live error/status regions, mobile-first layouts, and text in addition to colour. Result pages are dynamic and `noindex`; `/estimate` remains in the sitemap. Local setup is `pnpm db:start`, `pnpm db:generate`, `pnpm db:migrate`, `pnpm auth:initialize`, optional Draft initialization, and the normal quality commands.
 
-Known limitations: CTPS must approve real prices, legal wording, retention, and all rule combinations; the current admin preview surface is intentionally conservative; formal quote preparation, booking, payment, customer accounts, and job/scheduling management remain deferred.
+Known limitations: CTPS must approve real prices, legal wording, retention, and all rule combinations; the current admin preview surface is intentionally conservative; formal quote preparation, public booking, payment, customer accounts, and invoicing remain deferred. Phase 9 adds private operational scheduling without treating an estimate as a final price.

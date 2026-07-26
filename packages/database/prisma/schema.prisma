@@ -142,6 +142,66 @@ enum BlogMediaVariantKind {
   THUMBNAIL
 }
 
+enum ServiceJobStatus {
+  DRAFT
+  READY_TO_SCHEDULE
+  SCHEDULED
+  CONFIRMED
+  EN_ROUTE
+  ARRIVED
+  IN_PROGRESS
+  PAUSED
+  COMPLETED
+  FOLLOW_UP_REQUIRED
+  CANCELLED
+  CLOSED
+  ARCHIVED
+}
+
+enum ServiceJobAssignmentRole {
+  LEAD
+  CREW_MEMBER
+  COORDINATOR
+}
+
+enum ServiceJobChecklistCategory {
+  PREPARATION
+  ARRIVAL
+  SERVICE
+  SAFETY
+  CLEANUP
+  COMPLETION
+}
+
+enum ServiceJobNoteVisibility {
+  INTERNAL
+  CUSTOMER_FACING
+}
+
+enum ServiceJobMediaCategory {
+  BEFORE
+  DURING
+  AFTER
+  ACCESS
+  ISSUE
+  COMPLETION
+  OTHER
+}
+
+enum ServiceJobMediaVariantKind {
+  ORIGINAL
+  LARGE
+  STANDARD
+  THUMBNAIL
+}
+
+enum ServiceJobIncidentSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
 model User {
   id                         String                      @id @default(uuid()) @db.Uuid
   email                      String                      @unique @db.VarChar(254)
@@ -169,6 +229,19 @@ model User {
   blogRevisions              BlogPostRevision[]           @relation("BlogRevisionActor")
   uploadedBlogMedia          BlogMediaAsset[]             @relation("BlogMediaUploader")
   authorProfile              AuthorProfile?
+  createdServiceJobs         ServiceJob[]                 @relation("ServiceJobCreatedBy")
+  updatedServiceJobs         ServiceJob[]                 @relation("ServiceJobUpdatedBy")
+  coordinatedServiceJobs     ServiceJob[]                 @relation("ServiceJobCoordinator")
+  serviceJobAssignments      ServiceJobAssignment[]       @relation("ServiceJobAssignee")
+  assignedServiceJobs        ServiceJobAssignment[]       @relation("ServiceJobAssignedBy")
+  serviceJobScheduleChanges  ServiceJobScheduleHistory[]  @relation("ServiceJobScheduleActor")
+  serviceJobStatusChanges    ServiceJobStatusHistory[]    @relation("ServiceJobStatusActor")
+  serviceJobNotes            ServiceJobNote[]             @relation("ServiceJobNoteAuthor")
+  completedChecklistItems    ServiceJobChecklistItem[]    @relation("ServiceJobChecklistCompleter")
+  uploadedServiceJobMedia    ServiceJobMedia[]             @relation("ServiceJobMediaUploader")
+  reportedServiceIncidents   ServiceJobIncident[]          @relation("ServiceJobIncidentReporter")
+  resolvedServiceIncidents   ServiceJobIncident[]          @relation("ServiceJobIncidentResolver")
+  serviceJobActivities       ServiceJobActivity[]          @relation("ServiceJobActivityActor")
 
   @@index([status])
   @@index([createdAt])
@@ -410,6 +483,7 @@ model QuoteRequest {
   estimateMatchStatus    EstimateMatchStatus         @default(NOT_LINKED)
   estimateSnapshot       Json?
   estimateResult         EstimateResult?             @relation(fields: [estimateResultId], references: [id], onDelete: SetNull)
+  serviceJobs            ServiceJob[]
 
   @@index([status, createdAt(sort: Desc)])
   @@index([assignedToUserId, status])
@@ -581,7 +655,9 @@ model PublicRequestThrottle {
 
 model EmailOutbox {
   id             String            @id @default(uuid()) @db.Uuid
-  quoteRequestId String            @db.Uuid
+  quoteRequestId String?           @db.Uuid
+  serviceJobId   String?           @db.Uuid
+  deduplicationKey String?         @unique @db.VarChar(160)
   templateKey    String            @db.VarChar(64)
   recipient      String            @db.VarChar(254)
   payload        Json
@@ -591,10 +667,249 @@ model EmailOutbox {
   sentAt         DateTime?
   createdAt      DateTime          @default(now())
   updatedAt      DateTime          @updatedAt
-  quoteRequest   QuoteRequest      @relation(fields: [quoteRequestId], references: [id], onDelete: Cascade)
+  quoteRequest   QuoteRequest?     @relation(fields: [quoteRequestId], references: [id], onDelete: Cascade)
+  serviceJob     ServiceJob?       @relation(fields: [serviceJobId], references: [id], onDelete: Cascade)
 
   @@index([status, createdAt])
   @@index([quoteRequestId])
+  @@index([serviceJobId, createdAt(sort: Desc)])
+}
+
+model ServiceJob {
+  id                         String                    @id @default(uuid()) @db.Uuid
+  referenceNumber            String                    @unique @db.VarChar(22)
+  quoteRequestId             String?                   @unique @db.Uuid
+  status                     ServiceJobStatus          @default(DRAFT)
+  customerType               QuotePropertyType
+  customerNameSnapshot       String                    @db.VarChar(120)
+  customerEmailSnapshot      String                    @db.VarChar(254)
+  customerPhoneSnapshot      String                    @db.VarChar(32)
+  companyNameSnapshot        String?                   @db.VarChar(160)
+  propertyAddressLine1Snapshot String                  @db.VarChar(160)
+  propertyAddressLine2Snapshot String?                 @db.VarChar(160)
+  citySnapshot               String                    @db.VarChar(80)
+  serviceAreaKey             String                    @db.VarChar(64)
+  province                   String                    @default("British Columbia") @db.VarChar(40)
+  postalCodeSnapshot         String                    @db.VarChar(16)
+  propertyTypeSnapshot       String                    @db.VarChar(80)
+  accessNotes                String?                   @db.VarChar(3000)
+  serviceScopeSummary        String                    @db.VarChar(4000)
+  customerSchedulingNotes    String?                   @db.VarChar(3000)
+  internalOperationalNotes   String?                   @db.VarChar(5000)
+  scheduledStartAt           DateTime?
+  scheduledEndAt             DateTime?
+  estimatedDurationMinutes   Int?
+  actualArrivalAt            DateTime?
+  actualStartAt              DateTime?
+  actualEndAt                DateTime?
+  completionSummary          String?                   @db.VarChar(4000)
+  cancellationReason         String?                   @db.VarChar(1000)
+  followUpRequired           Boolean                   @default(false)
+  followUpNotes              String?                   @db.VarChar(3000)
+  conflictOverrideReason     String?                   @db.VarChar(1000)
+  assignedCoordinatorUserId  String?                   @db.Uuid
+  createdByUserId            String                    @db.Uuid
+  updatedByUserId            String                    @db.Uuid
+  version                    Int                       @default(1)
+  completedAt                DateTime?
+  closedAt                   DateTime?
+  archivedAt                 DateTime?
+  cancelledAt                DateTime?
+  createdAt                  DateTime                  @default(now())
+  updatedAt                  DateTime                  @updatedAt
+  quoteRequest               QuoteRequest?             @relation(fields: [quoteRequestId], references: [id], onDelete: Restrict)
+  coordinator                User?                     @relation("ServiceJobCoordinator", fields: [assignedCoordinatorUserId], references: [id], onDelete: SetNull)
+  createdBy                  User                      @relation("ServiceJobCreatedBy", fields: [createdByUserId], references: [id], onDelete: Restrict)
+  updatedBy                  User                      @relation("ServiceJobUpdatedBy", fields: [updatedByUserId], references: [id], onDelete: Restrict)
+  services                   ServiceJobService[]
+  assignments                ServiceJobAssignment[]
+  scheduleHistory            ServiceJobScheduleHistory[]
+  statusHistory              ServiceJobStatusHistory[]
+  notes                      ServiceJobNote[]
+  checklistItems             ServiceJobChecklistItem[]
+  media                      ServiceJobMedia[]
+  incidents                  ServiceJobIncident[]
+  activities                 ServiceJobActivity[]
+  emailMessages              EmailOutbox[]
+
+  @@index([status, scheduledStartAt])
+  @@index([scheduledStartAt, scheduledEndAt])
+  @@index([quoteRequestId, status])
+  @@index([serviceAreaKey, scheduledStartAt])
+  @@index([followUpRequired, status])
+  @@index([archivedAt, updatedAt(sort: Desc)])
+}
+
+model ServiceJobService {
+  id           String     @id @default(uuid()) @db.Uuid
+  jobId        String     @db.Uuid
+  serviceKey   String     @db.VarChar(64)
+  scopeSummary String?    @db.VarChar(2000)
+  sortOrder    Int
+  createdAt    DateTime   @default(now())
+  job          ServiceJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@unique([jobId, serviceKey])
+  @@unique([jobId, sortOrder])
+  @@index([serviceKey, jobId])
+}
+
+model ServiceJobAssignment {
+  id               String                   @id @default(uuid()) @db.Uuid
+  jobId            String                   @db.Uuid
+  userId           String                   @db.Uuid
+  assignmentRole   ServiceJobAssignmentRole
+  assignedAt       DateTime                 @default(now())
+  assignedByUserId String                   @db.Uuid
+  unassignedAt     DateTime?
+  notes            String?                  @db.VarChar(1000)
+  job              ServiceJob               @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  user             User                     @relation("ServiceJobAssignee", fields: [userId], references: [id], onDelete: Restrict)
+  assignedBy       User                     @relation("ServiceJobAssignedBy", fields: [assignedByUserId], references: [id], onDelete: Restrict)
+
+  @@index([jobId, unassignedAt])
+  @@index([userId, unassignedAt])
+}
+
+model ServiceJobScheduleHistory {
+  id                String     @id @default(uuid()) @db.Uuid
+  jobId             String     @db.Uuid
+  previousStartAt   DateTime?
+  previousEndAt     DateTime?
+  newStartAt        DateTime
+  newEndAt          DateTime
+  changedByUserId   String     @db.Uuid
+  reason            String     @db.VarChar(1000)
+  conflictOverridden Boolean   @default(false)
+  createdAt         DateTime   @default(now())
+  job               ServiceJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  changedBy         User       @relation("ServiceJobScheduleActor", fields: [changedByUserId], references: [id], onDelete: Restrict)
+
+  @@index([jobId, createdAt(sort: Desc)])
+}
+
+model ServiceJobStatusHistory {
+  id              String            @id @default(uuid()) @db.Uuid
+  jobId           String            @db.Uuid
+  previousStatus  ServiceJobStatus
+  newStatus       ServiceJobStatus
+  changedByUserId String            @db.Uuid
+  reason          String?           @db.VarChar(1000)
+  createdAt       DateTime          @default(now())
+  job             ServiceJob        @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  changedBy       User              @relation("ServiceJobStatusActor", fields: [changedByUserId], references: [id], onDelete: Restrict)
+
+  @@index([jobId, createdAt(sort: Desc)])
+}
+
+model ServiceJobNote {
+  id         String                   @id @default(uuid()) @db.Uuid
+  jobId      String                   @db.Uuid
+  authorUserId String                 @db.Uuid
+  visibility ServiceJobNoteVisibility
+  body       String                   @db.VarChar(3000)
+  createdAt  DateTime                 @default(now())
+  updatedAt  DateTime                 @updatedAt
+  deletedAt  DateTime?
+  job        ServiceJob               @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  author     User                     @relation("ServiceJobNoteAuthor", fields: [authorUserId], references: [id], onDelete: Restrict)
+
+  @@index([jobId, visibility, createdAt(sort: Desc)])
+}
+
+model ServiceJobChecklistItem {
+  id                String                      @id @default(uuid()) @db.Uuid
+  jobId             String                      @db.Uuid
+  label             String                      @db.VarChar(200)
+  description       String?                     @db.VarChar(1000)
+  category          ServiceJobChecklistCategory
+  required          Boolean                     @default(false)
+  completed         Boolean                     @default(false)
+  completedAt       DateTime?
+  completedByUserId String?                     @db.Uuid
+  sortOrder         Int
+  notes             String?                     @db.VarChar(1000)
+  createdAt         DateTime                    @default(now())
+  updatedAt         DateTime                    @updatedAt
+  job               ServiceJob                  @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  completedBy       User?                       @relation("ServiceJobChecklistCompleter", fields: [completedByUserId], references: [id], onDelete: SetNull)
+
+  @@unique([jobId, sortOrder])
+  @@index([jobId, completed, required])
+}
+
+model ServiceJobMedia {
+  id               String                  @id @default(uuid()) @db.Uuid
+  jobId            String                  @db.Uuid
+  storageKey       String                  @unique @db.VarChar(260)
+  originalFilename String                  @db.VarChar(255)
+  mimeType         String                  @db.VarChar(100)
+  sizeBytes        Int
+  width            Int
+  height           Int
+  checksum         String                  @db.Char(64)
+  category         ServiceJobMediaCategory
+  altText          String                  @default("") @db.VarChar(300)
+  caption          String?                 @db.VarChar(500)
+  sortOrder        Int
+  uploadedByUserId String                  @db.Uuid
+  createdAt        DateTime                @default(now())
+  removedAt        DateTime?
+  job              ServiceJob              @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  uploader         User                    @relation("ServiceJobMediaUploader", fields: [uploadedByUserId], references: [id], onDelete: Restrict)
+  variants         ServiceJobMediaVariant[]
+
+  @@unique([jobId, sortOrder])
+  @@index([jobId, category, removedAt])
+}
+
+model ServiceJobMediaVariant {
+  id         String                     @id @default(uuid()) @db.Uuid
+  mediaId    String                     @db.Uuid
+  kind       ServiceJobMediaVariantKind
+  storageKey String                     @unique @db.VarChar(280)
+  mimeType   String                     @db.VarChar(100)
+  sizeBytes  Int
+  width      Int
+  height     Int
+  createdAt  DateTime                   @default(now())
+  media      ServiceJobMedia            @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+  @@unique([mediaId, kind])
+  @@index([mediaId])
+}
+
+model ServiceJobIncident {
+  id               String                     @id @default(uuid()) @db.Uuid
+  jobId            String                     @db.Uuid
+  title            String                     @db.VarChar(200)
+  description      String                     @db.VarChar(3000)
+  severity         ServiceJobIncidentSeverity
+  blocksCompletion Boolean                    @default(false)
+  reportedByUserId String                     @db.Uuid
+  resolvedAt       DateTime?
+  resolvedByUserId String?                    @db.Uuid
+  resolutionNotes  String?                    @db.VarChar(2000)
+  createdAt        DateTime                   @default(now())
+  updatedAt        DateTime                   @updatedAt
+  job              ServiceJob                 @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  reportedBy       User                       @relation("ServiceJobIncidentReporter", fields: [reportedByUserId], references: [id], onDelete: Restrict)
+  resolvedBy       User?                      @relation("ServiceJobIncidentResolver", fields: [resolvedByUserId], references: [id], onDelete: SetNull)
+
+  @@index([jobId, blocksCompletion, resolvedAt])
+}
+
+model ServiceJobActivity {
+  id          String     @id @default(uuid()) @db.Uuid
+  jobId       String     @db.Uuid
+  actorUserId String?    @db.Uuid
+  action      String     @db.VarChar(100)
+  metadata    Json?
+  createdAt   DateTime   @default(now())
+  job         ServiceJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  actor       User?      @relation("ServiceJobActivityActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([jobId, createdAt(sort: Desc)])
 }
 
 model MediaAsset {

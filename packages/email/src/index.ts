@@ -88,3 +88,30 @@ export function staffQuoteNotification(input: {
     html: `<p>A new quote request <strong>${reference}</strong> was submitted for ${services}.</p><p>Sign in to the admin site to review private customer details.</p>`,
   };
 }
+
+export function customerJobNotification(input: {
+  to: string;
+  from: string;
+  name: string;
+  reference: string;
+  type: "SCHEDULED" | "RESCHEDULED" | "CANCELLED" | "COMPLETED" | "REMINDER";
+  scheduleText?: string;
+  customerNote?: string;
+}): QuoteEmailMessage {
+  const reference = input.reference.toUpperCase();
+  const labels = {
+    SCHEDULED: "appointment scheduled",
+    RESCHEDULED: "appointment updated",
+    CANCELLED: "appointment cancelled",
+    COMPLETED: "service completed",
+    REMINDER: "appointment reminder",
+  } as const;
+  const detail = [input.scheduleText, input.customerNote].filter(Boolean).join("\n\n");
+  return {
+    to: input.to,
+    from: input.from,
+    subject: `CTPS ${labels[input.type]} — ${reference}`,
+    text: `Hello ${input.name},\n\nYour CTPS service reference ${reference}: ${labels[input.type]}.${detail ? `\n\n${detail}` : ""}\n\nPlease contact CTPS directly if you need to discuss this appointment. This message does not provide a self-service booking, cancellation, or payment link.`,
+    html: `<p>Hello ${escapeHtml(input.name)},</p><p>Your CTPS service reference <strong>${escapeHtml(reference)}</strong>: ${escapeHtml(labels[input.type])}.</p>${input.scheduleText ? `<p>${escapeHtml(input.scheduleText)}</p>` : ""}${input.customerNote ? `<p>${escapeHtml(input.customerNote)}</p>` : ""}<p>Please contact CTPS directly if you need to discuss this appointment. This message does not provide a self-service booking, cancellation, or payment link.</p>`,
+  };
+}

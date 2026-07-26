@@ -32,6 +32,10 @@ The API owns before-and-after project lifecycle, metadata, image validation/proc
 
 The public Next.js application hosts the accessible multi-step guest experience and a narrow same-origin BFF. The NestJS API remains authoritative for definitions, validation, approved areas, draft possession, abuse controls, image processing, idempotency, reference allocation, confirmation, and workflow state. PostgreSQL stores quote data, hashed draft/confirmation/idempotency identifiers, durable throttles, status history, notes, assignments, audit events, and structured email outbox records. The email package owns safe customer/staff templates and SMTP/log-safe/disabled delivery adapters. Customer images have an isolated private-only store and quote-specific schema. The admin application consumes protected APIs and streams images only through permission-checked no-store routes. See `quote-request-implementation.md`.
 
+## Phase 9 operational jobs boundary
+
+The API owns quote conversion, operational snapshots, lifecycle transitions, UTC/Vancouver scheduling, assignment conflicts, checklists, notes, private job media, incidents, completion rules, audit events, and job-linked email outbox records. The Admin consumes protected APIs through a narrow BFF. There is no public jobs API or media route. PostgreSQL stores metadata/history while bytes remain isolated under `storage/private/jobs`. See `jobs-scheduling-implementation.md`.
+
 ## Deployment topology
 
 ## Phase 8 blog boundary

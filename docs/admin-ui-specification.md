@@ -60,6 +60,10 @@ Support grid and list views, upload, search, filters, file type, size, dimension
 
 Upload shows constraints, progress, processing, success, and per-file errors. Deletion first checks usage and retention, lists affected references, and requires confirmation; replacing an asset should preserve or deliberately update relationships. Do not expose storage keys or make private media public through a toggle without elevated permission and explicit warning.
 
+## Phase 9 jobs administration
+
+The implemented Jobs navigation is permission-aware. `/jobs` provides bounded filtering without list-level residential addresses; `/jobs/calendar` provides day/week/month agenda modes and an accessible list; `/jobs/new` separates quote conversion from staff-created work; `/jobs/[id]` visibly marks private data and groups snapshots, scope, schedule, team, checklist, private media, notes, incidents, completion/follow-up, histories, and outbox state. Scheduling is explicitly America/Vancouver, status is not color-only, checklist ordering uses labeled controls, and destructive transitions require reasons or confirmation.
+
 ## 10. User and permission management
 
 User list/detail includes verified identity fields, account status, role assignments, last activity when policy allows, and security actions. Role screens group permissions by domain, support create/edit, identify changed grants/removals, and show affected users before save. Do not present a misleading simple “Admin” toggle.

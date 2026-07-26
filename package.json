@@ -30,6 +30,8 @@
     "estimator:initialize-development": "pnpm --filter @ctps/api estimator:initialize-development",
     "verify:estimator-runtime": "pnpm --filter @ctps/api verify:estimator-runtime",
     "blog:publish-due": "pnpm --filter @ctps/api blog:publish-due",
+    "jobs:send-reminders": "pnpm --filter @ctps/api jobs:send-reminders",
+    "verify:jobs-runtime": "pnpm --filter @ctps/api verify:jobs-runtime",
     "verify:blog-runtime": "pnpm --filter @ctps/api verify:blog-runtime",
     "db:start": "docker compose up -d postgres",
     "db:stop": "docker compose down",
