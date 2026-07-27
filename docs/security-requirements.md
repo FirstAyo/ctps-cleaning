@@ -42,6 +42,13 @@ Keep PostgreSQL/private storage off public ports, patch base images/host, run co
 
 Before release: dependency/container scanning, authorization matrix tests, input/fuzz boundary tests, upload tests, CSRF/session review, privacy/data-flow review, restore exercise, secret scan, penetration testing proportional to risk, and remediation tracking.
 
+Phase 10 adds explicit proxy-hop trust, bounded correlation IDs, structured production request
+logs, sanitised unknown-error responses, HTTPS-only production environment validation, safe
+liveness/readiness/storage probes, Nginx security headers, non-root application images,
+internal-only database/API networking, secret/static scans, and guarded backup/restore tooling. CSP
+retains documented `unsafe-inline` script/style exceptions for Next.js and the pre-paint theme
+initializer; it never enables `unsafe-eval` and requires browser verification.
+
 ## Unresolved decisions
 
 MFA policy, password breach screening, malware scanning, encryption-at-rest approach, retention, audit retention, backup RPO/RTO, incident process, and final privacy/legal wording require future approval. Phase 3 fixes the password, session, CSRF, and login-throttle baselines; Phase 5 upload limits are recorded in `before-after-implementation.md`; Phase 6 guest controls and limits are recorded in `quote-request-implementation.md`.

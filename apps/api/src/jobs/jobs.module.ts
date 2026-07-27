@@ -22,6 +22,6 @@ import { JobStorageService } from "./job-storage.service";
     JobsService,
     JobStorageService,
   ],
-  exports: [JobsService],
+  exports: [JobsService, JobNotificationService],
 })
 export class JobsModule {}

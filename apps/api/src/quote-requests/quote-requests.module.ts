@@ -22,5 +22,6 @@ import { QuoteReferenceService } from "./quote-reference.service";
     QuoteCleanupService,
     QuoteReferenceService,
   ],
+  exports: [QuoteEmailService],
 })
 export class QuoteRequestsModule {}

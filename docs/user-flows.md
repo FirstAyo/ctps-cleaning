@@ -45,3 +45,11 @@ The initial Super Admin is provisioned through a secure setup mechanism. A Super
 ## Managed content and media
 
 Authorized users create services, areas, projects, posts, and media metadata according to permissions. Public publishing validates slugs, visibility, SEO, relationships, and required accessible text. Public media is optimized and addressable; private quote uploads require authorized access. Safe deletion checks references and retention policy.
+
+## Release and recovery operations
+
+An operator validates an untracked production environment, verifies database/media backups,
+reviews and deploys migrations, starts the internal topology behind Nginx/TLS, checks readiness and
+representative workflows, configures locked schedulers/monitoring, and records the release. Upgrade
+failure uses prior compatible images or a reviewed forward correction. Backup restoration is
+rehearsed in isolation and never overwrites the main database by default.

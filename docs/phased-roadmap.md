@@ -44,9 +44,14 @@ Implemented permission- and ownership-protected authoring for posts, profiles, c
 
 Implemented private staff scope includes eligible quote conversion, staff-created jobs, secure references, operational snapshots, lifecycle/history, Vancouver scheduling and conflicts, assignments, accessible list/calendar views, checklists, timing, separated notes, private media, incidents, completion/follow-up, cancellation/closing/archiving, outbox notifications, auditing, tests, and documentation. No public booking, customer account, payment/invoice, live availability, or public job tracker is included. See `jobs-scheduling-implementation.md`.
 
-## Phase 10 — Quality assurance and VPS deployment
+## Phase 10 — Quality assurance and VPS deployment readiness
 
-Complete accessibility, responsive/browser, security, and performance reviews; image optimization; backup/restore tests; monitoring; production images; Nginx/HTTPS; VPS deployment; recovery procedures; and deployment documentation.
+Implemented the release-hardening foundation: production images/Compose/Nginx/TLS readiness,
+validated environments, explicit proxy/cookie/error/logging controls, database and storage
+readiness, backup/restore/smoke/release tooling, scheduler/outbox operations, legal-policy
+foundations, monitoring/incident/retention guidance, QA matrix, and deployment/upgrade/release
+runbooks. Real VPS, DNS, certificate, firewall, SSH, monitoring-provider, and production-secret
+changes remain operator-controlled and were not performed.
 
 ## Cross-phase gates
 

@@ -42,3 +42,9 @@ Initial development/VPS storage uses separate configurable public/private roots 
 ## Operations
 
 Back up media off-host, test restores, monitor capacity and failed processing, and reconcile orphaned records/objects. CDN choice, quotas, retention, acceptable MIME types, transformations, virus scanner, storage provider, and migration threshold remain unresolved.
+
+Phase 10 mounts all public and private namespaces as distinct production volumes, probes each
+configured root safely for readiness, and provides checksum-verified archive/isolated restore
+tooling. Database and media backups use a coordinated quiet window because they cannot share a
+transaction. Malware scanning, off-host provider, approved retention, and automatic orphan
+reconciliation remain launch decisions.

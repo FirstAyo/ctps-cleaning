@@ -4,6 +4,12 @@ CTPS Cleaning is a VPS-portable public website, protected staff application, and
 provide the monorepo/design foundations, staff authentication and authorization, public marketing,
 before-and-after, quote, estimator, blog, and private operational jobs/scheduling workflows.
 
+Phase 10 adds production deployment readiness without performing a real deployment. Start from
+`.env.production.example`, then follow `docs/deployment-runbook.md` and
+`docs/release-checklist.md`. Core operator commands include `pnpm environment:validate:production`,
+`pnpm security:scan`, `pnpm verify:release`, `pnpm smoke`, `pnpm email:process-outbox`,
+`pnpm maintenance:cleanup-dry-run`, `pnpm backup:database`, and `pnpm backup:media`.
+
 ## Workspace
 
 - `apps/web` — public CTPS marketing and published portfolio website on port 3000; `/design-system` preserves the Phase 2 preview
@@ -104,7 +110,8 @@ pricing versions, secure result transfer, and operations are documented in
 explicitly unapproved Draft starting configuration. Phase 8 blog authoring, managed media,
 publishing, scheduling, public discovery, and operations are documented in
 `docs/blog-implementation.md`; run `pnpm blog:publish-due` from a VPS-compatible scheduler to
-publish due posts. Customer authentication and production deployment remain unimplemented.
+publish due posts. Customer authentication remains unimplemented; production infrastructure is
+release-ready but no real VPS deployment is performed by repository commands.
 Phase 9 private operational jobs, Vancouver scheduling, assignments, fulfilment, private media,
 and outbox notifications are documented in `docs/jobs-scheduling-implementation.md`; run
 `pnpm jobs:send-reminders` from a VPS-compatible scheduler.

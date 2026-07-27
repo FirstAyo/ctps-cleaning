@@ -1,7 +1,10 @@
 # Infrastructure
 
-Production infrastructure is intentionally deferred beyond Phase 1. This directory contains no
-Nginx, TLS, deployment, backup, monitoring, or production container configuration.
+Phase 10 adds the portable Nginx/TLS reverse-proxy foundation used by `compose.production.yml`.
+Application Dockerfiles remain in their application directories; backup, restore, smoke, and
+deployment helpers live under `scripts/deployment`. Real certificates, environment files, DNS,
+host firewall, SSH, monitoring credentials, and runtime media are deliberately not committed.
 
-Phase 1 uses only the root `docker-compose.yml` PostgreSQL service for local development. Future
-infrastructure must follow `docs/deployment-plan.md` and preserve standard Linux VPS portability.
+The root `docker-compose.yml` remains the PostgreSQL-only development workflow. Follow
+`docs/deployment-runbook.md`, `docs/security-hardening.md`, and `docs/backup-and-recovery.md` before
+operating the production topology.

@@ -100,3 +100,9 @@ Allowed motion is brief sidebar/drawer, toast, expand/collapse, loading, row fee
 ## Security and acceptance constraints
 
 Never include secrets, private customer data, upload URLs, internal notes, or pricing configuration in a response solely because the route is hidden. Test the permission matrix at API and UI layers, keyboard tables/dialogs/drawers, focus restoration, screen-reader labels/statuses, theme contrast, zoom/reflow, destructive confirmations, stale-record conflicts, session expiry, and all loading/empty/error states before release.
+
+Phase 10 adds safe global not-found/error states and Admin-wide noindex/security headers. Manual
+release QA covers current Chrome, Edge, Firefox, and Safari/WebKit; desktop/mobile reflow; both
+themes; keyboard; screen-reader semantics; session expiry; conflicts; and private-media denial. No
+privileged diagnostics page was added: health and release metadata remain minimal and
+operator-facing.

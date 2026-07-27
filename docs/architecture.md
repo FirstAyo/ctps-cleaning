@@ -44,6 +44,13 @@ The API owns strict structured-content validation, post ownership, lifecycle tra
 
 Recommended VPS topology: Nginx terminates HTTPS and proxies host/path traffic to containerized web, admin, and API services; PostgreSQL is reachable only on a private Docker network; persistent volumes hold database and initial media data; an SMTP service is external or separately operated. Health checks and controlled startup ordering are Phase 1 concerns. Secrets enter at deployment and are not built into images.
 
+Phase 10 implements this foundation in `compose.production.yml`: only Nginx publishes ports,
+application/PostgreSQL traffic stays on an internal network, PostgreSQL and public/private media
+use separate persistent volumes, and a profile-gated migration image runs `prisma migrate deploy`.
+Next.js standalone and API runtime processes use non-root application users. API readiness includes
+database and storage probes, while Nginx/API propagate bounded request IDs. See
+`production-readiness.md`.
+
 Backups should include encrypted PostgreSQL dumps/base backups plus public/private media and deployment metadata, copied off-host with retention and periodic restore tests. Deployments must coordinate migrations and application versions.
 
 ## Scaling path

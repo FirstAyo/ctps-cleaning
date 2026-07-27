@@ -214,7 +214,9 @@ const footerGroups = [
       { label: "Before & After", href: "/before-after" },
       { label: "Blog", href: "/blog" },
       { label: "Estimate", href: "/estimate" },
-      { label: "Privacy placeholder", href: "/contact#privacy" },
+      { label: "Privacy", href: "/privacy" },
+      { label: "Terms", href: "/terms" },
+      { label: "Accessibility", href: "/accessibility" },
     ],
   },
 ] as const;
@@ -253,7 +255,7 @@ export function PublicFooter() {
           ))}
         </div>
         <div className="mt-10 flex flex-wrap justify-between gap-3 border-t border-sidebar-border pt-6 text-sm text-sidebar-muted">
-          <span>© {new Date().getFullYear()} CTPS. Production legal wording pending.</span>
+          <span>© {new Date().getFullYear()} CTPS. Policy foundations require review.</span>
           <Link href="/design-system">Design system preview</Link>
         </div>
       </Container>

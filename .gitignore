@@ -9,6 +9,7 @@ coverage/
 .env
 .env.*
 !.env.example
+!.env.production.example
 
 # Generated database client
 packages/database/src/generated/
@@ -20,9 +21,16 @@ postgres-data/
 storage/public/before-after/*
 storage/private/before-after/*
 storage/private/quote-requests/*
+storage/public/blog/*
+storage/private/blog/*
+storage/private/jobs/*
+backups/
 !storage/public/before-after/.gitkeep
 !storage/private/before-after/.gitkeep
 !storage/private/quote-requests/.gitkeep
+!storage/public/blog/.gitkeep
+!storage/private/blog/.gitkeep
+!storage/private/jobs/.gitkeep
 
 # Editors and operating systems
 .DS_Store

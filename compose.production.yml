@@ -1,0 +1,158 @@
+name: ctps-cleaning-production
+
+x-app-defaults: &app-defaults
+  restart: unless-stopped
+  env_file:
+    - ${CTPS_ENV_FILE:-.env.production.example}
+  networks:
+    - ctps_internal
+  init: true
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    env_file:
+      - ${CTPS_ENV_FILE:-.env.production.example}
+    volumes:
+      - ctps_postgres_data:/var/lib/postgresql/data
+    networks:
+      - ctps_internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    stop_grace_period: 60s
+
+  migrate:
+    <<: *app-defaults
+    restart: "no"
+    profiles: ["tools"]
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+      target: migration
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  api:
+    <<: *app-defaults
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+      target: runtime
+    environment:
+      API_PORT: "4000"
+    volumes:
+      - ctps_public_media:/app/storage/public
+      - ctps_private_media:/app/storage/private
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:4000/health/ready').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    stop_grace_period: 30s
+
+  web:
+    <<: *app-defaults
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      target: runtime
+    environment:
+      API_URL: http://api:4000
+      WEB_URL: https://${PUBLIC_HOST:-ctps.example.com}
+      NEXT_PUBLIC_SITE_URL: https://${PUBLIC_HOST:-ctps.example.com}
+      PORT: "3000"
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3000/').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  admin:
+    <<: *app-defaults
+    build:
+      context: .
+      dockerfile: apps/admin/Dockerfile
+      target: runtime
+    environment:
+      API_URL: http://api:4000
+      ADMIN_URL: https://${ADMIN_HOST:-admin.ctps.example.com}
+      PORT: "3001"
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3001/login').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  nginx:
+    restart: unless-stopped
+    build:
+      context: infrastructure/nginx
+    environment:
+      PUBLIC_HOST: ${PUBLIC_HOST:-ctps.example.com}
+      ADMIN_HOST: ${ADMIN_HOST:-admin.ctps.example.com}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./infrastructure/nginx/certs:/etc/nginx/certs:ro
+      - ./infrastructure/nginx/acme:/var/www/acme:ro
+    networks:
+      - ctps_internal
+    depends_on:
+      web:
+        condition: service_healthy
+      admin:
+        condition: service_healthy
+    healthcheck:
+      test:
+        ["CMD-SHELL", "wget -q --no-check-certificate --spider https://127.0.0.1/healthz || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+    stop_grace_period: 15s
+
+networks:
+  ctps_internal:
+    internal: true
+
+volumes:
+  ctps_postgres_data:
+  ctps_public_media:
+  ctps_private_media:

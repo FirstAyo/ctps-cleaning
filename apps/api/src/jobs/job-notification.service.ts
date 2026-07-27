@@ -166,4 +166,18 @@ export class JobNotificationService {
     }
     return { examined: jobs.length, queued };
   }
+  async dispatchPending() {
+    const records = await this.database.client.emailOutbox.findMany({
+      where: {
+        serviceJobId: { not: null },
+        status: { in: ["PENDING", "FAILED"] },
+        attempts: { lt: 5 },
+      },
+      orderBy: { createdAt: "asc" },
+      take: 50,
+      select: { id: true },
+    });
+    for (const record of records) await this.dispatch(record.id);
+    return { examined: records.length, processed: records.length };
+  }
 }

@@ -120,3 +120,8 @@ Permitted motion includes restrained section/card/image reveals, hover transitio
 ## Content and acceptance constraints
 
 No fake testimonials, reviews, statistics, project claims, prices, contact details, or service availability. Test keyboard-only navigation, screen-reader names/status, 200% zoom and reflow, touch controls, theme contrast, reduced motion, slow/error/offline paths, responsive imagery, and guest form recovery before release.
+
+Phase 10 adds honest Privacy, Terms, and Accessibility foundations marked for business/legal
+review, plus safe global error/not-found states. They do not claim certification or invent
+contact/legal guarantees. Release QA and content approval gates are tracked in `qa-matrix.md` and
+`release-checklist.md`.

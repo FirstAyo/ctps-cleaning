@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { randomUUID } from "node:crypto";
 
 const allowed =
   /^(configuration|calculate|results\/[A-Za-z0-9_-]{43}(?:\/quote-transfer)?|quote-transfer\/[A-Za-z0-9_-]{43})$/;
@@ -24,6 +25,11 @@ async function forward(request: Request, context: { params: Promise<{ path: stri
       { status: 503 },
     );
   try {
+    const suppliedRequestId = request.headers.get("x-request-id");
+    const requestId =
+      suppliedRequestId && /^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/.test(suppliedRequestId)
+        ? suppliedRequestId
+        : randomUUID();
     const response = await fetch(
       new URL(
         `public/estimator/${path}`,
@@ -36,6 +42,7 @@ async function forward(request: Request, context: { params: Promise<{ path: stri
           accept: "application/json",
           "content-type": "application/json",
           origin: webOrigin,
+          "x-request-id": requestId,
         },
         ...(request.method === "GET" ? {} : { body: (await request.text()) || "{}" }),
       },
@@ -45,6 +52,7 @@ async function forward(request: Request, context: { params: Promise<{ path: stri
       headers: {
         "content-type": response.headers.get("content-type") ?? "application/json",
         "cache-control": "no-store",
+        "x-request-id": response.headers.get("x-request-id") ?? requestId,
       },
     });
   } catch {

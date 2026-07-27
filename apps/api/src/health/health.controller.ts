@@ -1,5 +1,5 @@
 import { Controller, Get, Inject } from "@nestjs/common";
-import type { ApiHealthResponse, DatabaseHealthResponse } from "@ctps/types";
+import type { ApiHealthResponse, ApiReadinessResponse, DatabaseHealthResponse } from "@ctps/types";
 
 import { HealthService } from "./health.service";
 import { PublicRoute } from "../auth/security.decorators";
@@ -17,5 +17,10 @@ export class HealthController {
   @Get("database")
   getDatabaseReadiness(): Promise<DatabaseHealthResponse> {
     return this.healthService.getDatabaseReadiness();
+  }
+
+  @Get("ready")
+  getReadiness(): Promise<ApiReadinessResponse> {
+    return this.healthService.getReadiness();
   }
 }

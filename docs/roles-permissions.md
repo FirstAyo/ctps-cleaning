@@ -58,3 +58,8 @@ Phase 9 adds granular `jobs.*` keys covering read/read-assigned, quote/internal 
 ## Unresolved policy
 
 Later-feature permission catalogues, approval requirements, audit retention, support access, and whether certain pricing or publishing actions need two-person review remain future decisions. Phase 5 project/media and Phase 6 quote-request permissions are no longer unresolved.
+
+Phase 10 adds no business role or permission. Deployment, migration, backup, restore, scheduler,
+and environment access are host-operator capabilities outside browser RBAC and must be limited
+through Linux, Docker, and file permissions. Super Admin remains an application role, not automatic
+VPS or database-root authority.

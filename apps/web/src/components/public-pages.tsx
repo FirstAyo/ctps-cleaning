@@ -468,3 +468,35 @@ export function FaqPage() {
     </PublicLayout>
   );
 }
+
+export function PolicyFoundation({
+  title,
+  summary,
+  sections,
+}: {
+  readonly title: string;
+  readonly summary: string;
+  readonly sections: readonly { readonly title: string; readonly body: string }[];
+}) {
+  return (
+    <PublicLayout>
+      <PageHero description={summary} eyebrow="Policy foundation" title={title} />
+      <Section>
+        <Container className="max-w-3xl">
+          <p className="rounded-md border border-warning/50 bg-warning/10 p-4 text-sm font-semibold">
+            This foundation requires CTPS business approval and independent legal review before
+            production publication. It is not legal advice or a compliance certification.
+          </p>
+          <div className="mt-10 grid gap-8">
+            {sections.map((section) => (
+              <section key={section.title}>
+                <h2 className="text-2xl font-semibold">{section.title}</h2>
+                <p className="mt-3 text-muted-foreground">{section.body}</p>
+              </section>
+            ))}
+          </div>
+        </Container>
+      </Section>
+    </PublicLayout>
+  );
+}

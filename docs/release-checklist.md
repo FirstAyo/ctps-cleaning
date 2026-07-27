@@ -1,0 +1,24 @@
+# Release Checklist
+
+- [ ] Clean Git state; immutable release/tag recorded; Phase 10 review approved
+- [ ] `.env.production` validated; placeholders removed; secrets protected/rotatable
+- [ ] Database and media backups verified off-host; restore rehearsal current
+- [ ] Migrations and forward/rollback compatibility reviewed
+- [ ] Format, lint, typecheck, tests, builds, audit, scans, Compose, images, and Nginx validation pass
+- [ ] Liveness/readiness, public smoke, Admin login/session/CSRF, and safe errors pass
+- [ ] Quote receipt—not booking—workflow and private uploads pass with disposable data removed
+- [ ] Estimator is preliminary; approved Published configuration only; no development pricing active
+- [ ] Blog publication/scheduler and before-and-after publication/privacy pass
+- [ ] Job conversion/scheduling/assignment/checklist/private media/completion and Author denial pass
+- [ ] Email SMTP/outbox retry/alert mode verified without private links/body logging
+- [ ] Schedulers use locking, safe environment loading, monitored logs, and expected timezone
+- [ ] PostgreSQL/API/Admin internal ports remain unexposed; firewall allows only approved SSH/80/443
+- [ ] TLS valid/renewal tested; HSTS/CSP/security headers/browser console reviewed
+- [ ] Monitoring, disk/certificate/backup/outbox/scheduler alerts and log rotation configured
+- [ ] Accessibility keyboard, screen reader semantics, 200% zoom, themes, reduced motion, and touch reviewed
+- [ ] Chrome, Firefox, Safari/WebKit, and Edge current versions reviewed at representative widths
+- [ ] Canonical domain, robots, sitemap, metadata, structured data, and noindex routes verified
+- [ ] Real logo/contact/address/hours/legal/privacy/accessibility/email/media/content gaps approved or launch blocked
+- [ ] No fake reviews, prices, biographies, project claims, credentials, or test records remain
+- [ ] No customer account, public booking, live availability, payment, invoice, or public job tracker exists
+- [ ] Release operator/time/version, backup IDs, checksums, migration state, and rollback owner recorded

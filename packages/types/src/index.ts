@@ -3,6 +3,25 @@ export interface ApiHealthResponse {
   readonly status: "ok";
   readonly service: "ctps-api";
   readonly timestamp: string;
+  readonly release: string;
+}
+
+export interface ApiReadinessResponse {
+  readonly success: true;
+  readonly status: "ready";
+  readonly database: "connected";
+  readonly storage: "writable";
+  readonly timestamp: string;
+  readonly release: string;
+}
+
+export interface ApiReadinessFailureResponse {
+  readonly success: false;
+  readonly status: "unavailable";
+  readonly database: "connected" | "unavailable";
+  readonly storage: "writable" | "unavailable";
+  readonly timestamp: string;
+  readonly release: string;
 }
 
 export interface DatabaseHealthResponse {

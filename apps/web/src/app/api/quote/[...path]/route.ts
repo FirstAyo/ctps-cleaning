@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { randomUUID } from "node:crypto";
 
 const allowed = /^(drafts|uploads(?:\/[0-9a-f-]{36}|\/order)?|submit)$/i;
 
@@ -24,8 +25,14 @@ async function forward(request: Request, context: { params: Promise<{ path: stri
     );
   const targetPath = path === "submit" ? "public/quote-requests" : `public/quote-requests/${path}`;
   const headers = new Headers();
+  const suppliedRequestId = request.headers.get("x-request-id");
+  const requestId =
+    suppliedRequestId && /^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/.test(suppliedRequestId)
+      ? suppliedRequestId
+      : randomUUID();
   headers.set("origin", expected);
   headers.set("accept", "application/json");
+  headers.set("x-request-id", requestId);
   const contentType = request.headers.get("content-type");
   if (contentType) headers.set("content-type", contentType);
   const token = request.headers.get("x-quote-draft-token");
@@ -42,6 +49,7 @@ async function forward(request: Request, context: { params: Promise<{ path: stri
       headers: {
         "content-type": response.headers.get("content-type") ?? "application/json",
         "cache-control": "no-store",
+        "x-request-id": response.headers.get("x-request-id") ?? requestId,
       },
     });
   } catch {

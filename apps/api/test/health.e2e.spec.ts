@@ -34,8 +34,22 @@ describe("health endpoints", () => {
       success: true,
       status: "ok",
       service: "ctps-api",
+      release: "development",
     });
     expect(new Date(response.body.timestamp as string).toString()).not.toBe("Invalid Date");
+  });
+
+  it("reports combined database and storage readiness without exposing paths", async () => {
+    const testApp = await createApp(vi.fn().mockResolvedValue(undefined));
+    const response = await request(testApp.getHttpServer()).get("/health/ready").expect(200);
+    expect(response.body).toMatchObject({
+      success: true,
+      status: "ready",
+      database: "connected",
+      storage: "writable",
+      release: "development",
+    });
+    expect(JSON.stringify(response.body)).not.toMatch(/storage[\\/]|postgresql:|secret/i);
   });
 
   it("reports database readiness after a successful Prisma check", async () => {

@@ -2,7 +2,8 @@
 
 ## Purpose
 
-This is a future deployment plan, not infrastructure implementation. It preserves portability to a standard Linux VPS.
+Phase 10 implements the portable deployment foundation while leaving real VPS provisioning and
+deployment operator-controlled. See `deployment-runbook.md` and `production-readiness.md`.
 
 ## Planned topology
 
@@ -41,3 +42,11 @@ Phase 6 requires a persistent, non-web-served `QUOTE_PRIVATE_MEDIA_ROOT`, SMTP s
 ## Future scaling
 
 Possible later steps include separate database/storage hosts, S3-compatible media, background workers, multiple stateless app replicas, managed SMTP, and external monitoring. Adopt them only from measured needs.
+
+## Implemented release assets
+
+Production application Dockerfiles, internal-network Compose, Nginx TLS templates, persistent
+volumes, environment validation, readiness/storage checks, backup/restore scripts, outbox and
+cleanup commands, smoke/release checks, monitoring guidance, and rollback/recovery runbooks are
+present. Real domains, certificates, firewall/SSH changes, monitoring providers, off-host backup
+targets, and production secrets are intentionally absent.

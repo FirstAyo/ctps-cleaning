@@ -106,7 +106,10 @@ export class QuoteEmailService {
       take: 50,
       select: { quoteRequestId: true },
     });
+    let processed = 0;
     for (const { quoteRequestId } of requests)
       if (quoteRequestId) await this.dispatchForRequest(quoteRequestId);
+    processed = requests.length;
+    return { examined: requests.length, processed };
   }
 }

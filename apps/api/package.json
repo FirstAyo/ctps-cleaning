@@ -20,6 +20,9 @@
     "jobs:send-reminders": "dotenv -e ../../.env -- tsx src/cli/send-job-reminders.ts",
     "verify:jobs-runtime": "dotenv -e ../../.env -- tsx src/cli/verify-jobs-runtime.ts",
     "verify:blog-runtime": "dotenv -e ../../.env -- tsx src/cli/verify-blog-runtime.ts",
+    "environment:validate": "tsx src/cli/validate-environment.ts",
+    "email:process-outbox": "dotenv -e ../../.env -- tsx src/cli/process-email-outbox.ts",
+    "maintenance:cleanup-dry-run": "dotenv -e ../../.env -- tsx src/cli/cleanup-dry-run.ts",
     "clean": "rimraf dist coverage"
   },
   "dependencies": {

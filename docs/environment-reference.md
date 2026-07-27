@@ -1,0 +1,21 @@
+# Environment Reference
+
+Production starts from `.env.production.example`; copy it to an untracked `.env.production`, replace every `CHANGE_ME`, set mode `600`, and run `pnpm environment:validate:production`. Never use the example file as a real deployment configuration.
+
+| Group           | Variables                                                                                                      | Production rule                                                                              | Consumer           |
+| --------------- | -------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- | ------------------ |
+| Runtime         | `NODE_ENV`, `RELEASE_VERSION`, `LOG_FORMAT`, `TRUST_PROXY_HOPS`                                                | `production`, immutable release label, JSON, and exactly the reviewed Nginx hop count        | API                |
+| PostgreSQL      | `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`, `DATABASE_URL`                                            | Strong secret; internal `postgres:5432`; never publish the port                              | Postgres/API/tools |
+| URLs            | `WEB_URL`, `ADMIN_URL`, `API_URL`, `NEXT_PUBLIC_SITE_URL`, `PUBLIC_HOST`, `ADMIN_HOST`, `CORS_ALLOWED_ORIGINS` | Browser-facing values use HTTPS and approved domains. `API_URL` remains internal.            | All services/Nginx |
+| Authentication  | `AUTH_*`, `LOGIN_THROTTLE_*`                                                                                   | Secure cookie required; host-only domain preferred; bounded expiry/throttle values           | API/Admin          |
+| Portfolio media | `MEDIA_*`                                                                                                      | Absolute persistent public/private container roots; limits must remain internally consistent | API                |
+| Quote requests  | `QUOTE_*`                                                                                                      | Private persistent root; bounded expiry, rate, count, byte limits                            | API/Web            |
+| Estimator       | `ESTIMATOR_*`                                                                                                  | Bounded token expiry and throttle settings; no price values in environment                   | API/Web            |
+| Blog            | `BLOG_*`                                                                                                       | Separate public/private roots, image limits, scheduler batch                                 | API/Web/Admin      |
+| Jobs            | `JOBS_*`                                                                                                       | Vancouver timezone, bounded schedule/media/reminder settings, private root                   | API/Admin          |
+| Email           | `EMAIL_DELIVERY_MODE`, `EMAIL_FROM`, `QUOTE_STAFF_EMAIL`, `SMTP_*`                                             | Production requires `smtp`, approved addresses, host, and secret supplied at runtime         | API                |
+| Operations      | `BACKUP_ROOT`, `BACKUP_RETENTION_DAYS`, `SMOKE_*_URL`, `MEDIA_BACKUP_SOURCE`, `RESTORE_DATABASE_URL`           | Host-only paths/URLs; restore URL must target isolation                                      | Operator scripts   |
+
+Only `NEXT_PUBLIC_SITE_URL` is browser-public, and it is non-secret. Storage roots, database URLs, SMTP credentials, and authentication settings must never use `NEXT_PUBLIC_`. API startup validates critical configuration and fails before listening. Changing the database/SMTP password requires coordinated service rotation; changing session-cookie behavior may invalidate access; rotating the database credential requires updating both PostgreSQL and the API atomically.
+
+Local defaults in `.env.example` are deliberately unsafe for production. The production schema rejects insecure cookies, HTTP browser origins, zero trusted proxy hops, non-SMTP delivery, `.invalid` sender addresses, malformed release identifiers, and inconsistent media/duration limits.

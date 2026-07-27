@@ -95,9 +95,12 @@ describe("Phase 4 public marketing", () => {
 
   it("publishes all marketing routes while excluding development/admin routes", async () => {
     const urls = (await sitemap()).map((item) => item.url);
-    expect(urls).toHaveLength(23);
+    expect(urls).toHaveLength(26);
     expect(urls.some((url) => url.endsWith("/services/window-cleaning"))).toBe(true);
     expect(urls.some((url) => url.endsWith("/service-areas/north-vancouver"))).toBe(true);
+    expect(urls.some((url) => url.endsWith("/privacy"))).toBe(true);
+    expect(urls.some((url) => url.endsWith("/terms"))).toBe(true);
+    expect(urls.some((url) => url.endsWith("/accessibility"))).toBe(true);
     expect(urls.some((url) => url.includes("design-system"))).toBe(false);
     expect(urls.some((url) => url.includes("admin"))).toBe(false);
   });

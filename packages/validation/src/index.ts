@@ -6,6 +6,10 @@ const portSchema = z.coerce.number().int().min(1).max(65_535);
 const positiveSecondsSchema = z.coerce.number().int().positive();
 const booleanEnvironmentSchema = z.enum(["true", "false"]).transform((value) => value === "true");
 const positiveIntegerSchema = z.coerce.number().int().positive();
+const releaseVersionSchema = z
+  .string()
+  .trim()
+  .regex(/^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/);
 const httpUrlSchema = z
   .url()
   .refine((url) => url.startsWith("http://") || url.startsWith("https://"), {
@@ -51,6 +55,9 @@ export const apiEnvironmentSchema = z
     DATABASE_URL: z.string().min(1).startsWith("postgresql://"),
     LOGIN_THROTTLE_MAX_ATTEMPTS: z.coerce.number().int().min(2).max(100).default(8),
     LOGIN_THROTTLE_WINDOW_SECONDS: positiveSecondsSchema.min(30).default(900),
+    LOG_FORMAT: z.enum(["human", "json"]).default("human"),
+    RELEASE_VERSION: releaseVersionSchema.default("development"),
+    TRUST_PROXY_HOPS: z.coerce.number().int().min(0).max(3).default(0),
     MEDIA_STORAGE_DRIVER: z.literal("local").default("local"),
     MEDIA_LOCAL_PUBLIC_ROOT: z.string().trim().min(1).default("../../storage/public/before-after"),
     MEDIA_LOCAL_PRIVATE_ROOT: z
@@ -148,6 +155,54 @@ export const apiEnvironmentSchema = z
         message: "Secure authentication cookies are required in production",
       });
     }
+    if (value.NODE_ENV === "production") {
+      for (const [key, url] of [
+        ["WEB_URL", value.WEB_URL],
+        ["ADMIN_URL", value.ADMIN_URL],
+        ...value.CORS_ALLOWED_ORIGINS.map((origin) => ["CORS_ALLOWED_ORIGINS", origin]),
+      ] as const) {
+        if (!url.startsWith("https://"))
+          context.addIssue({
+            code: "custom",
+            path: [key],
+            message: "Production browser origins must use HTTPS",
+          });
+      }
+      if (value.TRUST_PROXY_HOPS < 1)
+        context.addIssue({
+          code: "custom",
+          path: ["TRUST_PROXY_HOPS"],
+          message: "Production behind Nginx must trust the explicitly configured proxy hop",
+        });
+      if (value.EMAIL_DELIVERY_MODE !== "smtp")
+        context.addIssue({
+          code: "custom",
+          path: ["EMAIL_DELIVERY_MODE"],
+          message: "Production must explicitly use SMTP delivery",
+        });
+      if (value.EMAIL_FROM.endsWith(".invalid") || value.QUOTE_STAFF_EMAIL.endsWith(".invalid"))
+        context.addIssue({
+          code: "custom",
+          path: ["EMAIL_FROM"],
+          message: "Production email addresses must be approved deliverable addresses",
+        });
+      for (const [key, configured] of [
+        ["RELEASE_VERSION", value.RELEASE_VERSION],
+        ["DATABASE_URL", value.DATABASE_URL],
+        ["EMAIL_FROM", value.EMAIL_FROM],
+        ["QUOTE_STAFF_EMAIL", value.QUOTE_STAFF_EMAIL],
+        ["SMTP_HOST", value.SMTP_HOST ?? ""],
+        ["SMTP_USER", value.SMTP_USER ?? ""],
+        ["SMTP_PASSWORD", value.SMTP_PASSWORD ?? ""],
+      ] as const) {
+        if (configured.includes("CHANGE_ME"))
+          context.addIssue({
+            code: "custom",
+            path: [key],
+            message: "Production placeholders must be replaced",
+          });
+      }
+    }
     if (value.MEDIA_MAX_TOTAL_UPLOAD_BYTES < value.MEDIA_MAX_FILE_BYTES) {
       context.addIssue({
         code: "custom",
@@ -232,6 +287,16 @@ export const apiHealthResponseSchema = z.object({
   status: z.literal("ok"),
   service: z.literal("ctps-api"),
   timestamp: z.iso.datetime({ offset: true }),
+  release: releaseVersionSchema,
+});
+
+export const apiReadinessResponseSchema = z.object({
+  success: z.literal(true),
+  status: z.literal("ready"),
+  database: z.literal("connected"),
+  storage: z.literal("writable"),
+  timestamp: z.iso.datetime({ offset: true }),
+  release: releaseVersionSchema,
 });
 
 export const databaseHealthResponseSchema = z.object({
