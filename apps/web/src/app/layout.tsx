@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import type { ReactNode } from "react";
 import { ThemeProvider } from "@ctps/ui/theme";
 import { themeInitScript } from "@ctps/ui/theme-core";
@@ -16,7 +17,9 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        <Script id="ctps-theme-init" strategy="beforeInteractive">
+          {themeInitScript}
+        </Script>
       </head>
       <body>
         <ThemeProvider>{children}</ThemeProvider>
