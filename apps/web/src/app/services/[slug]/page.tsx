@@ -3,16 +3,26 @@ import { ServicePageContent } from "@/components/marketing";
 import { PublicLayout } from "@/components/public-shell";
 import { getService, services } from "@/content/site";
 import { breadcrumbSchema, JsonLd, metadataFor } from "@/lib/seo";
+import { getMarketingMetadata, getMarketingPage } from "@/lib/marketing-api";
+import { MarketingPageRenderer } from "@/components/marketing-page-renderer";
 export function generateStaticParams() {
   return services.map(({ slug }) => ({ slug }));
 }
 export async function generateMetadata({ params }: { readonly params: Promise<{ slug: string }> }) {
   const service = getService((await params).slug);
-  return service ? metadataFor(service.name, service.summary, `/services/${service.slug}`) : {};
+  if (!service) return {};
+  return getMarketingMetadata(
+    `SERVICE_${service.slug.replaceAll("-", "_").toUpperCase()}`,
+    metadataFor(service.name, service.summary, `/services/${service.slug}`),
+  );
 }
 export default async function Page({ params }: { readonly params: Promise<{ slug: string }> }) {
-  const service = getService((await params).slug);
+  const slug = (await params).slug;
+  const service = getService(slug);
   if (!service) notFound();
+  const marketingPage = await getMarketingPage(
+    `SERVICE_${slug.replaceAll("-", "_").toUpperCase()}`,
+  );
   return (
     <PublicLayout>
       <JsonLd
@@ -38,7 +48,11 @@ export default async function Page({ params }: { readonly params: Promise<{ slug
           },
         ]}
       />
-      <ServicePageContent service={service} />
+      {marketingPage ? (
+        <MarketingPageRenderer page={marketingPage} />
+      ) : (
+        <ServicePageContent service={service} />
+      )}
     </PublicLayout>
   );
 }

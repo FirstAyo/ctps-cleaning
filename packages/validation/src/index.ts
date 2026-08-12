@@ -77,6 +77,18 @@ export const apiEnvironmentSchema = z
     MEDIA_MAX_HEIGHT: positiveIntegerSchema.max(20000).default(12000),
     MEDIA_IMAGE_QUALITY: z.coerce.number().int().min(40).max(95).default(82),
     MEDIA_PUBLIC_BASE_PATH: z.string().trim().startsWith("/").default("/media/before-after"),
+    MARKETING_MEDIA_PUBLIC_ROOT: z.string().trim().min(1).default("../../storage/public/marketing"),
+    MARKETING_MEDIA_MAX_UPLOAD_FILES: positiveIntegerSchema.max(20).default(10),
+    MARKETING_MEDIA_MAX_FILE_BYTES: positiveIntegerSchema
+      .max(25 * 1024 * 1024)
+      .default(10 * 1024 * 1024),
+    MARKETING_MEDIA_MAX_TOTAL_UPLOAD_BYTES: positiveIntegerSchema
+      .max(100 * 1024 * 1024)
+      .default(50 * 1024 * 1024),
+    MARKETING_MEDIA_MIN_WIDTH: positiveIntegerSchema.max(4000).default(600),
+    MARKETING_MEDIA_MIN_HEIGHT: positiveIntegerSchema.max(4000).default(400),
+    MARKETING_MEDIA_MAX_WIDTH: positiveIntegerSchema.max(20000).default(12000),
+    MARKETING_MEDIA_MAX_HEIGHT: positiveIntegerSchema.max(20000).default(12000),
     WEB_URL: httpUrlSchema,
     QUOTE_PRIVATE_MEDIA_ROOT: z
       .string()
@@ -1246,3 +1258,213 @@ export type ServiceJobMediaUpdateInput = z.infer<typeof serviceJobMediaUpdateSch
 export type ServiceJobListQuery = z.infer<typeof serviceJobListQuerySchema>;
 export type ServiceJobCalendarQuery = z.infer<typeof serviceJobCalendarQuerySchema>;
 export type ServiceJobNotificationInput = z.infer<typeof serviceJobNotificationSchema>;
+
+export const MARKETING_PAGE_KEYS = [
+  "HOME",
+  "SERVICES",
+  "ABOUT",
+  "CONTACT",
+  "RESIDENTIAL",
+  "COMMERCIAL",
+  "SERVICE_AREAS",
+  "SERVICE_WINDOW_CLEANING",
+  "SERVICE_PRESSURE_WASHING",
+  "SERVICE_GUTTER_CLEANING",
+  "SERVICE_MOSS_REMOVAL",
+  "SERVICE_VENT_CLEANING",
+  "AREA_VANCOUVER",
+  "AREA_RICHMOND",
+  "AREA_BURNABY",
+  "AREA_SURREY",
+  "AREA_COQUITLAM",
+  "AREA_NORTH_VANCOUVER",
+] as const;
+export const marketingPageKeySchema = z.enum(MARKETING_PAGE_KEYS);
+export const marketingSectionTypeSchema = z.enum([
+  "HERO_SLIDER",
+  "TRUST_STRIP",
+  "SERVICE_SHOWCASE",
+  "FEATURED_PROJECT",
+  "RESIDENTIAL_COMMERCIAL",
+  "VALUE_PROPOSITION",
+  "PROCESS",
+  "PROJECT_GRID",
+  "SERVICE_AREAS",
+  "BLOG_PREVIEW",
+  "FAQ",
+  "CONTACT",
+  "FINAL_CTA",
+  "RICH_TEXT",
+  "MEDIA_TEXT",
+  "RELATED_SERVICES",
+]);
+const marketingSectionIdSchema = z
+  .string()
+  .trim()
+  .min(2)
+  .max(80)
+  .regex(/^[a-z][a-z0-9-]*$/);
+const marketingCtaSchema = z
+  .object({ label: blogPlainTextSchema(80).min(1), href: blogLinkSchema })
+  .strict();
+const marketingItemSchema = z
+  .object({
+    key: z
+      .string()
+      .trim()
+      .min(1)
+      .max(80)
+      .regex(/^[a-z0-9-]+$/),
+    title: blogPlainTextSchema(160).min(1),
+    body: blogPlainTextSchema(1000).optional(),
+    href: blogLinkSchema.optional(),
+    mediaId: identifierSchema.optional(),
+    altText: blogPlainTextSchema(300).optional(),
+  })
+  .strict();
+const marketingHeroSectionSchema = z
+  .object({
+    id: marketingSectionIdSchema,
+    type: z.literal("HERO_SLIDER"),
+    enabled: z.boolean(),
+    eyebrow: blogPlainTextSchema(120).optional(),
+    title: blogPlainTextSchema(180).min(1),
+    body: blogPlainTextSchema(700).min(1),
+    primaryCta: marketingCtaSchema,
+    secondaryCta: marketingCtaSchema.optional(),
+    mediaIds: z.array(identifierSchema).max(4),
+    overlay: z.enum(["SOFT", "BALANCED", "STRONG"]),
+    autoplay: z.boolean(),
+    intervalMs: z.union([z.literal(6000), z.literal(7000), z.literal(8000), z.literal(10000)]),
+  })
+  .strict();
+const marketingStandardSectionSchema = z
+  .object({
+    id: marketingSectionIdSchema,
+    type: marketingSectionTypeSchema.exclude(["HERO_SLIDER"]),
+    enabled: z.boolean(),
+    eyebrow: blogPlainTextSchema(120).optional(),
+    title: blogPlainTextSchema(180).min(1),
+    body: blogPlainTextSchema(2000).optional(),
+    items: z.array(marketingItemSchema).max(16).default([]),
+    mediaIds: z.array(identifierSchema).max(8).default([]),
+    projectIds: z.array(identifierSchema).max(6).default([]),
+    postIds: z.array(identifierSchema).max(4).default([]),
+    primaryCta: marketingCtaSchema.optional(),
+    secondaryCta: marketingCtaSchema.optional(),
+  })
+  .strict();
+export const marketingPageContentSchema = z
+  .object({
+    sections: z
+      .array(
+        z.discriminatedUnion("type", [marketingHeroSectionSchema, marketingStandardSectionSchema]),
+      )
+      .max(24),
+  })
+  .strict()
+  .superRefine((value, context) => {
+    const ids = value.sections.map(({ id }) => id);
+    if (new Set(ids).size !== ids.length)
+      context.addIssue({
+        code: "custom",
+        path: ["sections"],
+        message: "Section identifiers must be unique",
+      });
+    if (value.sections.filter(({ type }) => type === "HERO_SLIDER").length > 1)
+      context.addIssue({
+        code: "custom",
+        path: ["sections"],
+        message: "A page can contain only one Hero",
+      });
+  });
+export const marketingPageUpdateSchema = z
+  .object({
+    version: z.number().int().positive(),
+    title: blogPlainTextSchema(180).min(1),
+    navigationLabel: blogPlainTextSchema(80).optional().nullable(),
+    draftContent: marketingPageContentSchema,
+    seoTitle: blogPlainTextSchema(70).optional().nullable(),
+    seoDescription: blogPlainTextSchema(170).optional().nullable(),
+    ogTitle: blogPlainTextSchema(70).optional().nullable(),
+    ogDescription: blogPlainTextSchema(170).optional().nullable(),
+    socialImageId: identifierSchema.optional().nullable(),
+  })
+  .strict();
+export const marketingPageRestoreSchema = z
+  .object({ version: z.number().int().positive() })
+  .strict();
+export const publicMediaUpdateSchema = z
+  .object({
+    title: blogPlainTextSchema(160).min(1).optional(),
+    altText: blogPlainTextSchema(300).optional(),
+    caption: blogPlainTextSchema(500).optional().nullable(),
+    focalPointX: z.number().int().min(0).max(100).optional(),
+    focalPointY: z.number().int().min(0).max(100).optional(),
+  })
+  .strict()
+  .refine((value) => Object.keys(value).length > 0, "At least one media field is required");
+export const publicMediaListQuerySchema = z
+  .object({
+    page: z.coerce.number().int().min(1).default(1),
+    pageSize: z.coerce.number().int().min(1).max(48).default(24),
+    search: blogPlainTextSchema(100).default(""),
+    filter: z
+      .enum(["ALL", "RECENT", "USED", "UNUSED", "LANDSCAPE", "PORTRAIT", "SQUARE"])
+      .default("ALL"),
+    status: z.enum(["READY", "ARCHIVED"]).default("READY"),
+  })
+  .strict();
+export const navigationUpdateSchema = z
+  .object({
+    items: z
+      .array(
+        z
+          .object({
+            systemKey: z
+              .string()
+              .trim()
+              .min(1)
+              .max(80)
+              .regex(/^[A-Z0-9_]+$/),
+            label: blogPlainTextSchema(80).min(1),
+            href: z
+              .string()
+              .trim()
+              .startsWith("/")
+              .max(200)
+              .refine((value) => !value.startsWith("//")),
+            enabled: z.boolean(),
+            sortOrder: z.number().int().min(0).max(100),
+            version: z.number().int().positive(),
+          })
+          .strict(),
+      )
+      .max(20),
+  })
+  .strict();
+export const siteSettingsUpdateSchema = z
+  .object({
+    brandTagline: blogPlainTextSchema(160).optional(),
+    primaryCtaLabel: blogPlainTextSchema(80).optional(),
+    footerDescription: blogPlainTextSchema(500).optional(),
+    contactEmail: z.union([z.literal(""), z.email().max(254)]).optional(),
+    contactPhone: z
+      .union([
+        z.literal(""),
+        z
+          .string()
+          .trim()
+          .regex(/^[+()\- .0-9]{7,32}$/),
+      ])
+      .optional(),
+  })
+  .strict();
+
+export type MarketingPageContent = z.infer<typeof marketingPageContentSchema>;
+export type MarketingPageUpdateInput = z.infer<typeof marketingPageUpdateSchema>;
+export type MarketingPageRestoreInput = z.infer<typeof marketingPageRestoreSchema>;
+export type PublicMediaUpdateInput = z.infer<typeof publicMediaUpdateSchema>;
+export type PublicMediaListQuery = z.infer<typeof publicMediaListQuerySchema>;
+export type NavigationUpdateInput = z.infer<typeof navigationUpdateSchema>;
+export type SiteSettingsUpdateInput = z.infer<typeof siteSettingsUpdateSchema>;

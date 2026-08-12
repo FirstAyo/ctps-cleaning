@@ -63,3 +63,5 @@ Phase 10 adds no business role or permission. Deployment, migration, backup, res
 and environment access are host-operator capabilities outside browser RBAC and must be limited
 through Linux, Docker, and file permissions. Super Admin remains an application role, not automatic
 VPS or database-root authority.
+
+Phase 11 adds granular page, navigation, site-settings, and public-media permissions. SUPER_ADMIN receives the full catalogue through the idempotent access initializer. ADMIN is not automatically expanded, and AUTHOR does not receive whole-site editing. Page SEO and publication are distinct permissions; every API endpoint enforces them server-side.

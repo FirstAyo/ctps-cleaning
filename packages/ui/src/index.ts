@@ -1,6 +1,7 @@
 export * from "./content";
 export * from "./layout";
 export * from "./image-comparison";
+export * from "./icons";
 export * from "./navigation";
 export * from "./primitives";
 export { StatusBadge } from "./status-badge";

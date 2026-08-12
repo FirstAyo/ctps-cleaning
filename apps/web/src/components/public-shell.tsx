@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Container } from "@ctps/ui/layout";
 import { Button, IconButton, LinkButton } from "@ctps/ui/primitives";
 import { ThemeToggle } from "@ctps/ui/theme";
+import { ChevronDown, Menu, Sparkles, X } from "@ctps/ui/icons";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -35,6 +36,9 @@ function active(pathname: string, href: string) {
 export function PublicHeader() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [managedNavigation, setManagedNavigation] = useState<
+    readonly { label: string; href: string }[] | null
+  >(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLElement>(null);
   useEffect(() => {
@@ -52,6 +56,17 @@ export function PublicHeader() {
       trigger?.focus();
     };
   }, [open]);
+  useEffect(() => {
+    void fetch("/api/marketing/navigation")
+      .then((response) => response.json())
+      .then((value: { items?: { label: string; href: string }[] }) => {
+        if (value.items?.length) setManagedNavigation(value.items);
+      })
+      .catch(() => undefined);
+  }, []);
+  const navigation = (managedNavigation ?? primaryNavigation).filter(
+    (item) => item.href !== "/services",
+  );
   return (
     <>
       <div className="bg-secondary py-2 text-center text-xs font-semibold tracking-wide text-secondary-foreground">
@@ -68,7 +83,7 @@ export function PublicHeader() {
               aria-hidden="true"
               className="grid size-10 place-items-center rounded-md bg-secondary text-secondary-foreground"
             >
-              C
+              <Sparkles aria-hidden="true" className="size-5" />
             </span>
             <span>
               CTPS{" "}
@@ -82,10 +97,7 @@ export function PublicHeader() {
               <summary
                 className={`flex min-h-11 cursor-pointer list-none items-center rounded-md px-3 text-sm font-semibold hover:bg-surface-muted ${active(pathname, "/services") ? "text-primary" : ""}`}
               >
-                Services{" "}
-                <span aria-hidden="true" className="ml-1">
-                  ⌄
-                </span>
+                Services <ChevronDown aria-hidden="true" className="ml-1 size-4" />
               </summary>
               <div className="absolute left-0 z-20 mt-1 w-64 rounded-md border border-border bg-popover p-2 shadow-[var(--shadow-md)]">
                 <Link
@@ -105,7 +117,7 @@ export function PublicHeader() {
                 ))}
               </div>
             </details>
-            {primaryNavigation.map((link) => (
+            {navigation.map((link) => (
               <Link
                 aria-current={active(pathname, link.href) ? "page" : undefined}
                 className="rounded-md px-2.5 py-2 text-sm font-semibold hover:bg-surface-muted aria-[current=page]:text-primary"
@@ -128,7 +140,7 @@ export function PublicHeader() {
               size="icon"
               variant="outline"
             >
-              <span aria-hidden="true">Menu</span>
+              <Menu aria-hidden="true" />
             </Button>
           </div>
         </Container>
@@ -149,7 +161,7 @@ export function PublicHeader() {
               <div className="mb-5 flex items-center justify-between">
                 <strong>CTPS navigation</strong>
                 <IconButton aria-label="Close navigation menu" onClick={() => setOpen(false)}>
-                  ×
+                  <X aria-hidden="true" />
                 </IconButton>
               </div>
               <div className="grid gap-1">
@@ -168,7 +180,7 @@ export function PublicHeader() {
                     </Link>
                   ))}
                 </div>
-                {primaryNavigation.map((link) => (
+                {navigation.map((link) => (
                   <Link
                     aria-current={active(pathname, link.href) ? "page" : undefined}
                     className="mobile-nav-link aria-[current=page]:text-primary"
@@ -222,6 +234,13 @@ const footerGroups = [
 ] as const;
 
 export function PublicFooter() {
+  const [settings, setSettings] = useState<Record<string, string>>({});
+  useEffect(() => {
+    void fetch("/api/marketing/site-settings")
+      .then((response) => response.json())
+      .then((value: Record<string, string>) => setSettings(value))
+      .catch(() => undefined);
+  }, []);
   return (
     <footer className="border-t border-sidebar-border bg-sidebar py-14 text-sidebar-foreground">
       <Container size="wide">
@@ -229,11 +248,13 @@ export function PublicFooter() {
           <div>
             <p className="text-2xl font-bold">CTPS</p>
             <p className="mt-3 max-w-xs text-sm text-sidebar-muted">
-              Residential and commercial property-care inquiries across six Metro Vancouver
-              communities.
+              {settings.footerDescription ??
+                "Residential and commercial property-care inquiries across six British Columbia communities."}
             </p>
             <p className="mt-4 max-w-xs text-sm text-sidebar-muted">
-              Contact details will be added before production.
+              {settings.contactEmail || settings.contactPhone
+                ? [settings.contactEmail, settings.contactPhone].filter(Boolean).join(" · ")
+                : "Contact details will be added before production."}
             </p>
           </div>
           {footerGroups.map((group) => (

@@ -15,6 +15,14 @@ export default async function ProtectedLayout({
     { href: "/dashboard", label: "Dashboard" },
     { href: "/account", label: "Account & sessions" },
   ];
+  if (identity.permissions.includes("pages.read"))
+    navigation.splice(1, 0, { href: "/pages", label: "Marketing Pages" });
+  if (identity.permissions.includes("mediaLibrary.read"))
+    navigation.splice(2, 0, { href: "/media-library", label: "Public Media" });
+  if (identity.permissions.includes("navigation.read"))
+    navigation.splice(3, 0, { href: "/navigation", label: "Navigation" });
+  if (identity.permissions.includes("siteSettings.read"))
+    navigation.splice(4, 0, { href: "/site-settings", label: "Site Settings" });
   if (
     identity.permissions.includes("jobs.read") ||
     identity.permissions.includes("jobs.readAssigned")

@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document defines a provider-neutral plan for service, blog, author, project, Open Graph, and customer-upload media. Phase 4 introduced committed development illustrations. Phase 5 adds managed before-and-after storage. Phase 6 adds a separate, private-only customer quote upload workflow; a general media library remains unimplemented.
+This document defines a provider-neutral plan for service, blog, author, project, Open Graph, and customer-upload media. Phase 4 introduced committed development illustrations. Phase 5 adds managed before-and-after storage. Phase 6 adds a separate, private-only customer quote upload workflow. Phase 11 and 11.1 implement the dedicated Public Media Library for controlled marketing-page photography.
 
 ## Phase 4 local assets
 
@@ -48,3 +48,9 @@ configured root safely for readiness, and provides checksum-verified archive/iso
 tooling. Database and media backups use a coordinated quiet window because they cannot share a
 transaction. Malware scanning, off-host provider, approved retention, and automatic orphan
 reconciliation remain launch decisions.
+
+Phase 11 adds isolated `storage/public/marketing`; Phase 11.1 completes its reusable management workflow. Verified JPEG/PNG/WebP inputs are auto-oriented and re-encoded—without retained EXIF/GPS or raw bytes—into WebP `original` (3200/q92), `hero` (2400/q90), `large` (1800/q88), `standard` (1200/q84), `card` (800/q82), and `thumbnail` (360/q76) variants, without upscaling. Files use generated UUID storage keys; PostgreSQL stores only metadata, relationships, checksums, lifecycle state, and variant records.
+
+The Public Media Library supports parameterized search, bounded pagination, useful usage/orientation filters, metadata and 0–100 focal-point editing, lifecycle-specific Draft/Published references, usage inspection, archive/restore, and referenced-deletion protection. Reusing an asset creates a new reference rather than copying bytes. Archived assets are excluded from new selection but remain readable by existing Published content. Database-creation failure after file processing triggers best-effort removal of the generated UUID directory; operators should continue periodic orphan reconciliation as a defense-in-depth task.
+
+Homepage direct-library mappings are Hero, ordered Services, Residential/Commercial, and Final CTA. Why CTPS currently has no image slot. Featured Transformation and Selected Work keep their Published Before & After source, while Insights keeps its Published Blog source. The library never enumerates or promotes quote, job, blog-draft, private Before & After, or other private media. See `premium-ui-and-marketing-cms.md`.

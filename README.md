@@ -115,3 +115,5 @@ release-ready but no real VPS deployment is performed by repository commands.
 Phase 9 private operational jobs, Vancouver scheduling, assignments, fulfilment, private media,
 and outbox notifications are documented in `docs/jobs-scheduling-implementation.md`; run
 `pnpm jobs:send-reminders` from a VPS-compatible scheduler.
+
+Phase 11 adds the premium photography-led homepage, controlled marketing-page CMS, public-only media library, navigation/site settings, and premium Admin authoring surfaces. Apply migrations and permissions, then run `pnpm marketing:initialize`; it creates only missing fixed pages and does not overwrite edits. See `docs/premium-ui-and-marketing-cms.md`.

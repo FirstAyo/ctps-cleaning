@@ -80,6 +80,7 @@ export function PortfolioEmpty() {
   );
 }
 export function FeaturedProject({ project }: { readonly project: PublicProject | null }) {
+  if (!project) return null;
   return (
     <Section className="bg-surface-muted/55">
       <Container>
@@ -98,18 +99,7 @@ export function FeaturedProject({ project }: { readonly project: PublicProject |
             </div>
             <ProjectComparison priority project={project} />
           </div>
-        ) : (
-          <>
-            <SectionHeading
-              eyebrow="Before & after"
-              title="Approved project stories are on the way."
-              copy="CTPS has not published a featured managed project yet. The portfolio will appear here only after real images and accessible descriptions pass review."
-            />
-            <div className="mt-8">
-              <PortfolioEmpty />
-            </div>
-          </>
-        )}
+        ) : null}
       </Container>
     </Section>
   );

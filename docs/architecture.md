@@ -73,3 +73,7 @@ Root workspace, Docker, and infrastructure files are deferred to Phase 1 or late
 Phase 7 keeps the estimator boundary explicit: PostgreSQL owns versioned business configuration and immutable result snapshots; `packages/pricing` owns the pure deterministic integer-cents engine; the API owns calculation, persistence, transfer validation, and protected administration; public web and admin remain separate consumers. See `estimator-implementation.md`.
 
 MFA, email-based recovery, audit retention, general job queue, cache, richer inline editing, analytics, observability stack, storage cutover criteria, backup schedule/RPO/RTO, multi-VPS needs, and whether web/admin deploy as separate processes remain future decisions. Phase 5 local media paths and limits are recorded in `before-after-implementation.md`; Phase 8 blog scheduling uses the bounded `blog:publish-due` CLI rather than a hosted cron dependency.
+
+## Phase 11 marketing content boundary
+
+The API owns fixed marketing-page identities, Draft/Published snapshots, revisions, validation, publication, navigation, site settings, public-media processing, authorization, and audit. Web server-renders Published content only; Admin reads Drafts through authenticated APIs and sends mutations through an exact BFF allowlist. `storage/public/marketing` is independent from before/after, blog, quote, and job namespaces. See `premium-ui-and-marketing-cms.md`.

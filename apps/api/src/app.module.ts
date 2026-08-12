@@ -9,6 +9,7 @@ import { QuoteRequestsModule } from "./quote-requests/quote-requests.module";
 import { EstimatorModule } from "./estimator/estimator.module";
 import { BlogModule } from "./blog/blog.module";
 import { JobsModule } from "./jobs/jobs.module";
+import { MarketingModule } from "./marketing/marketing.module";
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { JobsModule } from "./jobs/jobs.module";
     EstimatorModule,
     BlogModule,
     JobsModule,
+    MarketingModule,
     HealthModule,
   ],
 })

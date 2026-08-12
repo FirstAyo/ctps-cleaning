@@ -125,3 +125,7 @@ Phase 10 adds honest Privacy, Terms, and Accessibility foundations marked for bu
 review, plus safe global error/not-found states. They do not claim certification or invent
 contact/legal guarantees. Release QA and content approval gates are tracked in `qa-matrix.md` and
 `release-checklist.md`.
+
+## Phase 11 premium marketing surfaces
+
+The homepage uses a controlled Published section sequence and a cinematic 78–88vh Hero with up to four images, fixed copy, approved overlays, gentle crossfade, tab pause, reduced-motion fallback, accessible controls, and responsive variants. Header labels/visibility/order and approved footer fields are managed without changing canonical routes. Services, property types, proof, process, areas, editorial previews, and final CTA retain approved business language and do not introduce testimonials or claims. See `premium-ui-and-marketing-cms.md`.

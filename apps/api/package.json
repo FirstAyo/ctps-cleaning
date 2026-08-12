@@ -11,6 +11,8 @@
     "test": "vitest run",
     "auth:initialize": "dotenv -e ../../.env -- tsx src/cli/initialize-auth.ts",
     "auth:bootstrap-super-admin": "dotenv -e ../../.env -- tsx src/cli/bootstrap-super-admin.ts",
+    "marketing:initialize": "dotenv -e ../../.env -- tsx src/cli/initialize-marketing-content.ts",
+    "verify:marketing-media-runtime": "dotenv -e ../../.env -- tsx src/cli/verify-marketing-media-runtime.ts",
     "verify:auth-runtime": "dotenv -e ../../.env -- tsx src/cli/verify-auth-runtime.ts",
     "verify:before-after-runtime": "dotenv -e ../../.env -- tsx src/cli/verify-before-after-runtime.ts",
     "verify:quote-request-runtime": "dotenv -e ../../.env -- tsx src/cli/verify-quote-request-runtime.ts",

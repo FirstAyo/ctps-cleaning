@@ -5,6 +5,25 @@ import { Avatar } from "@ctps/ui/content";
 import { Breadcrumb } from "@ctps/ui/navigation";
 import { Button, IconButton } from "@ctps/ui/primitives";
 import { ThemeToggle } from "@ctps/ui/theme";
+import {
+  BookOpen,
+  BriefcaseBusiness,
+  CalendarDays,
+  CircleDollarSign,
+  ClipboardList,
+  FileText,
+  Gauge,
+  ImageIcon,
+  LayoutDashboard,
+  Menu,
+  Navigation,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Settings,
+  ShieldCheck,
+  Users,
+  X,
+} from "@ctps/ui/icons";
 import { cn } from "@ctps/ui/utils";
 import Link from "next/link";
 
@@ -58,27 +77,51 @@ function SidebarNavigation({
   readonly onNavigate?: () => void;
 }) {
   return (
-    <nav aria-label="Demonstration admin navigation" className="grid gap-1 p-3">
-      {items.map((item, index) => (
-        <Link
-          {...(collapsed ? { "aria-label": item.label } : {})}
-          className={cn(
-            "flex min-h-10 items-center gap-3 rounded-md px-3 text-sm font-medium text-sidebar-muted hover:bg-sidebar-accent hover:text-sidebar-foreground",
-            index === 0 && "bg-sidebar-accent text-sidebar-foreground",
-          )}
-          href={item.href}
-          key={`${item.href}:${item.label}`}
-          {...(onNavigate ? { onClick: onNavigate } : {})}
-        >
-          <span
-            aria-hidden="true"
-            className="grid size-5 shrink-0 place-items-center rounded-sm border border-sidebar-border text-[0.65rem]"
+    <nav aria-label="Administration navigation" className="grid gap-1 p-3">
+      {items.map((item) => {
+        const Icon =
+          item.href === "/dashboard"
+            ? LayoutDashboard
+            : item.href.startsWith("/pages")
+              ? FileText
+              : item.href.startsWith("/media-library")
+                ? ImageIcon
+                : item.href.startsWith("/navigation")
+                  ? Navigation
+                  : item.href.startsWith("/site-settings")
+                    ? Settings
+                    : item.href.startsWith("/jobs/calendar")
+                      ? CalendarDays
+                      : item.href.startsWith("/jobs")
+                        ? BriefcaseBusiness
+                        : item.href.startsWith("/blog")
+                          ? BookOpen
+                          : item.href.startsWith("/pricing") || item.href.startsWith("/estimator")
+                            ? CircleDollarSign
+                            : item.href.startsWith("/quote") ||
+                                item.href.startsWith("/before-after")
+                              ? ClipboardList
+                              : item.href.startsWith("/users") || item.href.startsWith("/account")
+                                ? Users
+                                : item.href.startsWith("/roles") || item.href.startsWith("/audit")
+                                  ? ShieldCheck
+                                  : Gauge;
+        return (
+          <Link
+            {...(collapsed ? { "aria-label": item.label } : {})}
+            className={cn(
+              "flex min-h-10 items-center gap-3 rounded-md px-3 text-sm font-medium text-sidebar-muted hover:bg-sidebar-accent hover:text-sidebar-foreground",
+              item.href === "/dashboard" && "bg-sidebar-accent text-sidebar-foreground",
+            )}
+            href={item.href}
+            key={`${item.href}:${item.label}`}
+            {...(onNavigate ? { onClick: onNavigate } : {})}
           >
-            {index + 1}
-          </span>
-          {collapsed ? <span className="sr-only">{item.label}</span> : <span>{item.label}</span>}
-        </Link>
-      ))}
+            <Icon aria-hidden="true" className="size-4 shrink-0" strokeWidth={1.8} />
+            {collapsed ? <span className="sr-only">{item.label}</span> : <span>{item.label}</span>}
+          </Link>
+        );
+      })}
     </nav>
   );
 }
@@ -138,7 +181,11 @@ export function AdminShell({
             className="text-sidebar-foreground hover:bg-sidebar-accent"
             onClick={() => setCollapsed((value) => !value)}
           >
-            {collapsed ? ">" : "<"}
+            {collapsed ? (
+              <PanelLeftOpen aria-hidden="true" />
+            ) : (
+              <PanelLeftClose aria-hidden="true" />
+            )}
           </IconButton>
         </div>
         <div className="overflow-y-auto">
@@ -165,7 +212,7 @@ export function AdminShell({
               size="icon"
               variant="outline"
             >
-              Menu
+              <Menu aria-hidden="true" />
             </Button>
             <div>
               <p className="text-sm font-semibold">
@@ -215,7 +262,7 @@ export function AdminShell({
                 className="text-sidebar-foreground hover:bg-sidebar-accent"
                 onClick={() => setMobileOpen(false)}
               >
-                ×
+                <X aria-hidden="true" />
               </IconButton>
             </div>
             <SidebarNavigation items={navigationItems} onNavigate={() => setMobileOpen(false)} />

@@ -106,6 +106,21 @@ export const PERMISSION_KEYS = {
   JOBS_MANAGE_CUSTOMER_NOTIFICATIONS: "jobs.manageCustomerNotifications",
   JOBS_OVERRIDE_CONFLICTS: "jobs.overrideConflicts",
   JOBS_OVERRIDE_COMPLETION: "jobs.overrideCompletion",
+  PAGES_READ: "pages.read",
+  PAGES_UPDATE: "pages.update",
+  PAGES_PUBLISH: "pages.publish",
+  PAGES_PREVIEW: "pages.preview",
+  PAGES_MANAGE_SEO: "pages.manageSeo",
+  NAVIGATION_READ: "navigation.read",
+  NAVIGATION_UPDATE: "navigation.update",
+  SITE_SETTINGS_READ: "siteSettings.read",
+  SITE_SETTINGS_UPDATE: "siteSettings.update",
+  MEDIA_LIBRARY_READ: "mediaLibrary.read",
+  MEDIA_LIBRARY_UPLOAD: "mediaLibrary.upload",
+  MEDIA_LIBRARY_UPDATE: "mediaLibrary.update",
+  MEDIA_LIBRARY_ARCHIVE: "mediaLibrary.archive",
+  MEDIA_LIBRARY_RESTORE: "mediaLibrary.restore",
+  MEDIA_LIBRARY_DELETE: "mediaLibrary.delete",
 } as const;
 
 export type PermissionKey = (typeof PERMISSION_KEYS)[keyof typeof PERMISSION_KEYS];
@@ -124,7 +139,11 @@ export type PermissionGroup =
   | "Blog Taxonomy"
   | "Authors"
   | "Blog Revisions"
-  | "Jobs";
+  | "Jobs"
+  | "Website Pages"
+  | "Website Navigation"
+  | "Site Settings"
+  | "Media Library";
 
 export interface PermissionDefinition {
   readonly key: PermissionKey;
@@ -679,6 +698,117 @@ export const PERMISSION_DEFINITIONS: readonly PermissionDefinition[] = [
       ],
     ] as const
   ).map(([key, label, description]) => ({ key, label, description, group: "Jobs" as const })),
+  ...(
+    [
+      [
+        PERMISSION_KEYS.PAGES_READ,
+        "Read marketing pages",
+        "View controlled marketing pages and revisions.",
+      ],
+      [
+        PERMISSION_KEYS.PAGES_UPDATE,
+        "Update marketing pages",
+        "Save validated marketing-page drafts and section order.",
+      ],
+      [
+        PERMISSION_KEYS.PAGES_PUBLISH,
+        "Publish marketing pages",
+        "Publish or restore controlled marketing-page revisions.",
+      ],
+      [
+        PERMISSION_KEYS.PAGES_PREVIEW,
+        "Preview marketing pages",
+        "Preview authenticated marketing-page drafts.",
+      ],
+      [
+        PERMISSION_KEYS.PAGES_MANAGE_SEO,
+        "Manage page SEO",
+        "Edit controlled page metadata and social images.",
+      ],
+    ] as const
+  ).map(([key, label, description]) => ({
+    key,
+    label,
+    description,
+    group: "Website Pages" as const,
+  })),
+  ...(
+    [
+      [
+        PERMISSION_KEYS.NAVIGATION_READ,
+        "Read website navigation",
+        "View controlled public navigation items.",
+      ],
+      [
+        PERMISSION_KEYS.NAVIGATION_UPDATE,
+        "Update website navigation",
+        "Edit labels, visibility, and order for approved destinations.",
+      ],
+    ] as const
+  ).map(([key, label, description]) => ({
+    key,
+    label,
+    description,
+    group: "Website Navigation" as const,
+  })),
+  ...(
+    [
+      [
+        PERMISSION_KEYS.SITE_SETTINGS_READ,
+        "Read site settings",
+        "View controlled public brand and contact settings.",
+      ],
+      [
+        PERMISSION_KEYS.SITE_SETTINGS_UPDATE,
+        "Update site settings",
+        "Edit validated public site settings without executable content.",
+      ],
+    ] as const
+  ).map(([key, label, description]) => ({
+    key,
+    label,
+    description,
+    group: "Site Settings" as const,
+  })),
+  ...(
+    [
+      [
+        PERMISSION_KEYS.MEDIA_LIBRARY_READ,
+        "Read public media library",
+        "View approved reusable public marketing media.",
+      ],
+      [
+        PERMISSION_KEYS.MEDIA_LIBRARY_UPLOAD,
+        "Upload public media",
+        "Upload and process public marketing images.",
+      ],
+      [
+        PERMISSION_KEYS.MEDIA_LIBRARY_UPDATE,
+        "Update public media",
+        "Edit public media metadata and focal points.",
+      ],
+      [
+        PERMISSION_KEYS.MEDIA_LIBRARY_ARCHIVE,
+        "Archive public media",
+        "Hide public media from new selections without breaking existing published references.",
+      ],
+      [
+        PERMISSION_KEYS.MEDIA_LIBRARY_RESTORE,
+        "Restore public media",
+        "Return archived public media to the active picker catalogue.",
+      ],
+      [
+        PERMISSION_KEYS.MEDIA_LIBRARY_DELETE,
+        "Delete public media",
+        "Archive or delete unreferenced public marketing media.",
+      ],
+    ] as const
+  ).map(([key, label, description]) => ({
+    key,
+    label,
+    description,
+    group: "Media Library" as const,
+  })),
 ] as const;
 
 export const ALL_PERMISSION_KEYS = PERMISSION_DEFINITIONS.map(({ key }) => key);

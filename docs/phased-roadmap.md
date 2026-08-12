@@ -53,6 +53,10 @@ foundations, monitoring/incident/retention guidance, QA matrix, and deployment/u
 runbooks. Real VPS, DNS, certificate, firewall, SSH, monitoring-provider, and production-secret
 changes remain operator-controlled and were not performed.
 
+## Phase 11 — Premium public UI and controlled marketing CMS (implemented)
+
+Implemented the photography-led premium homepage, fixed-key structured marketing pages, Draft/Published revisions and authenticated preview, isolated public media library, navigation/site settings, granular permissions/audit, and premium Admin authoring surfaces. Phase 11 builds on Phase 3 authorization and preserves existing private-media and operational boundaries. See `premium-ui-and-marketing-cms.md`.
+
 ## Cross-phase gates
 
 Every phase must preserve VPS portability, private/public data boundaries, server authorization, accessibility, deterministic money handling, no fabricated content, tested migration/rollback plans where relevant, and honest documentation of what is actually shipped. Any protected administration added in Phases 5–9 must use the authentication, authorization, protected-route, admin-shell, Super Admin, and audit foundations completed in Phase 3; feature phases may extend those controls but must not defer or bypass them.

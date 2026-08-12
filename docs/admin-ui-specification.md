@@ -106,3 +106,15 @@ release QA covers current Chrome, Edge, Firefox, and Safari/WebKit; desktop/mobi
 themes; keyboard; screen-reader semantics; session expiry; conflicts; and private-media denial. No
 privileged diagnostics page was added: health and release metadata remain minimal and
 operator-facing.
+
+## Phase 11 content administration
+
+The protected Admin adds grouped, icon-led navigation plus Marketing Pages, Public Media, Navigation, and Site Settings workspaces. Page editing is structured and human-readable: section show/hide and reorder, safe copy fields, Hero presets, media selection, SEO sidebar, Save Draft, authenticated Preview, Publish, and revision history. Fixed keys/routes and all validation remain server-controlled. Operational domains inherit the shared visual language without business-logic changes.
+
+### Phase 11.1 public media editing
+
+Public Media is a responsive visual workspace rather than a table. It provides labeled search, Ready/Archived state, recent/usage/orientation filters, 24-item pages, thumbnail cards with non-color selection state, loading/error/empty messages, upload queue, metadata detail, upload provenance, focal-point editing, safe usage references, and permission-gated archive/restore/delete actions. Referenced deletion stays disabled in the UI and is independently rejected by the API.
+
+`MarketingImageField` is the reusable section control. It shows selected thumbnails, semantic slot guidance, remove and reorder controls, “Choose from Media Library,” and “Upload New Image.” Its large native dialog supplies server pagination/search/filtering, a responsive thumbnail grid, selection count, selected-asset detail, inline multi-upload, Cancel, and Use action. Native modal behavior supplies focus containment and Escape; closing restores trigger focus. Visible labels, `aria-pressed`, status live regions, 44px controls, keyboard-operable focal ranges, and full-height mobile layout cover the accessibility baseline.
+
+The Homepage uses the field for Hero (maximum four), ordered Services, Residential/Commercial, and Final CTA. Why CTPS does not currently use photography. Featured Transformation/Selected Work and Insights keep their canonical Before & After and Blog selectors. The approved public composition and copy remain unchanged.

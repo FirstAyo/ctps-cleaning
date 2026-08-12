@@ -202,6 +202,25 @@ enum ServiceJobIncidentSeverity {
   CRITICAL
 }
 
+enum MarketingPageStatus {
+  DRAFT
+  PUBLISHED
+}
+
+enum PublicMediaStatus {
+  READY
+  ARCHIVED
+}
+
+enum PublicMediaVariantKind {
+  ORIGINAL
+  HERO
+  LARGE
+  STANDARD
+  CARD
+  THUMBNAIL
+}
+
 model User {
   id                         String                      @id @default(uuid()) @db.Uuid
   email                      String                      @unique @db.VarChar(254)
@@ -242,6 +261,13 @@ model User {
   reportedServiceIncidents   ServiceJobIncident[]          @relation("ServiceJobIncidentReporter")
   resolvedServiceIncidents   ServiceJobIncident[]          @relation("ServiceJobIncidentResolver")
   serviceJobActivities       ServiceJobActivity[]          @relation("ServiceJobActivityActor")
+  createdMarketingPages      MarketingPage[]               @relation("MarketingPageCreatedBy")
+  updatedMarketingPages      MarketingPage[]               @relation("MarketingPageUpdatedBy")
+  publishedMarketingPages    MarketingPage[]               @relation("MarketingPagePublishedBy")
+  marketingPageRevisions     MarketingPageRevision[]       @relation("MarketingPageRevisionActor")
+  uploadedPublicMedia        PublicMediaAsset[]             @relation("PublicMediaUploader")
+  updatedNavigationItems     NavigationItem[]               @relation("NavigationItemUpdater")
+  updatedSiteSettings        SiteSetting[]                  @relation("SiteSettingUpdater")
 
   @@index([status])
   @@index([createdAt])
@@ -1009,6 +1035,146 @@ model BeforeAfterProjectMedia {
   @@unique([projectId, sortOrder])
   @@index([mediaId])
   @@index([projectId, category, sortOrder])
+}
+
+model MarketingPage {
+  id                  String                   @id @default(uuid()) @db.Uuid
+  pageKey             String                   @unique @db.VarChar(100)
+  slug                String                   @unique @db.VarChar(160)
+  title               String                   @db.VarChar(180)
+  navigationLabel     String?                  @db.VarChar(80)
+  pageType            String                   @db.VarChar(40)
+  status              MarketingPageStatus      @default(DRAFT)
+  draftContent        Json
+  publishedContent    Json?
+  seoTitle            String?                  @db.VarChar(70)
+  seoDescription      String?                  @db.VarChar(170)
+  ogTitle             String?                  @db.VarChar(70)
+  ogDescription       String?                  @db.VarChar(170)
+  socialImageId       String?                  @db.Uuid
+  version             Int                      @default(1)
+  publishedRevisionId String?                  @unique @db.Uuid
+  createdByUserId     String                   @db.Uuid
+  updatedByUserId     String                   @db.Uuid
+  publishedByUserId   String?                  @db.Uuid
+  createdAt           DateTime                 @default(now())
+  updatedAt           DateTime                 @updatedAt
+  publishedAt         DateTime?
+  createdBy           User                     @relation("MarketingPageCreatedBy", fields: [createdByUserId], references: [id], onDelete: Restrict)
+  updatedBy           User                     @relation("MarketingPageUpdatedBy", fields: [updatedByUserId], references: [id], onDelete: Restrict)
+  publishedBy         User?                    @relation("MarketingPagePublishedBy", fields: [publishedByUserId], references: [id], onDelete: SetNull)
+  socialImage         PublicMediaAsset?        @relation("MarketingPageSocialImage", fields: [socialImageId], references: [id], onDelete: SetNull)
+  publishedRevision   MarketingPageRevision?   @relation("PublishedMarketingRevision", fields: [publishedRevisionId], references: [id], onDelete: SetNull)
+  revisions           MarketingPageRevision[]  @relation("MarketingPageRevisions")
+  mediaReferences     MarketingPageMedia[]
+
+  @@index([status, updatedAt(sort: Desc)])
+  @@index([pageType, status])
+  @@index([socialImageId])
+}
+
+model MarketingPageRevision {
+  id              String         @id @default(uuid()) @db.Uuid
+  pageId          String         @db.Uuid
+  revisionNumber  Int
+  content         Json
+  seoSnapshot     Json
+  createdByUserId String         @db.Uuid
+  createdAt       DateTime       @default(now())
+  page            MarketingPage  @relation("MarketingPageRevisions", fields: [pageId], references: [id], onDelete: Cascade)
+  createdBy       User           @relation("MarketingPageRevisionActor", fields: [createdByUserId], references: [id], onDelete: Restrict)
+  publishedFor    MarketingPage? @relation("PublishedMarketingRevision")
+
+  @@unique([pageId, revisionNumber])
+  @@index([pageId, createdAt(sort: Desc)])
+}
+
+model PublicMediaAsset {
+  id               String                    @id @default(uuid()) @db.Uuid
+  originalFilename String                    @db.VarChar(255)
+  title            String                    @db.VarChar(160)
+  altText          String                    @db.VarChar(300)
+  caption          String?                   @db.VarChar(500)
+  mimeType         String                    @db.VarChar(100)
+  sizeBytes        Int
+  width            Int
+  height           Int
+  checksum         String                    @db.Char(64)
+  focalPointX      Int                       @default(50)
+  focalPointY      Int                       @default(50)
+  status           PublicMediaStatus         @default(READY)
+  uploadedByUserId String                    @db.Uuid
+  createdAt        DateTime                  @default(now())
+  updatedAt        DateTime                  @updatedAt
+  archivedAt       DateTime?
+  uploader         User                      @relation("PublicMediaUploader", fields: [uploadedByUserId], references: [id], onDelete: Restrict)
+  variants         PublicMediaVariant[]
+  pageReferences   MarketingPageMedia[]
+  socialImageFor   MarketingPage[]           @relation("MarketingPageSocialImage")
+
+  @@index([status, createdAt(sort: Desc)])
+  @@index([uploadedByUserId, createdAt(sort: Desc)])
+  @@index([checksum])
+}
+
+model PublicMediaVariant {
+  id         String                 @id @default(uuid()) @db.Uuid
+  mediaId    String                 @db.Uuid
+  kind       PublicMediaVariantKind
+  storageKey String                 @unique @db.VarChar(260)
+  mimeType   String                 @db.VarChar(100)
+  sizeBytes  Int
+  width      Int
+  height     Int
+  createdAt  DateTime               @default(now())
+  media      PublicMediaAsset       @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+  @@unique([mediaId, kind])
+  @@index([mediaId])
+}
+
+model MarketingPageMedia {
+  id        String           @id @default(uuid()) @db.Uuid
+  pageId    String           @db.Uuid
+  mediaId   String           @db.Uuid
+  usage     String           @db.VarChar(80)
+  sortOrder Int              @default(0)
+  createdAt DateTime         @default(now())
+  page      MarketingPage    @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  media     PublicMediaAsset @relation(fields: [mediaId], references: [id], onDelete: Restrict)
+
+  @@unique([pageId, mediaId, usage])
+  @@index([mediaId])
+  @@index([pageId, usage, sortOrder])
+}
+
+model NavigationItem {
+  id              String   @id @default(uuid()) @db.Uuid
+  systemKey       String   @unique @db.VarChar(80)
+  label           String   @db.VarChar(80)
+  href            String   @db.VarChar(200)
+  enabled         Boolean  @default(true)
+  sortOrder       Int      @default(0)
+  version         Int      @default(1)
+  updatedByUserId String   @db.Uuid
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  updatedBy       User     @relation("NavigationItemUpdater", fields: [updatedByUserId], references: [id], onDelete: Restrict)
+
+  @@index([enabled, sortOrder])
+}
+
+model SiteSetting {
+  id              String   @id @default(uuid()) @db.Uuid
+  key             String   @unique @db.VarChar(100)
+  value           Json
+  version         Int      @default(1)
+  updatedByUserId String   @db.Uuid
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  updatedBy       User     @relation("SiteSettingUpdater", fields: [updatedByUserId], references: [id], onDelete: Restrict)
+
+  @@index([updatedAt(sort: Desc)])
 }
 
 model Role {

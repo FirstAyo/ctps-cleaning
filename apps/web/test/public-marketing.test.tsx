@@ -33,16 +33,9 @@ function sourceFiles(path: string): string[] {
 describe("Phase 4 public marketing", () => {
   it("renders the complete homepage conversion architecture", async () => {
     const html = markup(await HomePage());
-    for (const section of [
-      "Property care without template thinking",
-      "Approved project stories are on the way",
-      "Clarity is part of the service",
-      "A four-step, quote-based process",
-      "Metro Vancouver coverage",
-      "A place reserved for verified voices",
-      "Practical property-care guidance",
-    ])
-      expect(html).toContain(section);
+    expect(html).toContain("A cleaner exterior starts with a precise plan");
+    expect(html).toContain("premium-hero");
+    expect(html).not.toMatch(/coming soon|no articles have been published|on the way/i);
   });
 
   it("renders the service overview and every configured service template", () => {

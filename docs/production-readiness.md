@@ -27,3 +27,5 @@ A cautious single-VPS evaluation can begin with 4 vCPU, 8 GiB RAM, SSD capacity 
 ## Remaining launch approvals
 
 Real logo/contact/address/hours, approved imagery, verified testimonials, estimator prices, author biographies/articles, email sender, privacy/terms wording, retention, malware scanning, RPO/RTO, monitoring destination, and incident contacts require business or legal approval. No fake replacement may be published.
+
+Phase 11 deployment additionally requires `MARKETING_MEDIA_PUBLIC_ROOT` on the public-media volume, `pnpm auth:initialize`, and idempotent `pnpm marketing:initialize` after a Super Admin exists. Readiness probes the new root and normal media backups include it. Generated architectural Hero placeholders require approval or replacement; do not publish unapproved assets.

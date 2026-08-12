@@ -17,6 +17,10 @@
       "types": "./dist/image-comparison.d.ts",
       "default": "./dist/image-comparison.js"
     },
+    "./icons": {
+      "types": "./dist/icons.d.ts",
+      "default": "./dist/icons.js"
+    },
     "./layout": {
       "types": "./dist/layout.d.ts",
       "default": "./dist/layout.js"
@@ -59,6 +63,7 @@
   },
   "dependencies": {
     "clsx": "^2.1.1",
+    "lucide-react": "^1.31.0",
     "tailwind-merge": "^3.3.1"
   },
   "devDependencies": {

@@ -25,6 +25,8 @@
     "db:studio": "pnpm --filter @ctps/database db:studio",
     "auth:initialize": "pnpm --filter @ctps/api auth:initialize",
     "auth:bootstrap-super-admin": "pnpm --filter @ctps/api auth:bootstrap-super-admin",
+    "marketing:initialize": "pnpm --filter @ctps/api marketing:initialize",
+    "verify:marketing-media-runtime": "pnpm --filter @ctps/api verify:marketing-media-runtime",
     "verify:auth-runtime": "pnpm --filter @ctps/api verify:auth-runtime",
     "verify:before-after-runtime": "pnpm --filter @ctps/api verify:before-after-runtime",
     "verify:quote-request-runtime": "pnpm --filter @ctps/api verify:quote-request-runtime",

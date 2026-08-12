@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { adminApi, currentIdentity } from "@/lib/admin-api";
 import type { JobListItem } from "@/lib/job-types";
+import type { MarketingPageListItem, PublicMediaItem } from "@/lib/marketing-types";
 
 export default async function DashboardPage() {
   const identity = await currentIdentity();
@@ -15,8 +16,59 @@ export default async function DashboardPage() {
         "admin/jobs?page=1&pageSize=20&archived=false",
       )
     : null;
+  const marketing = identity.permissions.includes("pages.read")
+    ? await adminApi<{ items: MarketingPageListItem[] }>("admin/pages")
+    : null;
+  const publicMedia = identity.permissions.includes("mediaLibrary.read")
+    ? await adminApi<{ items: PublicMediaItem[] }>("admin/media-library")
+    : null;
   return (
     <div className="grid gap-6">
+      <section className="admin-dashboard-hero">
+        <p className="eyebrow text-primary">CTPS workspace</p>
+        <h2>Good to see you, {identity.displayName}.</h2>
+        <p>
+          Manage the public experience and operational work from one permission-aware workspace.
+        </p>
+        <div className="mt-6 flex flex-wrap gap-3">
+          {marketing ? (
+            <Link
+              className="rounded-md bg-primary px-4 py-2 font-semibold text-primary-foreground"
+              href="/pages"
+            >
+              Edit marketing pages
+            </Link>
+          ) : null}
+          {identity.permissions.includes("quoteRequests.read") ? (
+            <Link
+              className="rounded-md border border-sidebar-border px-4 py-2 font-semibold"
+              href="/quote-requests"
+            >
+              Review quote requests
+            </Link>
+          ) : null}
+        </div>
+      </section>
+      {marketing || publicMedia ? (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {marketing ? (
+            <Link className="admin-metric" href="/pages">
+              <span>Marketing pages</span>
+              <strong>{marketing.items.length}</strong>
+              <small>
+                {marketing.items.filter((page) => page.status === "PUBLISHED").length} published
+              </small>
+            </Link>
+          ) : null}
+          {publicMedia ? (
+            <Link className="admin-metric" href="/media-library">
+              <span>Public media</span>
+              <strong>{publicMedia.items.length}</strong>
+              <small>Isolated marketing assets</small>
+            </Link>
+          ) : null}
+        </div>
+      ) : null}
       <Card>
         <CardHeader>
           <CardTitle>Welcome, {identity.displayName}</CardTitle>

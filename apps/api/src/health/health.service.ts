@@ -60,6 +60,7 @@ export class HealthService {
   private async checkStorage(): Promise<void> {
     const roots = new Set([
       process.env.MEDIA_LOCAL_PUBLIC_ROOT ?? "../../storage/public/before-after",
+      process.env.MARKETING_MEDIA_PUBLIC_ROOT ?? "../../storage/public/marketing",
       process.env.MEDIA_LOCAL_PRIVATE_ROOT ?? "../../storage/private/before-after",
       process.env.QUOTE_PRIVATE_MEDIA_ROOT ?? "../../storage/private/quote-requests",
       process.env.BLOG_LOCAL_PUBLIC_ROOT ?? "../../storage/public/blog",

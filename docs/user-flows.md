@@ -53,3 +53,7 @@ reviews and deploys migrations, starts the internal topology behind Nginx/TLS, c
 representative workflows, configures locked schedulers/monitoring, and records the release. Upgrade
 failure uses prior compatible images or a reviewed forward correction. Backup restoration is
 rehearsed in isolation and never overwrites the main database by default.
+
+## Marketing editor flow
+
+An authorised editor opens a fixed page, changes approved fields or section order/visibility, selects public-library media, and saves a version-checked Draft. Visitors continue seeing the prior Published snapshot. The editor opens an authenticated noindex preview, then a user with `pages.publish` publishes. Restore selects an immutable revision and creates a new Draft version. Separate flows manage fixed-destination navigation and approved site fields. AUTHOR is denied unless explicitly granted.
