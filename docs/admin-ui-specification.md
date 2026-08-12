@@ -111,6 +111,12 @@ operator-facing.
 
 The protected Admin adds grouped, icon-led navigation plus Marketing Pages, Public Media, Navigation, and Site Settings workspaces. Page editing is structured and human-readable: section show/hide and reorder, safe copy fields, Hero presets, media selection, SEO sidebar, Save Draft, authenticated Preview, Publish, and revision history. Fixed keys/routes and all validation remain server-controlled. Operational domains inherit the shared visual language without business-logic changes.
 
+### Phase 11.2 page editing
+
+The fixed-page editor exposes page-specific labeled sections for Services, five services, About, Contact, Residential, Commercial, Service Areas, and six area pages. Entry controls cover title, description, safe destination, and contextual alt text rather than JSON. All marketing photography reuses `MarketingImageField`; Admin never chooses a generated variant.
+
+Project-proof controls list Published Before & After records available to the current permission set, and Save revalidates Published status. Draft/Preview/Publish, revisions, conflicts, media references, focal editing, and permissions remain intact. Blog post editing is deferred to Phase 11.3.
+
 ### Phase 11.1 public media editing
 
 Public Media is a responsive visual workspace rather than a table. It provides labeled search, Ready/Archived state, recent/usage/orientation filters, 24-item pages, thumbnail cards with non-color selection state, loading/error/empty messages, upload queue, metadata detail, upload provenance, focal-point editing, safe usage references, and permission-gated archive/restore/delete actions. Referenced deletion stays disabled in the UI and is independently rejected by the API.

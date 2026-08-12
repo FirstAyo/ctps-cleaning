@@ -4,7 +4,7 @@ import { CmsManagedPage } from "@/components/cms-managed-page";
 import { getMarketingMetadata } from "@/lib/marketing-api";
 const fallbackMetadata = metadataFor(
   "Contact",
-  "View the CTPS contact-page foundation and confirmed service-area summary.",
+  "Use Contact for general inquiries or Request a Quote for property-specific service requests.",
   "/contact",
 );
 export function generateMetadata() {

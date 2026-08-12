@@ -66,7 +66,7 @@ describe("Phase 4 public marketing", () => {
     expect(quote).toContain("Step 1 of 8");
     expect(quote).toContain("Property type");
     expect(quote).toContain("This is not a price, appointment, or booking");
-    expect(markup(<ContactPage />)).toContain("Contact submission not active");
+    expect(markup(<ContactPage />)).toContain("General contact unavailable");
   });
 
   it("renders accessible FAQ, comparison, and editorial foundations without fake records", () => {

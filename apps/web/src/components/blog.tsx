@@ -5,31 +5,37 @@ import Link from "next/link";
 import type { PublicBlogBlock, PublicBlogMedia, PublicBlogPost } from "@/lib/blog-api";
 
 const imagePath = (media: PublicBlogMedia, variant: string) => `/media/blog/${media.id}/${variant}`;
-export function BlogCard({ post }: { readonly post: PublicBlogPost }) {
+export function BlogCard({
+  post,
+  featured = false,
+}: {
+  readonly post: PublicBlogPost;
+  readonly featured?: boolean;
+}) {
   return (
-    <article className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+    <article className={`journal-card${featured ? " journal-card-featured" : ""}`}>
       {post.featuredMedia ? (
         <Link href={`/blog/${post.slug}`}>
           <img
             alt={post.featuredMedia.altText}
-            className="aspect-[16/9] w-full object-cover"
+            className="journal-card-image"
             loading="lazy"
             src={imagePath(post.featuredMedia, "featured")}
           />
         </Link>
       ) : null}
-      <div className="p-5">
-        <p className="text-sm text-muted-foreground">
+      <div className="journal-card-copy">
+        <p className="journal-meta">
           {new Intl.DateTimeFormat("en-CA", { dateStyle: "long" }).format(
             new Date(post.publishedAt),
           )}{" "}
           · {post.readingTimeMinutes} min read
         </p>
-        <h2 className="mt-2 text-2xl font-semibold">
+        <h2>
           <Link href={`/blog/${post.slug}`}>{post.title}</Link>
         </h2>
-        <p className="mt-3 text-muted-foreground">{post.excerpt}</p>
-        <p className="mt-4 text-sm">
+        <p>{post.excerpt}</p>
+        <p className="journal-byline">
           By{" "}
           {post.author.slug ? (
             <Link className="underline" href={`/blog/author/${post.author.slug}`}>
@@ -108,29 +114,31 @@ export function BlogArticle({
           <nav aria-label="Breadcrumb" className="text-sm">
             <Link href="/">Home</Link> / <Link href="/blog">Blog</Link> / <span>{post.title}</span>
           </nav>
-          <article className="mt-8">
-            <div className="mx-auto max-w-3xl">
-              <p className="text-sm text-muted-foreground">
+          <article className="journal-article">
+            <header className="journal-article-header">
+              <p className="journal-meta">
                 {new Intl.DateTimeFormat("en-CA", { dateStyle: "long" }).format(
                   new Date(post.publishedAt),
                 )}{" "}
                 · {post.readingTimeMinutes} min read
               </p>
-              <h1 className="mt-3 text-4xl font-semibold sm:text-5xl">{post.title}</h1>
-              <p className="mt-5 text-xl text-muted-foreground">{post.excerpt}</p>
+              <h1>{post.title}</h1>
+              <p className="journal-deck">{post.excerpt}</p>
               {post.featuredMedia ? (
                 <img
                   alt={post.featuredMedia.altText}
-                  className="mt-8 aspect-[16/9] w-full rounded-xl object-cover"
+                  className="journal-featured-image"
                   src={imagePath(post.featuredMedia, "featured")}
                 />
               ) : null}
-              <div className="prose prose-lg mt-10 max-w-none">
+            </header>
+            <div className="journal-article-body">
+              <div className="prose prose-lg max-w-none">
                 {post.content.map((block, index) => (
                   <PublicBlock block={block} key={index} media={media} />
                 ))}
               </div>
-              <footer className="mt-10 border-t pt-6">
+              <footer className="journal-author-footer">
                 <p>
                   Written by{" "}
                   {post.author.slug ? (
@@ -167,7 +175,7 @@ export function BlogArticle({
                     </Link>
                   ))}
                 </div>
-                <div className="mt-8 rounded-xl bg-primary p-6 text-primary-foreground">
+                <div className="journal-cta">
                   <h2 className="text-2xl font-semibold">Need a property-specific review?</h2>
                   <p className="mt-2">
                     Article guidance is general. CTPS can review your service request and property

@@ -23,6 +23,44 @@ const content = {
 };
 
 describe("marketing page media reference lifecycle", () => {
+  it("rejects a Draft project identifier at the trusted page-save boundary", async () => {
+    const service = new MarketingService(
+      {
+        client: {
+          publicMediaAsset: { count: vi.fn(async () => 0) },
+          beforeAfterProject: { count: vi.fn(async () => 0) },
+          blogPost: { count: vi.fn(async () => 0) },
+        },
+      } as never,
+      { record: vi.fn(async () => undefined) } as never,
+    );
+    await expect(
+      service.update(
+        "SERVICES",
+        {
+          version: 1,
+          title: "Services",
+          draftContent: {
+            sections: [
+              {
+                id: "proof",
+                type: "FEATURED_PROJECT",
+                enabled: true,
+                title: "Selected work",
+                items: [],
+                mediaIds: [],
+                projectIds: [crypto.randomUUID()],
+                postIds: [],
+              },
+            ],
+          },
+        } as never,
+        actorUserId,
+        false,
+      ),
+    ).rejects.toMatchObject({ response: { code: "PROJECT_NOT_AVAILABLE" } });
+  });
+
   it("replaces Draft references only and audits a changed selection", async () => {
     const deleteMany = vi.fn(async () => ({ count: 0 }));
     const createMany = vi.fn(async () => ({ count: 1 }));

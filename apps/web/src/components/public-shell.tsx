@@ -251,11 +251,11 @@ export function PublicFooter() {
               {settings.footerDescription ??
                 "Residential and commercial property-care inquiries across six British Columbia communities."}
             </p>
-            <p className="mt-4 max-w-xs text-sm text-sidebar-muted">
-              {settings.contactEmail || settings.contactPhone
-                ? [settings.contactEmail, settings.contactPhone].filter(Boolean).join(" · ")
-                : "Contact details will be added before production."}
-            </p>
+            {settings.contactEmail || settings.contactPhone ? (
+              <p className="mt-4 max-w-xs text-sm text-sidebar-muted">
+                {[settings.contactEmail, settings.contactPhone].filter(Boolean).join(" · ")}
+              </p>
+            ) : null}
           </div>
           {footerGroups.map((group) => (
             <nav aria-label={`${group.title} links`} key={group.title}>
@@ -276,8 +276,7 @@ export function PublicFooter() {
           ))}
         </div>
         <div className="mt-10 flex flex-wrap justify-between gap-3 border-t border-sidebar-border pt-6 text-sm text-sidebar-muted">
-          <span>© {new Date().getFullYear()} CTPS. Policy foundations require review.</span>
-          <Link href="/design-system">Design system preview</Link>
+          <span>© {new Date().getFullYear()} CTPS.</span>
         </div>
       </Container>
     </footer>

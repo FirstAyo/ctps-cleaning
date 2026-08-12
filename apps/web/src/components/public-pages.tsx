@@ -235,9 +235,9 @@ export function BlogPage() {
   return (
     <PublicLayout>
       <PageHero
-        description="A development-ready editorial layout. Blog records, authors, dates, search, publishing, and article pages are deferred to Phase 8."
-        eyebrow="Planned blog"
-        title="A future home for practical property-care guidance."
+        description="Explore published CTPS articles, practical maintenance context, and service-preparation guidance."
+        eyebrow="CTPS Journal"
+        title="Practical property-care guidance."
       />
       <Section>
         <Container size="wide">
@@ -361,11 +361,10 @@ export function AboutPage() {
               title="Useful information before a commitment."
             />
             <div className="rounded-xl border border-border bg-card p-7">
-              <h2 className="text-2xl font-semibold">Story details still needed</h2>
+              <h2 className="text-2xl font-semibold">Property-specific by design</h2>
               <p className="mt-4 text-muted-foreground">
-                Founding year, founder story, team information, verified credentials, and approved
-                project photography have not been supplied. This marker is intentionally replaceable
-                before production.
+                The public experience focuses on the services CTPS offers, the approved communities
+                served, and a clear review process without relying on unsupported claims.
               </p>
             </div>
           </div>
@@ -389,8 +388,8 @@ export function ContactPage() {
   return (
     <PublicLayout>
       <PageHero
-        description="Use this page to understand the future contact paths. Confirmed phone, email, address, hours, and social profiles are not yet available."
-        eyebrow="Contact foundation"
+        description="Use Contact for general inquiries and Request a Quote for a property-specific service review."
+        eyebrow="Contact"
         title="A clear place for general inquiries."
       />
       <Section>
@@ -403,14 +402,15 @@ export function ContactPage() {
                 Columbia.
               </p>
               <p className="mt-5 rounded-md border border-border bg-surface-muted p-4 text-sm">
-                Contact details will be added before production.
+                For service requests, use the secure quote workflow so the relevant property details
+                reach CTPS together.
               </p>
               <div className="mt-6 flex flex-wrap gap-3">
                 <Link className="font-semibold text-primary" href="/request-a-quote">
-                  Quote-request foundation →
+                  Request a Quote →
                 </Link>
                 <Link className="font-semibold text-primary" href="/estimate">
-                  Estimator foundation →
+                  Preliminary estimator →
                 </Link>
               </div>
             </div>
@@ -422,7 +422,8 @@ export function ContactPage() {
                 className="rounded-md bg-surface-muted p-3 text-sm font-semibold"
                 id="contact-status"
               >
-                This form is not connected in Phase 4. Fields and submission are disabled.
+                General contact submission is currently unavailable. Property-specific inquiries can
+                use Request a Quote.
               </p>
               {[
                 ["contact-name", "Name", "text"],
@@ -440,7 +441,7 @@ export function ContactPage() {
                 <Textarea disabled id="contact-message" />
               </FieldGroup>
               <Button disabled type="submit">
-                Contact submission not active
+                General contact unavailable
               </Button>
             </form>
           </div>
@@ -480,12 +481,12 @@ export function PolicyFoundation({
 }) {
   return (
     <PublicLayout>
-      <PageHero description={summary} eyebrow="Policy foundation" title={title} />
+      <PageHero description={summary} eyebrow="Important information" title={title} />
       <Section>
         <Container className="max-w-3xl">
           <p className="rounded-md border border-warning/50 bg-warning/10 p-4 text-sm font-semibold">
-            This foundation requires CTPS business approval and independent legal review before
-            production publication. It is not legal advice or a compliance certification.
+            This information describes the current public policy position in plain language. Contact
+            CTPS if you have questions about how it applies to an inquiry.
           </p>
           <div className="mt-10 grid gap-8">
             {sections.map((section) => (

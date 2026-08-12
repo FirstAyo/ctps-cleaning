@@ -5,7 +5,12 @@ import { Button } from "@ctps/ui/primitives";
 import { ChevronLeft, ChevronRight, Save, Upload } from "@ctps/ui/icons";
 import Link from "next/link";
 
-import type { MarketingPage, MarketingSection, PublicMediaItem } from "@/lib/marketing-types";
+import type {
+  MarketingPage,
+  MarketingProjectOption,
+  MarketingSection,
+  PublicMediaItem,
+} from "@/lib/marketing-types";
 import { MarketingImageField } from "./marketing-media-picker";
 
 async function mutation(path: string, method: "PATCH" | "POST", body: unknown) {
@@ -22,6 +27,7 @@ async function mutation(path: string, method: "PATCH" | "POST", body: unknown) {
 export function MarketingPageEditor({
   page: initialPage,
   media,
+  projects = [],
   canPublish,
   canSeo,
   canMediaUpload,
@@ -29,6 +35,7 @@ export function MarketingPageEditor({
 }: {
   readonly page: MarketingPage;
   readonly media: readonly PublicMediaItem[];
+  readonly projects?: readonly MarketingProjectOption[];
   readonly canPublish: boolean;
   readonly canSeo: boolean;
   readonly canMediaUpload: boolean;
@@ -54,6 +61,14 @@ export function MarketingPageEditor({
       [sections[index], sections[target]] = [sections[target]!, sections[index]!];
       return { ...current, draftContent: { sections } };
     });
+  const updateItem = (sectionIndex: number, itemIndex: number, update: Record<string, string>) => {
+    const section = page.draftContent.sections[sectionIndex]!;
+    updateSection(sectionIndex, {
+      items: (section.items ?? []).map((item, index) =>
+        index === itemIndex ? { ...item, ...update } : item,
+      ),
+    });
+  };
   const save = async () => {
     setBusy(true);
     setMessage("");
@@ -362,6 +377,117 @@ export function MarketingPageEditor({
                   onChange={(mediaIds) => updateSection(index, { mediaIds })}
                   selectedIds={section.mediaIds}
                 />
+              ) : null}
+              {page.pageKey !== "HOME" &&
+              [
+                "SERVICE_SHOWCASE",
+                "MEDIA_TEXT",
+                "CONTACT",
+                "RELATED_SERVICES",
+                "FINAL_CTA",
+              ].includes(section.type) ? (
+                <MarketingImageField
+                  canUpdate={canMediaUpdate}
+                  canUpload={canMediaUpload}
+                  guidance={
+                    section.type === "SERVICE_SHOWCASE"
+                      ? "Images follow the service order. Use approved property-care photography."
+                      : "Choose approved marketing photography for this section. Focal-point changes are managed in Public Media."
+                  }
+                  label={`${section.title} images`}
+                  maxSelections={
+                    section.type === "SERVICE_SHOWCASE" || section.type === "RELATED_SERVICES"
+                      ? Math.max(1, section.items?.length ?? 1)
+                      : 1
+                  }
+                  media={media}
+                  onChange={(mediaIds) => updateSection(index, { mediaIds })}
+                  selectedIds={section.mediaIds}
+                  {...(section.items?.length
+                    ? { slotLabels: section.items.map(({ title }) => title) }
+                    : {})}
+                />
+              ) : null}
+              {section.items?.length ? (
+                <fieldset className="cms-item-editor sm:col-span-2">
+                  <legend>Section entries</legend>
+                  {section.items.map((item, itemIndex) => (
+                    <div className="cms-item-editor-row" key={item.key}>
+                      <label className="cms-field">
+                        <span>Title</span>
+                        <input
+                          value={item.title}
+                          onChange={(event) =>
+                            updateItem(index, itemIndex, { title: event.target.value })
+                          }
+                        />
+                      </label>
+                      <label className="cms-field">
+                        <span>Description</span>
+                        <textarea
+                          rows={2}
+                          value={item.body ?? ""}
+                          onChange={(event) =>
+                            updateItem(index, itemIndex, { body: event.target.value })
+                          }
+                        />
+                      </label>
+                      {item.href ? (
+                        <label className="cms-field">
+                          <span>Destination</span>
+                          <input
+                            value={item.href}
+                            onChange={(event) =>
+                              updateItem(index, itemIndex, { href: event.target.value })
+                            }
+                          />
+                        </label>
+                      ) : null}
+                      {["SERVICE_SHOWCASE", "RELATED_SERVICES"].includes(section.type) ? (
+                        <label className="cms-field">
+                          <span>Contextual image alt text</span>
+                          <input
+                            value={item.altText ?? ""}
+                            onChange={(event) =>
+                              updateItem(index, itemIndex, { altText: event.target.value })
+                            }
+                          />
+                        </label>
+                      ) : null}
+                    </div>
+                  ))}
+                </fieldset>
+              ) : null}
+              {["FEATURED_PROJECT", "PROJECT_GRID"].includes(section.type) && projects.length ? (
+                <fieldset className="cms-project-selector sm:col-span-2">
+                  <legend>Published Before & After proof</legend>
+                  <p>
+                    Select only approved Published projects. Their images stay in the canonical
+                    Before & After system.
+                  </p>
+                  {projects.map((project) => {
+                    const checked = section.projectIds?.includes(project.id) ?? false;
+                    return (
+                      <label key={project.id}>
+                        <input
+                          checked={checked}
+                          type={section.type === "FEATURED_PROJECT" ? "radio" : "checkbox"}
+                          name={`${section.id}-project`}
+                          onChange={(event) =>
+                            updateSection(index, {
+                              projectIds: event.target.checked
+                                ? section.type === "FEATURED_PROJECT"
+                                  ? [project.id]
+                                  : [...(section.projectIds ?? []), project.id].slice(0, 6)
+                                : (section.projectIds ?? []).filter((id) => id !== project.id),
+                            })
+                          }
+                        />{" "}
+                        <span>{project.title}</span>
+                      </label>
+                    );
+                  })}
+                </fieldset>
               ) : null}
             </div>
           </article>

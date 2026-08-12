@@ -19,7 +19,7 @@ async function main(): Promise<void> {
       throw new Error("Create the initial Super Admin before initializing marketing content.");
     const result = await marketing.initialize(actor.id);
     process.stdout.write(
-      `Marketing content is initialized (${result.created} pages created; ${result.total} total).\n`,
+      `Marketing content is initialized (${result.created} pages created; ${result.upgraded} untouched placeholders upgraded; ${result.total} total).\n`,
     );
   } finally {
     await app.close();

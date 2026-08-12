@@ -17,8 +17,21 @@ import {
   ServiceProcessTimeline,
   WhyCtpsEditorial,
 } from "./homepage-sections";
-import { AreaGrid, QuoteCta, SectionHeading, ServiceGrid } from "./marketing";
+import { SectionHeading } from "./marketing";
 import { PremiumHero } from "./premium-hero";
+import {
+  EditorialAreas,
+  EditorialContact,
+  EditorialFaq,
+  EditorialMediaText,
+  EditorialPrinciples,
+  EditorialProcess,
+  EditorialProjectProof,
+  EditorialPropertyTypes,
+  EditorialRelated,
+  EditorialRichText,
+  EditorialServiceCatalogue,
+} from "./marketing-page-sections";
 
 function ItemGrid({ section }: { readonly section: MarketingSection }) {
   return (
@@ -35,35 +48,36 @@ function ItemGrid({ section }: { readonly section: MarketingSection }) {
   );
 }
 
-function StandardSection({ section }: { readonly section: MarketingSection }) {
+function StandardSection({
+  page,
+  section,
+  projects,
+  settings,
+}: {
+  readonly page: PublishedMarketingPage;
+  readonly section: MarketingSection;
+  readonly projects: readonly PublicProject[];
+  readonly settings?: Record<string, string> | null;
+}) {
+  if (section.type === "RICH_TEXT") return <EditorialRichText section={section} />;
+  if (section.type === "MEDIA_TEXT") return <EditorialMediaText page={page} section={section} />;
   if (section.type === "SERVICE_SHOWCASE")
-    return (
-      <Section>
-        <Container size="wide">
-          <SectionHeading
-            {...(section.body ? { copy: section.body } : {})}
-            eyebrow={section.eyebrow ?? "Services"}
-            title={section.title}
-          />
-          <ServiceGrid />
-        </Container>
-      </Section>
-    );
-  if (section.type === "SERVICE_AREAS")
-    return (
-      <Section className="premium-tint">
-        <Container size="wide">
-          <SectionHeading
-            {...(section.body ? { copy: section.body } : {})}
-            eyebrow={section.eyebrow ?? "Service areas"}
-            title={section.title}
-          />
-          <AreaGrid />
-        </Container>
-      </Section>
-    );
-  if (section.type === "FINAL_CTA")
-    return <QuoteCta {...(section.body ? { copy: section.body } : {})} title={section.title} />;
+    return <EditorialServiceCatalogue page={page} section={section} />;
+  if (section.type === "SERVICE_AREAS") return <EditorialAreas section={section} />;
+  if (section.type === "VALUE_PROPOSITION") return <EditorialPrinciples section={section} />;
+  if (section.type === "PROCESS") return <EditorialProcess section={section} />;
+  if (section.type === "RESIDENTIAL_COMMERCIAL")
+    return <EditorialPropertyTypes section={section} />;
+  if (section.type === "FAQ") return <EditorialFaq section={section} />;
+  if (section.type === "RELATED_SERVICES")
+    return <EditorialRelated page={page} section={section} />;
+  if (section.type === "FEATURED_PROJECT") {
+    const selected = projects.find((project) => section.projectIds?.includes(project.id)) ?? null;
+    return <EditorialProjectProof project={selected} section={section} />;
+  }
+  if (section.type === "CONTACT")
+    return <EditorialContact section={section} {...(settings !== undefined ? { settings } : {})} />;
+  if (section.type === "FINAL_CTA") return <PremiumFinalCta page={page} section={section} />;
   return (
     <Section className={section.type === "RESIDENTIAL_COMMERCIAL" ? "premium-dark-section" : ""}>
       <Container size="wide">
@@ -120,7 +134,7 @@ function HomepageSection({
     case "FINAL_CTA":
       return <PremiumFinalCta page={page} section={section} />;
     default:
-      return <StandardSection section={section} />;
+      return <StandardSection page={page} projects={projects} section={section} />;
   }
 }
 
@@ -129,14 +143,18 @@ export function MarketingPageRenderer({
   featuredProject = null,
   projects = [],
   posts = [],
+  settings = null,
 }: {
   readonly page: PublishedMarketingPage;
   readonly featuredProject?: PublicProject | null;
   readonly projects?: readonly PublicProject[];
   readonly posts?: readonly PublicBlogPost[];
+  readonly settings?: Record<string, string> | null;
 }) {
   return (
-    <>
+    <div
+      className={`marketing-page marketing-page-${page.pageKey.toLowerCase().replaceAll("_", "-")}`}
+    >
       {page.publishedContent.sections
         .filter((section) => section.enabled)
         .map((section) =>
@@ -154,11 +172,16 @@ export function MarketingPageRenderer({
               {section.type === "HERO_SLIDER" ? (
                 <PremiumHero media={page.media} section={section} />
               ) : (
-                <StandardSection section={section} />
+                <StandardSection
+                  page={page}
+                  projects={projects}
+                  section={section}
+                  settings={settings}
+                />
               )}
             </div>
           ),
         )}
-    </>
+    </div>
   );
 }

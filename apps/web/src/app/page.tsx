@@ -62,14 +62,16 @@ export default async function HomePage() {
       <WebsiteSchema />
       <section className="premium-hero" aria-labelledby="homepage-fallback-title">
         <div className="premium-hero-media">
-          <Image
-            alt="Architectural property-care development photography"
-            className="is-active"
-            fill
-            priority
-            sizes="100vw"
-            src="/images/phase-11/hero-residential.webp"
-          />
+          {process.env.NODE_ENV !== "production" ? (
+            <Image
+              alt="Architectural property exterior"
+              className="is-active"
+              fill
+              priority
+              sizes="100vw"
+              src="/images/phase-11/hero-residential.webp"
+            />
+          ) : null}
         </div>
         <div className="premium-hero-shade" />
         <Container className="premium-hero-content" size="wide">

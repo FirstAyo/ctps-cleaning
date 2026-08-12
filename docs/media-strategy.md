@@ -39,6 +39,12 @@ Track usage before deletion. Referenced assets should be blocked from deletion o
 
 Initial development/VPS storage uses separate configurable public/private roots behind an adapter; production volume, backup, and permissions design remains Phase 10 work. Metadata and application URLs do not depend on disk paths. Migration to Cloudflare R2, Backblaze B2, MinIO, or another S3-compatible provider should copy by checksum, verify, switch reads gradually, retain rollback, then retire old bytes after reconciliation.
 
+## Phase 11.2 page-media mapping
+
+Fixed marketing-page Heroes, service catalogues, media/text compositions, supporting images, related-service visuals, and CTAs reuse Public Media. Heroes use `hero`, large compositions use `large`, compact tiles use `card`, and Admin uses `thumbnail`. Focal points follow assets; contextual item alt text may override the default.
+
+Selected proof stores Published Before & After identifiers without copying bytes. Blog images remain Published Blog media. Quote uploads, job photos, customer data, Draft Blog media, and private Before & After media remain ineligible.
+
 ## Operations
 
 Back up media off-host, test restores, monitor capacity and failed processing, and reconcile orphaned records/objects. CDN choice, quotas, retention, acceptable MIME types, transformations, virus scanner, storage provider, and migration threshold remain unresolved.

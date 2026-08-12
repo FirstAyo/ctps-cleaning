@@ -6,6 +6,8 @@ import { BlogCard } from "@/components/blog";
 import { PublicLayout } from "@/components/public-shell";
 import { getBlogPosts, getBlogTaxonomy } from "@/lib/blog-api";
 import { metadataFor } from "@/lib/seo";
+import { getMarketingPage } from "@/lib/marketing-api";
+import { PremiumHero } from "@/components/premium-hero";
 
 export const dynamic = "force-dynamic";
 export const metadata = metadataFor(
@@ -24,7 +26,7 @@ export default async function Page({
   }>;
 }) {
   const query = await searchParams;
-  const [result, taxonomy] = await Promise.all([
+  const [result, taxonomy, marketingPage] = await Promise.all([
     getBlogPosts({
       ...(query.search ? { search: query.search } : {}),
       ...(query.category ? { category: query.category } : {}),
@@ -32,20 +34,31 @@ export default async function Page({
       ...(/^[1-9]\d*$/.test(query.page ?? "") ? { page: query.page! } : {}),
     }),
     getBlogTaxonomy(),
+    getMarketingPage("BLOG"),
   ]);
   const pages = Math.max(1, Math.ceil(result.total / result.pageSize));
   return (
     <PublicLayout>
-      <Section className="bg-secondary/30">
-        <Container>
-          <p className="text-sm font-bold uppercase tracking-widest text-primary">CTPS Journal</p>
-          <h1 className="mt-3 text-4xl font-semibold sm:text-5xl">Property-care guidance</h1>
-          <p className="mt-4 max-w-2xl text-lg text-muted-foreground">
-            Published CTPS articles, practical maintenance context, and service preparation
-            guidance.
-          </p>
-        </Container>
-      </Section>
+      {marketingPage?.publishedContent?.sections.find(
+        (section) => section.type === "HERO_SLIDER",
+      ) ? (
+        <PremiumHero
+          media={marketingPage.media}
+          section={marketingPage.publishedContent!.sections.find(
+            (section) => section.type === "HERO_SLIDER",
+          )!}
+        />
+      ) : (
+        <Section className="journal-index-hero">
+          <Container>
+            <p className="eyebrow">CTPS Journal</p>
+            <h1 className="public-display">Property-care guidance</h1>
+            <p>
+              Published articles, practical maintenance context, and service preparation guidance.
+            </p>
+          </Container>
+        </Section>
+      )}
       <Section>
         <Container size="wide">
           <form className="grid gap-4 rounded-xl border bg-card p-5 md:grid-cols-[1fr_14rem_14rem_auto]">
@@ -85,9 +98,9 @@ export default async function Page({
             {result.total} published {result.total === 1 ? "article" : "articles"} found.
           </p>
           {result.items.length ? (
-            <div className="mt-8 grid gap-7 md:grid-cols-2 lg:grid-cols-3">
-              {result.items.map((post) => (
-                <BlogCard key={post.slug} post={post} />
+            <div className="journal-index-layout">
+              {result.items.map((post, index) => (
+                <BlogCard featured={index === 0 && !query.page} key={post.slug} post={post} />
               ))}
             </div>
           ) : (

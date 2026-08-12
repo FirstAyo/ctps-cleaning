@@ -126,6 +126,15 @@ review, plus safe global error/not-found states. They do not claim certification
 contact/legal guarantees. Release QA and content approval gates are tracked in `qa-matrix.md` and
 `release-checklist.md`.
 
+## Phase 11.2 public-page compositions
+
+- `/services` is an alternating editorial catalogue, not five equal cards.
+- Five service pages vary by identity across Hero, positioning, media, inclusions, property relevance, Published proof, process, areas, FAQs, related services, and CTA.
+- About uses image-led philosophy and numbered principles. Residential and Commercial use different warmth and structure.
+- Service Areas uses large city typography; six details contain approved city-level context only.
+- Before & After uses a featured transformation and asymmetrical mosaic while retaining keyboard/touch comparison. Blog uses an editorial lead and semantic article measure.
+- Presentation selects Hero, Large, Card, and Thumbnail variants. Themes, reduced motion, focus, native FAQ disclosure, breadcrumbs, and 320px-up reflow remain mandatory.
+
 ## Phase 11 premium marketing surfaces
 
 The homepage uses a controlled Published section sequence and a cinematic 78–88vh Hero with up to four images, fixed copy, approved overlays, gentle crossfade, tab pause, reduced-motion fallback, accessible controls, and responsive variants. Header labels/visibility/order and approved footer fields are managed without changing canonical routes. Services, property types, proof, process, areas, editorial previews, and final CTA retain approved business language and do not introduce testimonials or claims. See `premium-ui-and-marketing-cms.md`.

@@ -10,6 +10,8 @@ export interface MarketingItem {
   title: string;
   body?: string;
   href?: string;
+  mediaId?: string;
+  altText?: string;
 }
 export interface MarketingSection {
   id: string;

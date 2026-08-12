@@ -8,6 +8,8 @@ import { PublicLayout } from "@/components/public-shell";
 import { serviceAreas, services } from "@/content/site";
 import { getPublishedProjects } from "@/lib/before-after-api";
 import { metadataFor } from "@/lib/seo";
+import { getMarketingPage } from "@/lib/marketing-api";
+import { PremiumHero } from "@/components/premium-hero";
 
 export const dynamic = "force-dynamic";
 export const metadata = metadataFor(
@@ -21,24 +23,40 @@ export default async function Page({
   readonly searchParams: Promise<{ service?: string; area?: string; page?: string }>;
 }) {
   const query = await searchParams;
-  const result = await getPublishedProjects({
-    ...(/^[1-9]\d*$/.test(query.page ?? "") ? { page: query.page! } : {}),
-    ...(services.some((item) => item.slug === query.service) ? { serviceKey: query.service! } : {}),
-    ...(serviceAreas.some((item) => item.slug === query.area)
-      ? { serviceAreaKey: query.area! }
-      : {}),
-  });
+  const [result, marketingPage] = await Promise.all([
+    getPublishedProjects({
+      ...(/^[1-9]\d*$/.test(query.page ?? "") ? { page: query.page! } : {}),
+      ...(services.some((item) => item.slug === query.service)
+        ? { serviceKey: query.service! }
+        : {}),
+      ...(serviceAreas.some((item) => item.slug === query.area)
+        ? { serviceAreaKey: query.area! }
+        : {}),
+    }),
+    getMarketingPage("BEFORE_AFTER"),
+  ]);
   const pages = Math.max(1, Math.ceil(result.total / result.pageSize));
   return (
     <PublicLayout>
-      <PageHero
-        description="Every project shown here is a published, managed CTPS portfolio record. Draft projects and private media are excluded."
-        eyebrow="Before & After"
-        title="Approved project stories, compared accessibly."
-      />
+      {marketingPage?.publishedContent?.sections.find(
+        (section) => section.type === "HERO_SLIDER",
+      ) ? (
+        <PremiumHero
+          media={marketingPage.media}
+          section={marketingPage.publishedContent!.sections.find(
+            (section) => section.type === "HERO_SLIDER",
+          )!}
+        />
+      ) : (
+        <PageHero
+          description="Every project shown here is a published, managed CTPS portfolio record. Draft projects and private media are excluded."
+          eyebrow="Before & After"
+          title="Approved project stories, compared accessibly."
+        />
+      )}
       <Section>
         <Container size="wide">
-          <form className="grid gap-4 rounded-xl border border-border bg-card p-5 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
+          <form className="portfolio-filter-bar">
             <div>
               <Label htmlFor="portfolio-service">Service</Label>
               <Select defaultValue={query.service ?? ""} id="portfolio-service" name="service">
@@ -67,9 +85,13 @@ export default async function Page({
             {result.total} published {result.total === 1 ? "project" : "projects"} found.
           </p>
           {result.items.length ? (
-            <div className="mt-8 grid gap-7 lg:grid-cols-2">
-              {result.items.map((project) => (
-                <ProjectCard key={project.id} project={project} />
+            <div className="portfolio-mosaic-grid">
+              {result.items.map((project, index) => (
+                <ProjectCard
+                  featured={index === 0 && !query.page}
+                  key={project.id}
+                  project={project}
+                />
               ))}
             </div>
           ) : (

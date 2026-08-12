@@ -55,12 +55,50 @@ export class MarketingService {
 
   async initialize(actorUserId: string) {
     let created = 0;
+    let upgraded = 0;
     for (const definition of systemMarketingPages) {
       const exists = await this.database.client.marketingPage.findUnique({
         where: { pageKey: definition.pageKey },
-        select: { id: true },
+        select: { id: true, version: true, draftContent: true },
       });
-      if (exists) continue;
+      if (exists) {
+        const sections = (exists.draftContent as { sections?: Array<{ id?: string }> }).sections;
+        const isUntouchedPhase11Placeholder =
+          definition.pageKey !== "HOME" &&
+          exists.version === 1 &&
+          Array.isArray(sections) &&
+          sections.length <= 3 &&
+          sections.every(({ id }) => ["hero", "content", "final-cta", "areas"].includes(id ?? ""));
+        if (isUntouchedPhase11Placeholder) {
+          await this.database.client.$transaction(async (transaction) => {
+            const revision = await transaction.marketingPageRevision.create({
+              data: {
+                pageId: exists.id,
+                revisionNumber: 2,
+                content: json(definition.content),
+                seoSnapshot: {},
+                createdByUserId: actorUserId,
+              },
+            });
+            await transaction.marketingPage.update({
+              where: { id: exists.id },
+              data: {
+                title: definition.title,
+                navigationLabel: definition.navigationLabel ?? null,
+                draftContent: json(definition.content),
+                publishedContent: json(definition.content),
+                publishedRevisionId: revision.id,
+                updatedByUserId: actorUserId,
+                publishedByUserId: actorUserId,
+                publishedAt: new Date(),
+                version: { increment: 1 },
+              },
+            });
+          });
+          upgraded += 1;
+        }
+        continue;
+      }
       await this.database.client.$transaction(async (transaction) => {
         const page = await transaction.marketingPage.create({
           data: {
@@ -116,7 +154,7 @@ export class MarketingService {
       },
       update: {},
     });
-    return { created, total: systemMarketingPages.length };
+    return { created, upgraded, total: systemMarketingPages.length };
   }
 
   list() {
@@ -207,6 +245,20 @@ export class MarketingService {
   ) {
     const uses = mediaUses(input.draftContent, "DRAFT");
     const ids = [...new Set(uses.map(({ mediaId }) => mediaId))];
+    const projectIds = [
+      ...new Set(
+        input.draftContent.sections.flatMap((section) =>
+          "projectIds" in section ? section.projectIds : [],
+        ),
+      ),
+    ];
+    const postIds = [
+      ...new Set(
+        input.draftContent.sections.flatMap((section) =>
+          "postIds" in section ? section.postIds : [],
+        ),
+      ),
+    ];
     if (ids.length) {
       const count = await this.database.client.publicMediaAsset.count({
         where: { id: { in: ids }, status: "READY" },
@@ -215,6 +267,26 @@ export class MarketingService {
         throw new ConflictException({
           code: "MEDIA_NOT_AVAILABLE",
           message: "One or more selected public images are unavailable.",
+        });
+    }
+    if (projectIds.length) {
+      const count = await this.database.client.beforeAfterProject.count({
+        where: { id: { in: projectIds }, status: "PUBLISHED" },
+      });
+      if (count !== projectIds.length)
+        throw new ConflictException({
+          code: "PROJECT_NOT_AVAILABLE",
+          message: "One or more selected projects are not Published.",
+        });
+    }
+    if (postIds.length) {
+      const count = await this.database.client.blogPost.count({
+        where: { id: { in: postIds }, status: "PUBLISHED" },
+      });
+      if (count !== postIds.length)
+        throw new ConflictException({
+          code: "POST_NOT_AVAILABLE",
+          message: "One or more selected articles are not Published.",
         });
     }
     const seoChanged = [

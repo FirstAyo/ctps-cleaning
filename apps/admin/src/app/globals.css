@@ -9,6 +9,45 @@
   line-height: 1.15;
 }
 
+.cms-item-editor,
+.cms-project-selector {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+.cms-item-editor > legend,
+.cms-project-selector > legend {
+  padding: 0 0.45rem;
+  font-weight: 800;
+}
+.cms-item-editor-row {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--surface-muted);
+  border-left: 3px solid var(--primary);
+}
+.cms-project-selector > p {
+  color: var(--muted-foreground);
+  font-size: 0.82rem;
+}
+.cms-project-selector > label {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  min-height: 2.75rem;
+  padding: 0.7rem;
+  border-bottom: 1px solid var(--border);
+}
+@media (min-width: 900px) {
+  .cms-item-editor-row {
+    grid-template-columns: minmax(10rem, 0.7fr) minmax(16rem, 1.3fr) minmax(10rem, 0.7fr);
+  }
+}
+
 .admin-table-wrap {
   overflow-x: auto;
   scrollbar-gutter: stable;

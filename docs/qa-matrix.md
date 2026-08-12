@@ -1,5 +1,18 @@
 # QA Matrix
 
+## Phase 11.2 remaining public pages
+
+| Area                    | Automated acceptance                                                                              | Manual acceptance                                  |
+| ----------------------- | ------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| Services/details        | Fixed identities, strict CMS, catalogue, inclusions, FAQ, links, Published proof, Draft exclusion | 390/768/1440 crop, rhythm, distinct identities     |
+| About/Contact/audiences | No fabricated facts, Contact/Quote distinction, media, process/FAQ/CTA                            | Photography, form clarity, warm vs structured tone |
+| Areas                   | Exactly six BC areas, invalid 404, safe copy, projects, FAQ/CTA                                   | Directory and six non-thin pages                   |
+| Portfolio               | Published-only mosaic/detail/comparison, no private metadata                                      | Pointer, touch, keyboard comparison                |
+| Blog                    | Published-only lead/list, semantic blocks, captions, taxonomy, related posts                      | Hierarchy, reading width, empty results            |
+| Media/security          | Existing picker/upload/focal/references/delete protection, managed URLs, permissions              | Guidance, preview, usage, archived behavior        |
+
+Visual review covers 320, 375, 390, 768, 1024, 1440, and 1920 widths, light/dark/system, reduced motion, overflow, focus, console/hydration errors, and production photography readiness.
+
 Run every applicable row on desktop and 320px-equivalent mobile, light/dark, keyboard-only, 200% zoom/reflow, reduced motion, and current Chrome/Edge/Firefox/Safari-WebKit. “Manual” requires recorded evidence; automated coverage supplements rather than replaces it.
 
 | Feature / role                 | Routes and expected result                    | Security/error focus                                                 | Coverage                              |

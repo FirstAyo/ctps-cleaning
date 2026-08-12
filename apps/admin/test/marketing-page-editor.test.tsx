@@ -96,6 +96,67 @@ describe("marketing page editor", () => {
     expect(screen.getByRole("button", { name: /choose from media library/i })).not.toBeNull();
     expect(screen.getByRole("button", { name: /upload new image/i })).not.toBeNull();
   });
+  it("exposes human-readable section entries, contextual alt text, media reuse, and Published project selection", () => {
+    const servicePage: MarketingPage = {
+      ...page,
+      pageKey: "SERVICE_WINDOW_CLEANING",
+      title: "Window Cleaning",
+      draftContent: {
+        sections: [
+          {
+            id: "services",
+            type: "SERVICE_SHOWCASE",
+            enabled: true,
+            title: "Service showcase",
+            body: "Editorial service copy",
+            mediaIds: [],
+            projectIds: [],
+            postIds: [],
+            items: [
+              {
+                key: "windows",
+                title: "Windows",
+                body: "Careful window care",
+                href: "/services/window-cleaning",
+              },
+            ],
+          },
+          {
+            id: "proof",
+            type: "FEATURED_PROJECT",
+            enabled: true,
+            title: "Selected work",
+            mediaIds: [],
+            projectIds: [],
+            postIds: [],
+            items: [],
+          },
+        ],
+      },
+    };
+    render(
+      <MarketingPageEditor
+        canMediaUpdate
+        canMediaUpload
+        canPublish
+        canSeo
+        media={[]}
+        page={servicePage}
+        projects={[
+          {
+            id: crypto.randomUUID(),
+            title: "Published window project",
+            serviceKey: "window-cleaning",
+            serviceAreaKey: "vancouver",
+          },
+        ]}
+      />,
+    );
+    expect(screen.getByLabelText("Contextual image alt text")).not.toBeNull();
+    expect(screen.getByText("Published window project")).not.toBeNull();
+    expect(screen.getByRole("button", { name: /choose from media library/i })).not.toBeNull();
+    expect(screen.queryByText(/raw json/i)).toBeNull();
+  });
 });
 
 describe("reusable marketing media controls", () => {

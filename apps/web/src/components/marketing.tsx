@@ -179,7 +179,7 @@ export function QuoteCta({
               href="/contact"
               variant="outline"
             >
-              Contact foundation
+              Contact CTPS
             </LinkButton>
           </div>
         </div>

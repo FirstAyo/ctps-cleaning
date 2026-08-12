@@ -44,13 +44,19 @@ export function ProjectComparison({
     />
   );
 }
-export function ProjectCard({ project }: { readonly project: PublicProject }) {
+export function ProjectCard({
+  project,
+  featured = false,
+}: {
+  readonly project: PublicProject;
+  readonly featured?: boolean;
+}) {
   const service = getService(project.serviceKey);
   const area = getServiceArea(project.serviceAreaKey);
   return (
-    <article className="overflow-hidden rounded-xl border border-border bg-card shadow-[var(--shadow-sm)]">
+    <article className={`portfolio-project-card${featured ? " portfolio-project-featured" : ""}`}>
       <ProjectComparison project={project} />
-      <div className="p-6">
+      <div className="portfolio-project-copy">
         <p className="eyebrow">
           {service?.name ?? project.serviceKey} · {area?.name ?? project.serviceAreaKey}
         </p>
@@ -109,8 +115,15 @@ export function ProjectDetail({ project }: { readonly project: PublicProject }) 
   const area = getServiceArea(project.serviceAreaKey);
   return (
     <>
-      <section className="border-b border-border bg-secondary py-14 text-secondary-foreground sm:py-20">
-        <Container>
+      <section className="project-detail-hero">
+        <Container size="wide">
+          <nav aria-label="Breadcrumb" className="project-breadcrumb">
+            <Link href="/">Home</Link>
+            <span>/</span>
+            <Link href="/before-after">Before & After</Link>
+            <span>/</span>
+            <span>{project.title}</span>
+          </nav>
           <p className="eyebrow text-primary">
             {service?.name} · {area?.name}
           </p>
@@ -118,10 +131,12 @@ export function ProjectDetail({ project }: { readonly project: PublicProject }) 
           <p className="mt-6 max-w-2xl text-lg text-sidebar-muted">{project.summary}</p>
         </Container>
       </section>
-      <Section>
-        <Container>
-          <ProjectComparison priority project={project} />
-          <div className="mx-auto mt-12 max-w-3xl">
+      <Section className="project-detail-main">
+        <Container size="wide">
+          <div className="project-detail-comparison">
+            <ProjectComparison priority project={project} />
+          </div>
+          <div className="project-detail-overview">
             <h2 className="public-heading">Project overview</h2>
             {project.description
               .split(/\n+/)

@@ -5,6 +5,7 @@ import { getServiceArea, serviceAreas } from "@/content/site";
 import { breadcrumbSchema, JsonLd, metadataFor } from "@/lib/seo";
 import { getMarketingMetadata, getMarketingPage } from "@/lib/marketing-api";
 import { MarketingPageRenderer } from "@/components/marketing-page-renderer";
+import { getPublishedProjects } from "@/lib/before-after-api";
 export function generateStaticParams() {
   return serviceAreas.map(({ slug }) => ({ slug }));
 }
@@ -20,7 +21,10 @@ export default async function Page({ params }: { readonly params: Promise<{ slug
   const slug = (await params).slug;
   const area = getServiceArea(slug);
   if (!area) notFound();
-  const marketingPage = await getMarketingPage(`AREA_${slug.replaceAll("-", "_").toUpperCase()}`);
+  const [marketingPage, projectResult] = await Promise.all([
+    getMarketingPage(`AREA_${slug.replaceAll("-", "_").toUpperCase()}`),
+    getPublishedProjects({ serviceAreaKey: slug, pageSize: "24" }),
+  ]);
   return (
     <PublicLayout>
       <JsonLd
@@ -31,7 +35,7 @@ export default async function Page({ params }: { readonly params: Promise<{ slug
         ])}
       />
       {marketingPage ? (
-        <MarketingPageRenderer page={marketingPage} />
+        <MarketingPageRenderer page={marketingPage} projects={projectResult.items} />
       ) : (
         <AreaPageContent area={area} />
       )}

@@ -97,3 +97,9 @@ export interface PublicMediaUsage {
     sortOrder: number;
   }>;
 }
+export interface MarketingProjectOption {
+  id: string;
+  title: string;
+  serviceKey: string;
+  serviceAreaKey: string;
+}

@@ -54,6 +54,15 @@ representative workflows, configures locked schedulers/monitoring, and records t
 failure uses prior compatible images or a reviewed forward correction. Backup restoration is
 rehearsed in isolation and never overwrites the main database by default.
 
+## Phase 11.2 marketing-page flow
+
+1. An authorized editor changes only labeled controls on a fixed page.
+2. General photography is chosen/uploaded through Public Media with alt and focal controls.
+3. Proof may select a Published Before & After record when permitted; bytes are not copied.
+4. Save validates managed media, Published identifiers, safe links, bounded sections, and version.
+5. Preview stays private/no-store/noindex; Publish copies validated Draft content and lifecycle references.
+6. Visitors see Published content only. Optional missing proof disappears; Contact and Quote remain distinct.
+
 ## Marketing editor flow
 
 An authorised editor opens a fixed page, changes approved fields or section order/visibility, selects public-library media, and saves a version-checked Draft. Visitors continue seeing the prior Published snapshot. The editor opens an authenticated noindex preview, then a user with `pages.publish` publishes. Restore selects an immutable revision and creates a new Draft version. Separate flows manage fixed-destination navigation and approved site fields. AUTHOR is denied unless explicitly granted.

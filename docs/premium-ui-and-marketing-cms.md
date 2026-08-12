@@ -40,6 +40,14 @@ Permissions are `pages.read/update/publish/preview/manageSeo`, `navigation.read/
 
 Audits record draft save, publish, restore, marketing-media selection changes, media upload/metadata/focal-point/archive/restore/delete, navigation update, and site-settings update with safe identifiers, counts, field names, and versions. They exclude page bodies, JSON blobs, paths, credentials, customer information, EXIF, and bytes.
 
+## Phase 11.2 remaining public pages
+
+The Homepage remains the benchmark and is not redesigned. Services uses an alternating editorial catalogue. Individual services use page-key-varied Hero, positioning, media/text, scope, property contexts, Published proof, process, areas, FAQ, related services, and CTA. About uses philosophy and numbered principles. Residential is warmer and image-led; Commercial is more structured without invented contracts, clients, response times, credentials, or insurance claims.
+
+Service Areas presents exactly Vancouver, Richmond, Burnaby, Surrey, Coquitlam, and North Vancouver without manufactured local claims. Contact separates general inquiries from the private quote workflow. Before & After remains a Published-only canonical project portfolio. Blog becomes an editorial journal while Blog Admin remains unchanged. Optional proof renders nothing without a valid Published selection.
+
+General photography reuses `MarketingImageField`, the Media Picker, focal metadata, optimized variants, lifecycle references, and deletion protection. Strict fields reject arbitrary HTML, external images, CSS, scripts, embeds, and layout code. Initialisation upgrades only untouched version-1 placeholders. Missing production photography uses neutral treatment or hidden optional sections.
+
 ## Performance, initialization, and limitations
 
 Lists and revision reads are bounded; the Media Library uses server-side pagination (24 by default, 48 maximum), thumbnails in grids, and a bounded candidate window for orientation filters. Media variants are immutable-cacheable; public CMS fetches use short tagged revalidation; carousel state is minimal. Publication revalidation is time bounded rather than event pushed. The structured editor intentionally exposes a conservative subset of fields and cannot change routes or add page types.

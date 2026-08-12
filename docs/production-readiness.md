@@ -1,5 +1,11 @@
 # Production Readiness
 
+## Phase 11.2 content-readiness gate
+
+Approve or replace every intended Hero, service, supporting, and CTA photograph; confirm alt text/focal points; select only consented Published project proof; and verify Blog media through its lifecycle. Configure verified contact values before exposure and do not activate general submission until its receiving workflow is approved and tested.
+
+Production never substitutes bundled development photography for missing CMS selections. Required visuals simplify neutrally and optional proof hides. Verify all redesigned marketing, service, area, portfolio, and Blog routes at 390, 768, and 1440 minimum. Phase 11.2 adds no migration or dependency and does not alter quote, estimator, jobs, project publication, Blog publication, or private-media storage.
+
 ## Topology
 
 Nginx is the only public container on ports 80/443. It routes the public and Admin hosts to separate Next.js containers. The NestJS API and PostgreSQL have no published ports and share the internal Docker network. PostgreSQL, managed public media, and private media use distinct persistent volumes. A profile-gated migration image runs before application replacement. SMTP remains external and provider-neutral.
