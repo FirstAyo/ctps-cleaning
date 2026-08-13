@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { BlogListing } from "@/components/blog";
 import { PublicLayout } from "@/components/public-shell";
 import { getBlogPosts, getBlogTaxonomy } from "@/lib/blog-api";
-import { metadataFor } from "@/lib/seo";
+import { noIndexFollowMetadata } from "@/lib/seo";
 export const dynamic = "force-dynamic";
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const slug = (await params).slug;
@@ -10,10 +10,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     (candidate) => candidate.slug === slug && candidate._count.posts > 0,
   );
   return item
-    ? metadataFor(
+    ? noIndexFollowMetadata(
         `#${item.name} Articles`,
         `Published CTPS articles tagged ${item.name}.`,
-        `/blog/tag/${slug}`,
       )
     : {};
 }

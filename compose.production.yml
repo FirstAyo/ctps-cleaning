@@ -72,10 +72,14 @@ services:
       context: .
       dockerfile: apps/web/Dockerfile
       target: runtime
+      args:
+        NEXT_PUBLIC_SITE_URL: https://${PUBLIC_HOST:-ctps.example.com}
+        PUBLIC_INDEXING_ENABLED: ${PUBLIC_INDEXING_ENABLED:-false}
     environment:
       API_URL: http://api:4000
       WEB_URL: https://${PUBLIC_HOST:-ctps.example.com}
       NEXT_PUBLIC_SITE_URL: https://${PUBLIC_HOST:-ctps.example.com}
+      PUBLIC_INDEXING_ENABLED: ${PUBLIC_INDEXING_ENABLED:-false}
       PORT: "3000"
     depends_on:
       api:

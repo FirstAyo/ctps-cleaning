@@ -1,5 +1,9 @@
 # Security Requirements
 
+## Phase 12 SEO safety
+
+Draft, preview, token, and staff content remains noindex, no-store where private, absent from sitemap, and protected by its original authorization boundary. JSON-LD uses typed builders and escaping rather than raw Admin-authored script. The SEO audit requires `seo.view`, queries Published metadata only, exposes no storage keys/private fields, and makes no outbound request. Robots remains crawl guidance, never access control. Canonical origin and index enablement are environment-controlled.
+
 ## Purpose
 
 This document establishes minimum controls for the planned system. Specific libraries are deliberately not finalized.

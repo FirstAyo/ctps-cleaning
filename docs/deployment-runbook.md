@@ -4,7 +4,7 @@
 2. Create a non-root deployment user and verify key-based SSH before any password/root restriction.
 3. Install supported Docker Engine and Compose; configure staged firewall rules for SSH, 80, and 443 only.
 4. Clone the tagged/recorded release into a deployment-user-owned directory.
-5. Copy `.env.production.example` to untracked `.env.production`, replace all placeholders, set mode `600`, and run `pnpm environment:validate:production`.
+5. Copy `.env.production.example` to untracked `.env.production`, replace all placeholders, set matching canonical `WEB_URL`/`NEXT_PUBLIC_SITE_URL`, keep `PUBLIC_INDEXING_ENABLED=false` until launch approval, set mode `600`, and run `pnpm environment:validate:production`.
 6. Create certificate/ACME, backup, and operational log directories with reviewed ownership; never make media world-writable.
 7. Configure public/Admin DNS. Confirm resolution before certificate issuance.
 8. Run `docker compose -f compose.production.yml config` and build immutable images.
@@ -18,5 +18,7 @@
 16. Configure documented cron/systemd tasks with `flock`, absolute paths, the deployment user, safe environment loading, and log rotation.
 17. Configure database/media backups, off-host copy, checksum monitoring, disk/certificate/health/mail alerts, and incident contacts.
 18. Complete `docs/release-checklist.md`, record release/version/time/operator, and retain the previous images for rollback.
+
+After the canonical hostname, HTTPS redirect, content, sitemap, robots, and representative source metadata pass, set `PUBLIC_INDEXING_ENABLED=true` and redeploy the public web. Search Console/Bing ownership verification and sitemap submission are post-launch operator actions and must not be recorded as complete before they occur.
 
 If certificate issuance fails, keep the prior TLS service active; do not expose direct app ports or weaken cookies. If first deployment has no prior service, keep the site unavailable while DNS/ACME is corrected. This repository does not alter a VPS, DNS, TLS, firewall, or SSH automatically.

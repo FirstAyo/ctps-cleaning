@@ -1,17 +1,13 @@
 import { Container, Section } from "@ctps/ui/layout";
 import Link from "next/link";
 import { PublicLayout } from "@/components/public-shell";
-import { metadataFor } from "@/lib/seo";
+import { noIndexMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
-export const metadata = {
-  ...metadataFor(
-    "Quote request received",
-    "Confirmation that CTPS received a private quote request.",
-    "/request-a-quote/confirmation",
-  ),
-  robots: { index: false, follow: false },
-};
+export const metadata = noIndexMetadata(
+  "Quote request received",
+  "Confirmation that CTPS received a private quote request.",
+);
 async function confirmation(token: string) {
   if (!token) return null;
   const api = process.env.API_URL;

@@ -32,6 +32,7 @@
     "@ctps/email": "workspace:*",
     "@ctps/permissions": "workspace:*",
     "@ctps/pricing": "workspace:*",
+    "@ctps/seo": "workspace:*",
     "@ctps/types": "workspace:*",
     "@ctps/validation": "workspace:*",
     "@inquirer/prompts": "^8.5.2",

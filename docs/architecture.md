@@ -1,5 +1,9 @@
 # Architecture
 
+## Phase 12 SEO boundary
+
+`packages/seo` owns framework-neutral canonical, indexability, structured-data, safe-serialization, and deterministic audit helpers. Public web adapts them to Next.js metadata, sitemap, robots, and server HTML. The API computes a read-only Published-content audit; Admin presents it only to `seo.view`. Canonical origin and indexing remain deployment configuration, not CMS state. No external crawler/API, AI generation, or derived SEO database state is introduced. See `seo-and-search-readiness.md`.
+
 ## Purpose
 
 This document separates confirmed platform constraints from recommendations, future options, and unresolved decisions. Nothing described here is implemented in Phase 0.

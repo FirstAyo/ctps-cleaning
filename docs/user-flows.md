@@ -4,6 +4,10 @@
 
 This document describes planned end-to-end behavior and critical recovery paths. It does not indicate that any flow is implemented.
 
+## SEO readiness review
+
+An authorized user opens `/seo`, reviews Published-content counts and deterministic findings, filters by content family/severity/missing metadata, and follows a deep link to the existing Marketing, Blog, or Project editor. The normal Draft, preview, version, permission, publish, and audit workflow remains authoritative. The dashboard never edits canonical origin/index policy, exposes Draft/private data, calls external SEO services, or rewrites content.
+
 ## Browse and request a quote
 
 1. Visitor discovers a service or service-area page.

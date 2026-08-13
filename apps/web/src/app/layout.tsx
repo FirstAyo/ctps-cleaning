@@ -5,12 +5,14 @@ import { ThemeProvider } from "@ctps/ui/theme";
 import { themeInitScript } from "@ctps/ui/theme-core";
 
 import "./globals.css";
+import { publicIndexingEnabled, site } from "@/content/site";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
-  title: { default: "CTPS | Property Care", template: "%s | CTPS" },
+  metadataBase: new URL(site.url),
+  title: "CTPS | Property Care",
   description:
     "Residential and commercial property-care services across Vancouver and surrounding communities.",
+  robots: { index: publicIndexingEnabled, follow: publicIndexingEnabled },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {

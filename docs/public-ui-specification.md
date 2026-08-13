@@ -1,5 +1,9 @@
 # Public Website UI Specification
 
+## Phase 12 search presentation
+
+Indexable pages share deterministic title, description, canonical, Open Graph, Twitter, and environment-aware robots rules. Service and area details add visible semantic breadcrumbs synchronized with structured data. Tags, authors, filtered Blog URLs, previews, tokens, Admin, and design tooling remain noindex. Exactly five services and six approved British Columbia areas are represented; no service-area combination pages were generated. See `seo-and-search-readiness.md`.
+
 Phase 9 adds no public job routes, availability, appointment confirmation, customer login, rescheduling, cancellation, payment, or tracking. Existing quote messaging may continue to explain that CTPS contacts customers after review.
 
 ## Purpose

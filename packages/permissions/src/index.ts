@@ -121,6 +121,7 @@ export const PERMISSION_KEYS = {
   MEDIA_LIBRARY_ARCHIVE: "mediaLibrary.archive",
   MEDIA_LIBRARY_RESTORE: "mediaLibrary.restore",
   MEDIA_LIBRARY_DELETE: "mediaLibrary.delete",
+  SEO_VIEW: "seo.view",
 } as const;
 
 export type PermissionKey = (typeof PERMISSION_KEYS)[keyof typeof PERMISSION_KEYS];
@@ -143,7 +144,8 @@ export type PermissionGroup =
   | "Website Pages"
   | "Website Navigation"
   | "Site Settings"
-  | "Media Library";
+  | "Media Library"
+  | "SEO";
 
 export interface PermissionDefinition {
   readonly key: PermissionKey;
@@ -809,6 +811,12 @@ export const PERMISSION_DEFINITIONS: readonly PermissionDefinition[] = [
     description,
     group: "Media Library" as const,
   })),
+  {
+    key: PERMISSION_KEYS.SEO_VIEW,
+    label: "View SEO readiness",
+    description: "View deterministic public-content SEO audits and readiness findings.",
+    group: "SEO",
+  },
 ] as const;
 
 export const ALL_PERMISSION_KEYS = PERMISSION_DEFINITIONS.map(({ key }) => key);

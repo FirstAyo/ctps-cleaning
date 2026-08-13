@@ -1,5 +1,7 @@
 # Roles and Permissions
 
+Phase 12 adds `seo.view` for the read-only whole-site SEO health workspace. Super Admin receives it through the existing complete-catalogue invariant. Admin receives no automatic expansion, and Author retains existing own-post SEO editing without gaining the global audit. Marketing/Blog/Project mutations continue to use their existing granular permissions and audit flows.
+
 ## Purpose
 
 This document defines the authorization model implemented as a Phase 3 foundation. Authorization is always server-enforced and follows `Users -> Roles -> Permissions`; UI hiding is only a usability aid.

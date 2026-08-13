@@ -6,6 +6,7 @@ const productionEnvironment = {
   NODE_ENV: "production",
   ADMIN_URL: "https://admin.ctps.example.com",
   WEB_URL: "https://ctps.example.com",
+  NEXT_PUBLIC_SITE_URL: "https://ctps.example.com",
   DATABASE_URL: "postgresql://ctps:strong-password@postgres:5432/ctps",
   CORS_ALLOWED_ORIGINS: "https://ctps.example.com,https://admin.ctps.example.com",
   AUTH_COOKIE_SECURE: "true",

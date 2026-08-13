@@ -5,16 +5,22 @@ import Link from "next/link";
 import { BlogCard } from "@/components/blog";
 import { PublicLayout } from "@/components/public-shell";
 import { getBlogPosts, getBlogTaxonomy } from "@/lib/blog-api";
-import { metadataFor } from "@/lib/seo";
+import { metadataFor, noIndexFollowMetadata } from "@/lib/seo";
 import { getMarketingPage } from "@/lib/marketing-api";
 import { PremiumHero } from "@/components/premium-hero";
 
 export const dynamic = "force-dynamic";
-export const metadata = metadataFor(
-  "Blog",
-  "Practical CTPS property-care articles for homes and businesses in British Columbia.",
-  "/blog",
-);
+const blogDescription =
+  "Practical CTPS property-care articles for homes and businesses in British Columbia.";
+export async function generateMetadata({
+  searchParams,
+}: {
+  readonly searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  return Object.keys(await searchParams).length
+    ? noIndexFollowMetadata("Filtered Blog Articles", blogDescription)
+    : metadataFor("Blog", blogDescription, "/blog");
+}
 export default async function Page({
   searchParams,
 }: {

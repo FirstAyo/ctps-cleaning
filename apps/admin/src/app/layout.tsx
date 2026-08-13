@@ -9,6 +9,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "CTPS Staff Administration",
   description: "Protected staff administration for CTPS Cleaning.",
+  robots: { index: false, follow: false, noarchive: true, noimageindex: true },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {

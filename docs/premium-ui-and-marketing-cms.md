@@ -1,5 +1,9 @@
 # Premium UI and marketing CMS
 
+## Phase 12 SEO integration
+
+Existing Marketing and Blog SEO fields remain authoritative; Phase 12 adds no duplicate editor or storage. Public metadata consumes Published values through the centralized canonical/social/robots system. The read-only SEO health workspace deep-links to existing editors and reports deterministic missing, duplicate, thin-content, image/alt, broken-link, and orphan findings. Canonical host and index enablement cannot be changed through CMS.
+
 ## Design direction
 
 Phase 11 advances the existing CTPS palette into a restrained architectural language: editorial headings, generous space, photography-led compositions, subtle borders, dark charcoal proof/CTA sections, and limited warm accents. The design system—not an editor—owns layout and presentation. Public and Admin retain light, dark, and system themes, visible focus, semantic landmarks, keyboard operation, responsive reflow from 320px upward, and reduced-motion behavior.

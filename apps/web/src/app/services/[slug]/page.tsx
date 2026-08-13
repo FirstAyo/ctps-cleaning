@@ -2,10 +2,11 @@ import { notFound } from "next/navigation";
 import { ServicePageContent } from "@/components/marketing";
 import { PublicLayout } from "@/components/public-shell";
 import { getService, services } from "@/content/site";
-import { breadcrumbSchema, JsonLd, metadataFor } from "@/lib/seo";
+import { breadcrumbSchema, JsonLd, metadataFor, serviceSchema } from "@/lib/seo";
 import { getMarketingMetadata, getMarketingPage } from "@/lib/marketing-api";
 import { MarketingPageRenderer } from "@/components/marketing-page-renderer";
 import { getPublishedProjects } from "@/lib/before-after-api";
+import { Breadcrumbs } from "@/components/breadcrumbs";
 export function generateStaticParams() {
   return services.map(({ slug }) => ({ slug }));
 }
@@ -34,20 +35,18 @@ export default async function Page({ params }: { readonly params: Promise<{ slug
             { name: "Services", path: "/services" },
             { name: service.name, path: `/services/${service.slug}` },
           ]),
-          {
-            "@context": "https://schema.org",
-            "@type": "Service",
+          serviceSchema({
             name: service.name,
             description: service.summary,
-            areaServed: [
-              "Vancouver",
-              "Richmond",
-              "Burnaby",
-              "Surrey",
-              "Coquitlam",
-              "North Vancouver",
-            ],
-          },
+            path: `/services/${service.slug}`,
+          }),
+        ]}
+      />
+      <Breadcrumbs
+        items={[
+          { name: "Home", path: "/" },
+          { name: "Services", path: "/services" },
+          { name: service.name, path: `/services/${service.slug}` },
         ]}
       />
       {marketingPage ? (

@@ -1,10 +1,17 @@
+import { normalizeSiteOrigin } from "@ctps/seo";
+
+const configuredOrigin =
+  process.env.NEXT_PUBLIC_SITE_URL ?? process.env.WEB_URL ?? "http://localhost:3000";
+
 export const site = {
   name: "CTPS",
   tagline: "Clean Precision",
-  url: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
+  url: normalizeSiteOrigin(configuredOrigin),
   description:
     "Residential and commercial property-care services across Vancouver and surrounding communities.",
 } as const;
+
+export const publicIndexingEnabled = process.env.PUBLIC_INDEXING_ENABLED === "true";
 
 export interface Service {
   readonly slug: string;

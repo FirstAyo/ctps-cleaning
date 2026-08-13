@@ -23,6 +23,8 @@ export default async function ProtectedLayout({
     navigation.splice(3, 0, { href: "/navigation", label: "Navigation" });
   if (identity.permissions.includes("siteSettings.read"))
     navigation.splice(4, 0, { href: "/site-settings", label: "Site Settings" });
+  if (identity.permissions.includes("seo.view"))
+    navigation.splice(5, 0, { href: "/seo", label: "SEO Health" });
   if (
     identity.permissions.includes("jobs.read") ||
     identity.permissions.includes("jobs.readAssigned")

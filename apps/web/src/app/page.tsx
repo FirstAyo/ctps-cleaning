@@ -7,7 +7,7 @@ import { PublicLayout } from "@/components/public-shell";
 import { getPublishedProjects } from "@/lib/before-after-api";
 import { getBlogPosts } from "@/lib/blog-api";
 import { getMarketingMetadata, getMarketingPage } from "@/lib/marketing-api";
-import { JsonLd, metadataFor, organizationSchema } from "@/lib/seo";
+import { JsonLd, metadataFor, organizationSchema, websiteSchema } from "@/lib/seo";
 
 const fallbackMetadata = metadataFor(
   "Residential & Commercial Property Care",
@@ -24,6 +24,7 @@ function WebsiteSchema() {
     <JsonLd
       data={[
         organizationSchema,
+        websiteSchema,
         {
           "@context": "https://schema.org",
           "@type": "WebSite",

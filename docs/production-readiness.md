@@ -1,5 +1,9 @@
 # Production Readiness
 
+## Phase 12 search launch gate
+
+Keep `PUBLIC_INDEXING_ENABLED=false` for local development and staging. Production must set a reviewed HTTPS `NEXT_PUBLIC_SITE_URL` matching `WEB_URL`, configure Nginx alternate-host and HTTP redirects to that canonical origin, and enable indexing only after content/legal/media approval. Verify live source metadata, status codes, robots, sitemap, redirects, structured data, and social previews before Search Console/Bing ownership verification and sitemap submission. Phase 12 performs no external submission and the example hostname is not a production claim.
+
 ## Phase 11.2 content-readiness gate
 
 Approve or replace every intended Hero, service, supporting, and CTA photograph; confirm alt text/focal points; select only consented Published project proof; and verify Blog media through its lifecycle. Configure verified contact values before exposure and do not activate general submission until its receiving workflow is approved and tested.

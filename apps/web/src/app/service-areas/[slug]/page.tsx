@@ -6,6 +6,7 @@ import { breadcrumbSchema, JsonLd, metadataFor } from "@/lib/seo";
 import { getMarketingMetadata, getMarketingPage } from "@/lib/marketing-api";
 import { MarketingPageRenderer } from "@/components/marketing-page-renderer";
 import { getPublishedProjects } from "@/lib/before-after-api";
+import { Breadcrumbs } from "@/components/breadcrumbs";
 export function generateStaticParams() {
   return serviceAreas.map(({ slug }) => ({ slug }));
 }
@@ -33,6 +34,13 @@ export default async function Page({ params }: { readonly params: Promise<{ slug
           { name: "Service Areas", path: "/service-areas" },
           { name: area.name, path: `/service-areas/${area.slug}` },
         ])}
+      />
+      <Breadcrumbs
+        items={[
+          { name: "Home", path: "/" },
+          { name: "Service Areas", path: "/service-areas" },
+          { name: area.name, path: `/service-areas/${area.slug}` },
+        ]}
       />
       {marketingPage ? (
         <MarketingPageRenderer page={marketingPage} projects={projectResult.items} />

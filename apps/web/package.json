@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@ctps/config": "workspace:*",
+    "@ctps/seo": "workspace:*",
     "@ctps/types": "workspace:*",
     "@ctps/ui": "workspace:*",
     "next": "^16.2.11",

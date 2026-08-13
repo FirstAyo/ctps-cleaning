@@ -1,5 +1,17 @@
 # QA Matrix
 
+## Phase 12 SEO and search readiness
+
+| Area                | Automated acceptance                                                                               | Manual acceptance                                        |
+| ------------------- | -------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| Canonicals/metadata | normalized origin/path, title branding, descriptions, OG/Twitter, query/token/preview policy       | representative returned source at production-like origin |
+| Structured data     | Organization, WebSite, Service, BlogPosting, BreadcrumbList, optional omission, injection escaping | official live validator after deployment                 |
+| Sitemap/robots      | Published-only dynamics, meaningful lastmod, taxonomy exclusions, explicit index switch            | canonical live URLs and staging noindex                  |
+| Local SEO           | exactly five services/six BC areas, unique identity, no combination routes                         | content usefulness and natural links                     |
+| Admin audit         | counts, filters, severities, metadata/image/link/orphan checks, permission metadata                | 390/768/1024/1440/1920, light/dark, keyboard, console    |
+
+Regression coverage retains CMS isolation, Blog lifecycle/redirect/feed, project visibility, quote/estimate tokens, auth, private media, production environment checks, and deployment verification.
+
 ## Phase 11.2 remaining public pages
 
 | Area                    | Automated acceptance                                                                              | Manual acceptance                                  |

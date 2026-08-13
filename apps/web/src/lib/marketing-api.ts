@@ -1,5 +1,6 @@
 import "server-only";
 import type { Metadata } from "next";
+import { brandedTitle } from "@ctps/seo";
 
 export interface MarketingCta {
   label: string;
@@ -86,15 +87,26 @@ export async function getSiteSettings() {
 export async function getMarketingMetadata(pageKey: string, fallback: Metadata): Promise<Metadata> {
   const page = await getMarketingPage(pageKey);
   if (!page) return fallback;
+  const image = page.socialImageId ? `/media/marketing/${page.socialImageId}/large` : undefined;
+  const metadataTitle = brandedTitle(page.seoTitle ?? page.title);
+  const socialTitle = brandedTitle(page.ogTitle ?? page.seoTitle ?? page.title);
+  const description =
+    page.ogDescription ?? page.seoDescription ?? fallback.description ?? undefined;
   return {
     ...fallback,
-    title: page.seoTitle ?? page.title,
+    title: metadataTitle,
     description: page.seoDescription ?? fallback.description,
     openGraph: {
       ...(typeof fallback.openGraph === "object" ? fallback.openGraph : {}),
-      title: page.ogTitle ?? page.seoTitle ?? page.title,
-      description: page.ogDescription ?? page.seoDescription ?? fallback.description ?? undefined,
-      ...(page.socialImageId ? { images: [`/media/marketing/${page.socialImageId}/large`] } : {}),
+      title: socialTitle,
+      description,
+      ...(image ? { images: [{ url: image }] } : {}),
+    },
+    twitter: {
+      ...(typeof fallback.twitter === "object" ? fallback.twitter : {}),
+      title: socialTitle,
+      description,
+      ...(image ? { card: "summary_large_image", images: [image] } : {}),
     },
   };
 }

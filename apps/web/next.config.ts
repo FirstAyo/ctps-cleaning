@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
   output: "standalone",
   outputFileTracingRoot: path.resolve(process.cwd(), "../.."),
   poweredByHeader: false,
-  transpilePackages: ["@ctps/config", "@ctps/types", "@ctps/ui"],
+  transpilePackages: ["@ctps/config", "@ctps/seo", "@ctps/types", "@ctps/ui"],
   turbopack: {
     root: path.resolve(process.cwd(), "../.."),
   },

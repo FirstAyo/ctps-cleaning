@@ -2,16 +2,12 @@ import { notFound } from "next/navigation";
 import { BlogListing } from "@/components/blog";
 import { PublicLayout } from "@/components/public-shell";
 import { getBlogAuthor } from "@/lib/blog-api";
-import { metadataFor } from "@/lib/seo";
+import { noIndexFollowMetadata } from "@/lib/seo";
 export const dynamic = "force-dynamic";
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const result = await getBlogAuthor((await params).slug);
   return result
-    ? metadataFor(
-        `${result.author.displayName}, CTPS Author`,
-        result.author.bio,
-        `/blog/author/${result.author.slug}`,
-      )
+    ? noIndexFollowMetadata(`${result.author.displayName}, CTPS Author`, result.author.bio)
     : {};
 }
 export default async function Page({ params }: { params: Promise<{ slug: string }> }) {

@@ -1,8 +1,9 @@
 import type { MetadataRoute } from "next";
-import { serviceAreas, services, site } from "@/content/site";
+import { publicIndexingEnabled, serviceAreas, services, site } from "@/content/site";
 import { getPublishedProjects } from "@/lib/before-after-api";
 import { getBlogPosts, getBlogTaxonomy } from "@/lib/blog-api";
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  if (!publicIndexingEnabled) return [];
   const paths = [
     "/",
     "/services",
@@ -38,20 +39,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...taxonomy.categories
       .filter((item) => item._count.posts > 0)
       .map((item) => `/blog/category/${item.slug}`),
-    ...taxonomy.tags
-      .filter((item) => item._count.posts > 0)
-      .map((item) => `/blog/tag/${item.slug}`),
-    ...new Set(
-      posts.flatMap((post) => (post.author.slug ? [`/blog/author/${post.author.slug}`] : [])),
-    ),
   ];
-  return [
-    ...paths,
-    ...projects.map((project) => `/before-after/${project.slug}`),
-    ...blogPaths,
-  ].map((path) => ({
+  const staticEntries = [...paths, ...blogPaths].map((path) => ({
     url: new URL(path, site.url).toString(),
-    changeFrequency: path === "/" ? "weekly" : "monthly",
-    priority: path === "/" ? 1 : 0.7,
   }));
+  return [
+    ...staticEntries,
+    ...projects.map((project) => ({
+      url: new URL(`/before-after/${project.slug}`, site.url).toString(),
+      lastModified: new Date(project.updatedAt ?? project.publishedAt),
+    })),
+    ...posts.map((post) => ({
+      url: new URL(`/blog/${post.slug}`, site.url).toString(),
+      lastModified: new Date(post.updatedAt),
+    })),
+  ];
 }

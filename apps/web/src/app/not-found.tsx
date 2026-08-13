@@ -1,6 +1,12 @@
 import Link from "next/link";
 import { Container, Section } from "@ctps/ui/layout";
 import { PublicLayout } from "@/components/public-shell";
+import { noIndexMetadata } from "@/lib/seo";
+
+export const metadata = noIndexMetadata(
+  "Page Not Found",
+  "The requested CTPS page is unavailable.",
+);
 
 export default function NotFound() {
   return (

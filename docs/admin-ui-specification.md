@@ -1,5 +1,9 @@
 # Admin Dashboard UI Specification
 
+## Phase 12 SEO health workspace
+
+The protected `/seo` workspace provides actionable Published-content counts, severity-labeled findings, content-family and issue filters, search, responsive page-audit cards, metadata/social-image state, and deep links to existing editors. It is read-only, requires `seo.view`, and never exposes Draft content, private media, customer data, or environment secrets. Editors remain the mutation surfaces, preserving permissions, versions, previews, publication rules, and audit events. See `seo-and-search-readiness.md`.
+
 ## Purpose
 
 This specification defines the planned protected dashboard. Clarity, efficiency, privacy, and security take priority over decorative presentation. Permission-aware UI never replaces API authorization.

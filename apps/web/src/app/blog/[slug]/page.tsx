@@ -1,9 +1,8 @@
 import { notFound, permanentRedirect } from "next/navigation";
 import { BlogArticle } from "@/components/blog";
 import { PublicLayout } from "@/components/public-shell";
-import { site } from "@/content/site";
 import { getBlogPost } from "@/lib/blog-api";
-import { breadcrumbSchema, JsonLd, metadataFor } from "@/lib/seo";
+import { blogPostingSchema, breadcrumbSchema, JsonLd, metadataFor } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
@@ -56,31 +55,18 @@ export default async function Page({ params }: { readonly params: Promise<{ slug
             { name: "Blog", path: "/blog" },
             { name: post.title, path: `/blog/${post.slug}` },
           ]),
-          {
-            "@context": "https://schema.org",
-            "@type": "BlogPosting",
+          blogPostingSchema({
             headline: post.title,
             description: post.excerpt,
+            path: `/blog/${post.slug}`,
             datePublished: post.publishedAt,
             dateModified: post.updatedAt,
-            mainEntityOfPage: new URL(`/blog/${post.slug}`, site.url).toString(),
-            author: {
-              "@type": "Person",
-              name: post.author.displayName,
-              ...(post.author.slug
-                ? { url: new URL(`/blog/author/${post.author.slug}`, site.url).toString() }
-                : {}),
-            },
-            publisher: { "@type": "Organization", name: site.name, url: site.url },
+            authorName: post.author.displayName,
+            ...(post.author.slug ? { authorPath: `/blog/author/${post.author.slug}` } : {}),
             ...(post.featuredMedia
-              ? {
-                  image: new URL(
-                    `/media/blog/${post.featuredMedia.id}/featured`,
-                    site.url,
-                  ).toString(),
-                }
+              ? { imageUrl: `/media/blog/${post.featuredMedia.id}/featured` }
               : {}),
-          },
+          }),
         ]}
       />
       <BlogArticle post={post} related={result.related ?? []} />

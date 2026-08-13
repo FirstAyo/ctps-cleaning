@@ -2,12 +2,13 @@ import { notFound } from "next/navigation";
 import { Container, Section } from "@ctps/ui/layout";
 import { PublicLayout } from "@/components/public-shell";
 import { EstimateResultActions } from "@/components/estimate-result-actions";
+import { noIndexMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
-export const metadata = {
-  title: "Preliminary estimate result",
-  robots: { index: false, follow: false },
-};
+export const metadata = noIndexMetadata(
+  "Preliminary estimate result",
+  "Private preliminary estimate result.",
+);
 export default async function Page({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
   const api = process.env.API_URL;

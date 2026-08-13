@@ -10,6 +10,7 @@ import { EstimatorModule } from "./estimator/estimator.module";
 import { BlogModule } from "./blog/blog.module";
 import { JobsModule } from "./jobs/jobs.module";
 import { MarketingModule } from "./marketing/marketing.module";
+import { SeoModule } from "./seo/seo.module";
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { MarketingModule } from "./marketing/marketing.module";
     BlogModule,
     JobsModule,
     MarketingModule,
+    SeoModule,
     HealthModule,
   ],
 })

@@ -20,6 +20,7 @@ export interface PublicProject {
   readonly status: "PUBLISHED";
   readonly featured: boolean;
   readonly publishedAt: string;
+  readonly updatedAt?: string;
   readonly completedAt: string | null;
   readonly serviceKey: string;
   readonly serviceAreaKey: string;

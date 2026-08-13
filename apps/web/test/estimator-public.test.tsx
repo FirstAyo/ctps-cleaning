@@ -22,7 +22,7 @@ describe("public estimator integration", () => {
       resolve(process.cwd(), "src/components/estimate-result-actions.tsx"),
       "utf8",
     );
-    expect(page).toContain("index: false");
+    expect(page).toContain("noIndexMetadata");
     expect(actions).toContain("quote-transfer");
   });
 });

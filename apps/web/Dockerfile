@@ -3,10 +3,13 @@ RUN npm install --global pnpm@10.15.1
 WORKDIR /workspace
 COPY . .
 RUN pnpm install --frozen-lockfile
+ARG NEXT_PUBLIC_SITE_URL=https://ctps.example.com
+ARG PUBLIC_INDEXING_ENABLED=false
 ENV NODE_ENV=production \
     API_URL=http://api:4000 \
     WEB_URL=https://ctps.example.com \
-    NEXT_PUBLIC_SITE_URL=https://ctps.example.com
+    NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL} \
+    PUBLIC_INDEXING_ENABLED=${PUBLIC_INDEXING_ENABLED}
 RUN pnpm --filter @ctps/web... build
 
 FROM node:22.12.0-bookworm-slim AS runtime

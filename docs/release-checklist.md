@@ -18,6 +18,9 @@
 - [ ] Accessibility keyboard, screen reader semantics, 200% zoom, themes, reduced motion, and touch reviewed
 - [ ] Chrome, Firefox, Safari/WebKit, and Edge current versions reviewed at representative widths
 - [ ] Canonical domain, robots, sitemap, metadata, structured data, and noindex routes verified
+- [ ] `PUBLIC_INDEXING_ENABLED` is false on staging and true only on the approved canonical production host
+- [ ] Alternate host redirects directly to canonical HTTPS; 404, old Blog slug, social preview, and source HTML verified
+- [ ] Search Console/Bing verification and sitemap submission recorded only after live ownership is confirmed
 - [ ] Real logo/contact/address/hours/legal/privacy/accessibility/email/media/content gaps approved or launch blocked
 - [ ] No fake reviews, prices, biographies, project claims, credentials, or test records remain
 - [ ] No customer account, public booking, live availability, payment, invoice, or public job tracker exists

@@ -60,6 +60,7 @@ describe("authentication validation", () => {
     const result = apiEnvironmentSchema.safeParse({
       ADMIN_URL: "https://admin.example.com",
       WEB_URL: "https://example.com",
+      NEXT_PUBLIC_SITE_URL: "https://example.com",
       API_PORT: "4000",
       AUTH_COOKIE_SECURE: "false",
       CORS_ALLOWED_ORIGINS: "https://admin.example.com",

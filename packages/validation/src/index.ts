@@ -90,6 +90,8 @@ export const apiEnvironmentSchema = z
     MARKETING_MEDIA_MAX_WIDTH: positiveIntegerSchema.max(20000).default(12000),
     MARKETING_MEDIA_MAX_HEIGHT: positiveIntegerSchema.max(20000).default(12000),
     WEB_URL: httpUrlSchema,
+    NEXT_PUBLIC_SITE_URL: httpUrlSchema.optional(),
+    PUBLIC_INDEXING_ENABLED: booleanEnvironmentSchema.default(false),
     QUOTE_PRIVATE_MEDIA_ROOT: z
       .string()
       .trim()
@@ -168,6 +170,12 @@ export const apiEnvironmentSchema = z
       });
     }
     if (value.NODE_ENV === "production") {
+      if (!value.NEXT_PUBLIC_SITE_URL || value.NEXT_PUBLIC_SITE_URL !== value.WEB_URL)
+        context.addIssue({
+          code: "custom",
+          path: ["NEXT_PUBLIC_SITE_URL"],
+          message: "Production public site URL must be present and match WEB_URL",
+        });
       for (const [key, url] of [
         ["WEB_URL", value.WEB_URL],
         ["ADMIN_URL", value.ADMIN_URL],

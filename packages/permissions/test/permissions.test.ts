@@ -32,6 +32,7 @@ describe("permission contract", () => {
     expect(ALL_PERMISSION_KEYS).toContain(PERMISSION_KEYS.MEDIA_LIBRARY_RESTORE);
     expect(ALL_PERMISSION_KEYS).toContain(PERMISSION_KEYS.NAVIGATION_UPDATE);
     expect(ALL_PERMISSION_KEYS).toContain(PERMISSION_KEYS.SITE_SETTINGS_UPDATE);
+    expect(ALL_PERMISSION_KEYS).toContain(PERMISSION_KEYS.SEO_VIEW);
   });
 
   it("combines multiple roles without accepting unknown keys", () => {
