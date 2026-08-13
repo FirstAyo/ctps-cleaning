@@ -9,7 +9,10 @@ import { LoginForm } from "../src/components/auth-forms";
 import { Forbidden } from "../src/components/forbidden";
 
 const replace = vi.fn();
-vi.mock("next/navigation", () => ({ useRouter: () => ({ replace, refresh: vi.fn() }) }));
+vi.mock("next/navigation", () => ({
+  usePathname: () => "/dashboard",
+  useRouter: () => ({ replace, refresh: vi.fn() }),
+}));
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();

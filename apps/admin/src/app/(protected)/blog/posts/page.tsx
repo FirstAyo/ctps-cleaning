@@ -47,6 +47,17 @@ export default async function Page({
       ? adminApi<{ id: string; displayName: string }[]>("admin/blog/authors")
       : Promise.resolve([]),
   ]);
+  const hasFilters = [
+    query.search,
+    query.status,
+    query.authorUserId,
+    query.categoryId,
+    query.tagId,
+    query.publishedFrom,
+    query.publishedTo,
+    query.scheduledFrom,
+    query.scheduledTo,
+  ].some(Boolean);
   return (
     <div className="grid gap-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
@@ -148,6 +159,12 @@ export default async function Page({
           </Select>
         </div>
         <Button type="submit">Filter</Button>
+        <Link
+          className="inline-flex min-h-11 items-center text-sm font-semibold underline"
+          href="/blog/posts"
+        >
+          Reset filters
+        </Link>
       </form>
       {result.items.length ? (
         <div className="admin-table-wrap">
@@ -158,6 +175,7 @@ export default async function Page({
                 <th>Image</th>
                 <th>Title</th>
                 <th>Status</th>
+                <th>Featured</th>
                 <th>Author</th>
                 <th>Categories</th>
                 <th>Published / scheduled</th>
@@ -186,6 +204,7 @@ export default async function Page({
                     <code className="text-xs">{post.slug}</code>
                   </td>
                   <td>{post.status}</td>
+                  <td>{post.featuredMedia ? "Yes" : "No"}</td>
                   <td>{post.author.displayName}</td>
                   <td>{post.categories.map((item) => item.name).join(", ") || "—"}</td>
                   <td>
@@ -207,9 +226,16 @@ export default async function Page({
           </table>
         </div>
       ) : (
-        <p className="rounded-lg border border-dashed p-8 text-center">
-          No posts match these filters.
-        </p>
+        <div className="grid justify-items-center gap-3 rounded-lg border border-dashed p-8 text-center">
+          <h2 className="text-xl font-semibold">
+            {hasFilters ? "No posts match these filters." : "No posts yet."}
+          </h2>
+          {!hasFilters && can(identity, "blogPosts.create") ? (
+            <Link href="/blog/posts/new">
+              <Button>Create your first post</Button>
+            </Link>
+          ) : null}
+        </div>
       )}
       <p className="text-sm text-muted-foreground">
         Page {result.page}; {result.total} total posts.

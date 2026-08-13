@@ -857,7 +857,7 @@ const blogPlainTextSchema = (maximum: number) =>
     .string()
     .trim()
     .max(maximum)
-    .refine((value) => !/<\/?(?:script|iframe|object|embed|form|html|style)\b/i.test(value), {
+    .refine((value) => !/<\s*\/?\s*[a-z!][^>]*>/i.test(value), {
       message: "Raw HTML and executable content are not supported",
     });
 const blogLinkSchema = z
@@ -921,6 +921,59 @@ const calloutBlockSchema = z
   })
   .strict();
 const dividerBlockSchema = z.object({ type: z.literal("divider") }).strict();
+const blogInlineMarkSchema = z.discriminatedUnion("type", [
+  z.object({ type: z.enum(["bold", "italic", "underline"]) }).strict(),
+  z.object({ type: z.literal("link"), href: blogLinkSchema }).strict(),
+]);
+const blogInlineTextSchema = z
+  .string()
+  .min(1)
+  .max(5000)
+  .refine((value) => !/<\s*\/?\s*[a-z!][^>]*>/i.test(value), {
+    message: "Raw HTML and executable content are not supported",
+  });
+const blogInlineContentSchema = z
+  .array(
+    z
+      .object({
+        type: z.literal("text"),
+        text: blogInlineTextSchema,
+        marks: z
+          .array(blogInlineMarkSchema)
+          .max(4)
+          .default([])
+          .refine((marks) => new Set(marks.map(({ type }) => type)).size === marks.length, {
+            message: "Inline formatting marks must be unique",
+          }),
+      })
+      .strict(),
+  )
+  .min(1)
+  .max(250)
+  .refine((content) => content.some(({ text }) => text.trim().length > 0), {
+    message: "Rich text cannot be blank",
+  });
+const richTextBlockSchema = z
+  .object({
+    type: z.literal("richText"),
+    style: z.enum(["paragraph", "heading2", "heading3", "heading4", "blockquote"]),
+    content: blogInlineContentSchema,
+  })
+  .strict();
+const richListBlockSchema = z
+  .object({
+    type: z.literal("richList"),
+    style: z.enum(["bullet", "numbered"]),
+    items: z.array(blogInlineContentSchema).min(1).max(50),
+  })
+  .strict();
+const managedImageBlockSchema = z
+  .object({
+    type: z.literal("managedImage"),
+    mediaId: identifierSchema,
+    layout: z.enum(["standard", "wide", "full"]).default("standard"),
+  })
+  .strict();
 export const blogContentBlockSchema = z.discriminatedUnion("type", [
   textBlockSchema,
   listBlockSchema,
@@ -928,6 +981,9 @@ export const blogContentBlockSchema = z.discriminatedUnion("type", [
   imageBlockSchema,
   calloutBlockSchema,
   dividerBlockSchema,
+  richTextBlockSchema,
+  richListBlockSchema,
+  managedImageBlockSchema,
 ]);
 export const blogContentSchema = z.array(blogContentBlockSchema).max(200);
 const blogPostMediaSchema = z
@@ -1000,6 +1056,10 @@ export const blogMediaUpdateSchema = z
   .refine((value) => value.altText !== undefined || value.caption !== undefined, {
     message: "At least one field must be updated",
   });
+export const blogMediaListQuerySchema = paginationSchema.extend({
+  pageSize: z.coerce.number().int().min(1).max(48).default(24),
+  search: blogPlainTextSchema(100).optional(),
+});
 export const blogMediaOrderSchema = z.object({
   version: z.number().int().positive(),
   media: blogPostMediaSchema,
@@ -1014,6 +1074,7 @@ export type BlogTaxonomyInput = z.infer<typeof blogTaxonomySchema>;
 export type BlogTagInput = z.infer<typeof blogTagSchema>;
 export type AuthorProfileInput = z.infer<typeof authorProfileSchema>;
 export type BlogMediaUpdateInput = z.infer<typeof blogMediaUpdateSchema>;
+export type BlogMediaListQuery = z.infer<typeof blogMediaListQuerySchema>;
 
 export const serviceJobStatusSchema = z.enum([
   "DRAFT",

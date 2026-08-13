@@ -49,6 +49,12 @@ Selected proof stores Published Before & After identifiers without copying bytes
 
 Back up media off-host, test restores, monitor capacity and failed processing, and reconcile orphaned records/objects. CDN choice, quotas, retention, acceptable MIME types, transformations, virus scanner, storage provider, and migration threshold remain unresolved.
 
+## Phase 11.3 Blog editor media flow
+
+The post editor's bounded, searchable picker contains only Ready Blog media allowed by the writer's own/all permissions; it never searches Public Marketing, Quote, Job, or Before & After storage. Writers may upload through the existing protected Blog pipeline, edit alt text and optional caption, choose standard/wide/full-reading-width layout, replace/remove an image, or move the selected block up/down without drag-only interaction. The editor persists the managed Blog media identifier and presentation metadata, never a filesystem path, binary, arbitrary URL, or original full-resolution payload.
+
+Draft Blog media continues to stream only through the authenticated no-store Admin boundary. Publication, unpublication, archive, scheduled publication, and revision restoration reuse the existing Blog media lifecycle and reference synchronization. Public `figure`/`figcaption` rendering resolves only media attached to a Published post. A featured image is selected separately in post settings but follows the same Blog ownership, readiness, alt-text, and lifecycle rules.
+
 Phase 10 mounts all public and private namespaces as distinct production volumes, probes each
 configured root safely for readiness, and provides checksum-verified archive/isolated restore
 tooling. Database and media backups use a coordinated quiet window because they cannot share a

@@ -77,8 +77,19 @@ Do not create fake Published articles or commit runtime media. Test fixtures and
 
 ## Known limitations and deferred work
 
-- Revision restore is optional and deferred; history is read-only.
-- Autosave, rich inline text spans, tables, code blocks, arbitrary embeds, public comments, newsletter, and a general page CMS are intentionally absent.
+- Autosave, tables, code blocks, arbitrary embeds, public comments, newsletter, and a general page CMS are intentionally absent.
 - Full-text indexes, external search, shared cross-owner media workflows, a standalone media library, malware scanning, CDN/object-storage cutover, and production scheduling/monitoring are deferred.
 - Local filesystem moves and PostgreSQL cannot form one atomic distributed transaction. Conditional publication prevents duplicate state changes; production operations should monitor and reconcile the extremely small file/database failure window.
 - Production cache/CDN policy, backup/restore, cron/systemd unit, and deployment remain Phase 10 work.
+
+## Phase 11.3 editor upgrade
+
+The Phase 8 domain and JSONB content architecture remain in place. The Admin now uses self-hosted Tiptap/ProseMirror as an interaction layer and converts its document to strict CTPS blocks; neither HTML nor unbounded editor JSON is persisted. Existing paragraph/heading/list/link/image/callout/divider blocks remain valid. New structured blocks add rich inline text with bold, italic, underline, and safe-link marks; H4; rich bullet/number lists; and managed image presentation metadata. The public renderer supports both generations with semantic headings, lists, links, blockquotes, figures, captions, dividers, and callouts. The post title remains the only H1.
+
+The Admin writing workspace has separate sticky publishing and formatting command rows below the global header. It includes explicit save state, unsaved-navigation protection, word count, reading time, a large title/excerpt surface, selection-aware formatting, safe link insert/edit/remove, Blog-only image choose/upload, standard/wide/full layouts, keyboard image movement, a desktop settings sidebar, and a mobile settings modal. It does not autosave or audit keystrokes.
+
+The existing per-post SEO title, meta description, and slug controls are grouped with a search preview; this does not begin Phase 12. Existing lifecycle actions, preview, author/category/tag relationships, scheduling, publication, media moves, redirects, permissions, and audit events are preserved. Schedule input is displayed in the browser's local timezone and normalized to UTC for the API.
+
+Revision history is now actionable for authorized users. Restoring revalidates the immutable snapshot against the current structured schema, verifies referenced taxonomy and Blog media, enforces own/all permissions, optimistic concurrency, and slug uniqueness, restores the content as Draft, synchronizes references/public media state, creates a new revision, and writes a content-free audit record. Prior revision rows are never edited.
+
+Tiptap core, React, ProseMirror, StarterKit, Link, Image, and Placeholder packages are locally bundled open-source dependencies. They require no hosted editor account or proprietary service and are used with client-only initial rendering for Next.js/React compatibility.

@@ -7,7 +7,7 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { hasPermission, PERMISSION_KEYS } from "@ctps/permissions";
-import type { BlogMediaUpdateInput } from "@ctps/validation";
+import type { BlogMediaListQuery, BlogMediaUpdateInput } from "@ctps/validation";
 
 import { AuditService } from "../auth/audit.service";
 import type { AuthenticatedIdentity } from "../auth/auth.types";
@@ -86,6 +86,30 @@ export class BlogMediaService {
       hasPermission(identity.permissions, all) ||
       (identity.userId === ownerId && hasPermission(identity.permissions, own))
     );
+  }
+
+  async list(query: BlogMediaListQuery, identity: AuthenticatedIdentity) {
+    const readAll = hasPermission(identity.permissions, PERMISSION_KEYS.BLOG_MEDIA_READ_ALL);
+    if (!readAll && !hasPermission(identity.permissions, PERMISSION_KEYS.BLOG_MEDIA_READ_OWN))
+      throw new ForbiddenException({ code: "FORBIDDEN", message: "You cannot read blog media." });
+    const where = {
+      status: "READY" as const,
+      ...(!readAll ? { uploadedByUserId: identity.userId } : {}),
+      ...(query.search
+        ? { originalFilename: { contains: query.search, mode: "insensitive" as const } }
+        : {}),
+    };
+    const [items, total] = await this.database.client.$transaction([
+      this.database.client.blogMediaAsset.findMany({
+        where,
+        include: { variants: true },
+        orderBy: [{ createdAt: "desc" }, { id: "asc" }],
+        skip: (query.page - 1) * query.pageSize,
+        take: query.pageSize,
+      }),
+      this.database.client.blogMediaAsset.count({ where }),
+    ]);
+    return { items: items.map((item) => this.response(item)), total, page: query.page };
   }
 
   async upload(files: Express.Multer.File[], identity: AuthenticatedIdentity) {

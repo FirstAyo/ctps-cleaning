@@ -25,6 +25,27 @@ const published: PublicBlogPost = {
   content: [
     { type: "heading2", text: "Plan for the season", emphasis: false },
     { type: "paragraph", text: "Review access and conditions.", emphasis: false },
+    {
+      type: "richText",
+      style: "heading4",
+      content: [
+        {
+          type: "text",
+          text: "Detailed guidance",
+          marks: [
+            { type: "bold" },
+            { type: "italic" },
+            { type: "underline" },
+            { type: "link", href: "/services" },
+          ],
+        },
+      ],
+    },
+    {
+      type: "richList",
+      style: "numbered",
+      items: [[{ type: "text", text: "Prepare safe access", marks: [] }]],
+    },
     { type: "image", mediaId: media.id },
   ],
   featuredMedia: media,
@@ -99,6 +120,12 @@ describe("public blog publishing", () => {
     );
     expect(article).toContain("Final result");
     expect(article).toContain("Related articles");
+    expect(article).toContain("<h4>");
+    expect(article).toContain("<strong>");
+    expect(article).toContain("<em>");
+    expect(article).toContain("<u>");
+    expect(article).toContain('href="/services"');
+    expect(article).toContain("<ol>");
     expect(article).toContain("/media/blog/");
     expect(article).not.toMatch(/comment|storageKey|authorUserId/i);
   });

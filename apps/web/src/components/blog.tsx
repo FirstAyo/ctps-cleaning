@@ -2,7 +2,12 @@
 import { Container, Section } from "@ctps/ui/layout";
 import Link from "next/link";
 
-import type { PublicBlogBlock, PublicBlogMedia, PublicBlogPost } from "@/lib/blog-api";
+import type {
+  PublicBlogBlock,
+  PublicBlogInlineContent,
+  PublicBlogMedia,
+  PublicBlogPost,
+} from "@/lib/blog-api";
 
 const imagePath = (media: PublicBlogMedia, variant: string) => `/media/blog/${media.id}/${variant}`;
 export function BlogCard({
@@ -216,10 +221,12 @@ function PublicBlock({
   media: Map<string, PublicBlogMedia>;
 }) {
   if (block.type === "divider") return <hr />;
-  if (block.type === "image") {
+  if (block.type === "image" || block.type === "managedImage") {
     const image = media.get(block.mediaId);
     return image ? (
-      <figure>
+      <figure
+        className={block.type === "managedImage" ? `journal-figure-${block.layout}` : undefined}
+      >
         <img
           alt={image.altText}
           className="w-full rounded-xl"
@@ -229,6 +236,22 @@ function PublicBlock({
         {image.caption ? <figcaption>{image.caption}</figcaption> : null}
       </figure>
     ) : null;
+  }
+  if (block.type === "richText") {
+    const content = <RichInline content={block.content} />;
+    if (block.style === "heading2") return <h2>{content}</h2>;
+    if (block.style === "heading3") return <h3>{content}</h3>;
+    if (block.style === "heading4") return <h4>{content}</h4>;
+    if (block.style === "blockquote") return <blockquote>{content}</blockquote>;
+    return <p>{content}</p>;
+  }
+  if (block.type === "richList") {
+    const items = block.items.map((item, index) => (
+      <li key={index}>
+        <RichInline content={item} />
+      </li>
+    ));
+    return block.style === "bullet" ? <ul>{items}</ul> : <ol>{items}</ol>;
   }
   if (block.type === "bulletList")
     return (
@@ -267,4 +290,24 @@ function PublicBlock({
       </aside>
     );
   return "text" in block ? <p>{block.text}</p> : null;
+}
+
+function RichInline({ content }: { readonly content: readonly PublicBlogInlineContent[] }) {
+  return content.map((node, index) => {
+    let rendered: React.ReactNode = node.text;
+    for (const mark of node.marks) {
+      if (mark.type === "bold") rendered = <strong>{rendered}</strong>;
+      else if (mark.type === "italic") rendered = <em>{rendered}</em>;
+      else if (mark.type === "underline") rendered = <u>{rendered}</u>;
+      else if ("href" in mark) {
+        const external = /^https?:\/\//i.test(mark.href);
+        rendered = (
+          <a href={mark.href} {...(external ? { rel: "noopener noreferrer" } : {})}>
+            {rendered}
+          </a>
+        );
+      }
+    }
+    return <span key={index}>{rendered}</span>;
+  });
 }

@@ -144,6 +144,55 @@ describe("safe structured blog content", () => {
       }).success,
     ).toBe(false);
   });
+  it("accepts the Phase 11.3 allowlisted rich-text structure", () => {
+    const content = [
+      {
+        type: "richText",
+        style: "heading4",
+        content: [
+          {
+            type: "text",
+            text: "Safe linked guidance",
+            marks: [
+              { type: "bold" },
+              { type: "italic" },
+              { type: "underline" },
+              { type: "link", href: "/services" },
+            ],
+          },
+        ],
+      },
+      {
+        type: "richList",
+        style: "numbered",
+        items: [[{ type: "text", text: "First", marks: [] }]],
+      },
+      { type: "managedImage", mediaId, layout: "wide" },
+    ];
+    const result = blogContentSchema.safeParse(content);
+    expect(result.success).toBe(true);
+    expect(blogContentText(result.data!)).toContain("Safe linked guidance First");
+    expect(referencedBlogMedia(result.data!)).toEqual([mediaId]);
+  });
+  it.each([
+    ["pasted script", { type: "text", text: "<script>alert(1)</script>", marks: [] }],
+    ["event-handler HTML", { type: "text", text: '<img onerror="alert(1)">', marks: [] }],
+    [
+      "javascript URL",
+      { type: "text", text: "unsafe", marks: [{ type: "link", href: "javascript:alert(1)" }] },
+    ],
+    [
+      "dangerous data URL",
+      { type: "text", text: "unsafe", marks: [{ type: "link", href: "data:text/html,alert(1)" }] },
+    ],
+    ["iframe", { type: "text", text: "<iframe src='https://example.com'>", marks: [] }],
+    ["unsupported mark", { type: "text", text: "unsafe", marks: [{ type: "script" }] }],
+  ])("rejects unsafe rich content: %s", (_name, inline) => {
+    expect(
+      blogContentSchema.safeParse([{ type: "richText", style: "paragraph", content: [inline] }])
+        .success,
+    ).toBe(false);
+  });
 });
 
 describe("blog ownership and scheduled publishing", () => {

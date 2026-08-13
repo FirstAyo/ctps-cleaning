@@ -152,17 +152,40 @@ async function main() {
     assert(update.response.ok, "Media metadata update failed");
   }
   const draft = await mutate("admin/blog/posts", "POST", authorSession, {
-    title: "Phase 8 runtime property-care guide",
+    title: "Phase 11.3 runtime property-care guide",
     slug,
-    excerpt: "A disposable post that verifies the Phase 8 publishing boundary.",
+    excerpt: "A disposable post that verifies the upgraded structured editor boundary.",
     content: [
-      { type: "heading2", text: "Runtime verification", emphasis: false },
       {
-        type: "paragraph",
-        text: "This content exists only during local verification.",
-        emphasis: false,
+        type: "richText",
+        style: "heading2",
+        content: [{ type: "text", text: "Runtime verification", marks: [] }],
       },
-      { type: "image", mediaId: mediaIds[1] },
+      {
+        type: "richText",
+        style: "paragraph",
+        content: [
+          { type: "text", text: "This content", marks: [{ type: "bold" }] },
+          { type: "text", text: " exists only during ", marks: [{ type: "italic" }] },
+          { type: "text", text: "local verification", marks: [{ type: "underline" }] },
+          {
+            type: "text",
+            text: ".",
+            marks: [{ type: "link", href: "/services" }],
+          },
+        ],
+      },
+      {
+        type: "richList",
+        style: "bullet",
+        items: [[{ type: "text", text: "Structured list item", marks: [] }]],
+      },
+      {
+        type: "managedImage",
+        mediaId: mediaIds[1],
+        layout: "wide",
+      },
+      { type: "divider" },
     ],
     featuredMediaId: mediaIds[0],
     media: [
@@ -178,6 +201,30 @@ async function main() {
   assert(draft.response.ok && draft.body.status === "DRAFT", "Draft creation failed");
   postId = String(draft.body.id);
   let version = Number(draft.body.version);
+  const initialRevisions = await json(`admin/blog/posts/${postId}/revisions`, {
+    headers: { cookie: authorSession },
+  });
+  const firstRevision = (initialRevisions.body as unknown as { id: string }[])[0];
+  assert(initialRevisions.response.ok && firstRevision, "Initial revision was not created");
+  const edited = await mutate(`admin/blog/posts/${postId}`, "PATCH", authorSession, {
+    version,
+    title: "Phase 11.3 runtime edited title",
+  });
+  assert(edited.response.ok, "Rich Draft update failed");
+  version = Number(edited.body.version);
+  const restored = await mutate(
+    `admin/blog/posts/${postId}/revisions/${firstRevision.id}/restore`,
+    "POST",
+    authorSession,
+    { version },
+  );
+  assert(
+    restored.response.ok &&
+      restored.body.status === "DRAFT" &&
+      restored.body.title === "Phase 11.3 runtime property-care guide",
+    "Revision restore failed",
+  );
+  version = Number(restored.body.version);
   assert(
     (await json(`public/blog/posts/${slug}`)).response.status === 404,
     "Draft leaked publicly",
@@ -254,7 +301,7 @@ async function main() {
     "Audit metadata exposed sensitive content",
   );
   process.stdout.write(
-    `${JSON.stringify({ auditEvents: events.length, authorOwnership: true, draftPrivate: true, filesUploaded: mediaIds.length, noComments: true, publicationPublic: true, publicMedia: true, scheduledPublication: true, schedulerIdempotent: true, unpublishedPrivate: true }, null, 2)}\n`,
+    `${JSON.stringify({ auditEvents: events.length, authorOwnership: true, draftPrivate: true, filesUploaded: mediaIds.length, noComments: true, publicationPublic: true, publicMedia: true, revisionRestore: true, richStructuredContent: true, scheduledPublication: true, schedulerIdempotent: true, unpublishedPrivate: true }, null, 2)}\n`,
   );
 }
 

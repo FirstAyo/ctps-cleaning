@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element -- authenticated draft media proxy */
 import { Forbidden } from "@/components/forbidden";
 import { adminApi, can, currentIdentity } from "@/lib/admin-api";
-import type { BlogBlock, BlogPostAdmin } from "@/lib/blog-types";
+import type { BlogBlock, BlogInlineContent, BlogPostAdmin } from "@/lib/blog-types";
 
 export const metadata = { robots: { index: false, follow: false } };
 
@@ -35,7 +35,7 @@ function PreviewBlock({
   media: Map<string, BlogPostAdmin["media"][number]["media"]>;
 }) {
   if (block.type === "divider") return <hr />;
-  if (block.type === "image") {
+  if (block.type === "image" || block.type === "managedImage") {
     const image = media.get(block.mediaId);
     return image ? (
       <figure>
@@ -48,6 +48,29 @@ function PreviewBlock({
       </figure>
     ) : (
       <p>Missing managed image.</p>
+    );
+  }
+  if (block.type === "richText") {
+    const content = <PreviewInline content={block.content} />;
+    if (block.style === "heading2") return <h2 className="text-2xl font-semibold">{content}</h2>;
+    if (block.style === "heading3") return <h3 className="text-xl font-semibold">{content}</h3>;
+    if (block.style === "heading4") return <h4 className="text-lg font-semibold">{content}</h4>;
+    if (block.style === "blockquote")
+      return <blockquote className="border-l-4 pl-4">{content}</blockquote>;
+    return <p>{content}</p>;
+  }
+  if (block.type === "richList") {
+    const Tag = block.style === "bullet" ? "ul" : "ol";
+    return (
+      <Tag
+        className={block.style === "bullet" ? "list-inside list-disc" : "list-inside list-decimal"}
+      >
+        {block.items.map((item, index) => (
+          <li key={index}>
+            <PreviewInline content={item} />
+          </li>
+        ))}
+      </Tag>
     );
   }
   if (block.type === "bulletList" || block.type === "numberedList") {
@@ -78,4 +101,22 @@ function PreviewBlock({
       </aside>
     );
   return "text" in block ? <p>{block.text}</p> : null;
+}
+
+function PreviewInline({ content }: { readonly content: readonly BlogInlineContent[] }) {
+  return content.map((node, index) => {
+    let rendered: React.ReactNode = node.text;
+    for (const mark of node.marks) {
+      if (mark.type === "bold") rendered = <strong>{rendered}</strong>;
+      else if (mark.type === "italic") rendered = <em>{rendered}</em>;
+      else if (mark.type === "underline") rendered = <u>{rendered}</u>;
+      else if ("href" in mark)
+        rendered = (
+          <a className="underline" href={mark.href}>
+            {rendered}
+          </a>
+        );
+    }
+    return <span key={index}>{rendered}</span>;
+  });
 }

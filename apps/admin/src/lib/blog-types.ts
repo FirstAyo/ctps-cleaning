@@ -4,7 +4,19 @@ export type BlogBlock =
   | { type: "link"; text: string; href: string; emphasis: boolean }
   | { type: "image"; mediaId: string }
   | { type: "callout"; title?: string; text: string }
-  | { type: "divider" };
+  | { type: "divider" }
+  | {
+      type: "richText";
+      style: "paragraph" | "heading2" | "heading3" | "heading4" | "blockquote";
+      content: BlogInlineContent[];
+    }
+  | { type: "richList"; style: "bullet" | "numbered"; items: BlogInlineContent[][] }
+  | { type: "managedImage"; mediaId: string; layout: "standard" | "wide" | "full" };
+export interface BlogInlineContent {
+  type: "text";
+  text: string;
+  marks: Array<{ type: "bold" | "italic" | "underline" } | { type: "link"; href: string }>;
+}
 export interface BlogMedia {
   id: string;
   originalFilename: string;

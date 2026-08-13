@@ -18,6 +18,7 @@ import type {
   ScheduleBlogPostInput,
   UpdateBlogPostInput,
 } from "@ctps/validation";
+import { blogContentSchema } from "@ctps/validation";
 
 import { AuditService } from "../auth/audit.service";
 import type { AuthenticatedIdentity } from "../auth/auth.types";
@@ -761,6 +762,134 @@ export class BlogService {
         actor: { select: { displayName: true } },
       },
     });
+  }
+
+  async restoreRevision(
+    id: string,
+    revisionId: string,
+    version: number,
+    identity: AuthenticatedIdentity,
+  ) {
+    const current = await this.find(id);
+    this.authorize(
+      identity,
+      current.authorUserId,
+      PERMISSION_KEYS.BLOG_POSTS_UPDATE_OWN,
+      PERMISSION_KEYS.BLOG_POSTS_UPDATE_ALL,
+    );
+    this.authorize(
+      identity,
+      current.authorUserId,
+      PERMISSION_KEYS.BLOG_REVISIONS_READ_OWN,
+      PERMISSION_KEYS.BLOG_REVISIONS_READ_ALL,
+    );
+    const snapshot = await this.database.client.blogPostRevision.findFirst({
+      where: { id: revisionId, postId: id },
+    });
+    if (!snapshot)
+      throw new NotFoundException({
+        code: "BLOG_REVISION_NOT_FOUND",
+        message: "The blog revision was not found.",
+      });
+    const categoryIds = Array.isArray(snapshot.categoryIdsSnapshot)
+      ? snapshot.categoryIdsSnapshot.filter((value): value is string => typeof value === "string")
+      : [];
+    const tagIds = Array.isArray(snapshot.tagIdsSnapshot)
+      ? snapshot.tagIdsSnapshot.filter((value): value is string => typeof value === "string")
+      : [];
+    await this.assertTaxonomy(categoryIds, tagIds);
+    const parsedContent = blogContentSchema.safeParse(snapshot.content);
+    if (!parsedContent.success)
+      throw new ConflictException({
+        code: "BLOG_REVISION_INVALID",
+        message: "This historical revision is not compatible with the current safe content format.",
+      });
+    const content = parsedContent.data;
+    const mediaIds = [
+      ...referencedBlogMedia(content),
+      ...(snapshot.featuredMediaId ? [snapshot.featuredMediaId] : []),
+    ];
+    await this.media.validateOwned(mediaIds, identity);
+    const slugConflict = await this.database.client.blogPost.findFirst({
+      where: {
+        id: { not: id },
+        OR: [{ slug: snapshot.slug }, { redirects: { some: { oldSlug: snapshot.slug } } }],
+      },
+      select: { id: true },
+    });
+    if (slugConflict)
+      throw new ConflictException({
+        code: "BLOG_SLUG_CONFLICT",
+        message: "The historical slug is now used by another post.",
+      });
+    const restored = await this.database.client.$transaction(async (transaction) => {
+      const updated = await transaction.blogPost.updateMany({
+        where: { id, version },
+        data: {
+          title: snapshot.title,
+          slug: snapshot.slug,
+          excerpt: snapshot.excerpt,
+          content: snapshot.content as Prisma.InputJsonValue,
+          searchText: blogContentText(content),
+          status: "DRAFT",
+          featuredMediaId: snapshot.featuredMediaId,
+          seoTitle: snapshot.seoTitle,
+          seoDescription: snapshot.seoDescription,
+          scheduledFor: null,
+          archivedAt: null,
+          readingTimeMinutes: blogReadingTime(content),
+          version: { increment: 1 },
+        },
+      });
+      if (!updated.count)
+        throw new ConflictException({
+          code: "BLOG_EDIT_CONFLICT",
+          message: "This post changed before the revision could be restored.",
+        });
+      await transaction.blogPostCategory.deleteMany({ where: { postId: id } });
+      await transaction.blogPostTag.deleteMany({ where: { postId: id } });
+      await transaction.blogPostMedia.deleteMany({ where: { postId: id } });
+      if (categoryIds.length)
+        await transaction.blogPostCategory.createMany({
+          data: categoryIds.map((categoryId) => ({ postId: id, categoryId })),
+        });
+      if (tagIds.length)
+        await transaction.blogPostTag.createMany({
+          data: tagIds.map((tagId) => ({ postId: id, tagId })),
+        });
+      if (mediaIds.length)
+        await transaction.blogPostMedia.createMany({
+          data: [...new Set(mediaIds)].map((mediaId, sortOrder) => ({
+            postId: id,
+            mediaId,
+            sortOrder,
+          })),
+        });
+      if (current.slug !== snapshot.slug) {
+        await transaction.blogSlugRedirect.deleteMany({
+          where: { oldSlug: snapshot.slug, postId: id },
+        });
+        if (current.publishedAt)
+          await transaction.blogSlugRedirect.upsert({
+            where: { oldSlug: current.slug },
+            update: { postId: id },
+            create: { oldSlug: current.slug, postId: id },
+          });
+      }
+      const post = await transaction.blogPost.findUniqueOrThrow({ where: { id } });
+      await this.revision(transaction, post, identity.userId, categoryIds, tagIds);
+      return post;
+    });
+    if (current.status === "PUBLISHED")
+      await this.media.revokeUnused(this.allMediaIds(current), id);
+    await this.audit.record({
+      actorUserId: identity.userId,
+      action: "blog_post.revision_restored",
+      resourceType: "blog_post",
+      resourceId: id,
+      metadata: { revisionId, restoredAsVersion: restored.version },
+    });
+    return this.get(id, identity);
   }
 
   async publicList(query: PublicBlogPostListQuery) {

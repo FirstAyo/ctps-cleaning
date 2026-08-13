@@ -1346,6 +1346,15 @@ img {
   max-width: 46rem;
   margin: clamp(3rem, 7vw, 6rem) auto 0;
 }
+.journal-article-body .journal-figure-wide {
+  width: min(62rem, calc(100vw - 2rem));
+  max-width: none;
+  margin-left: 50%;
+  transform: translateX(-50%);
+}
+.journal-article-body .journal-figure-full {
+  width: 100%;
+}
 .journal-article-body .prose {
   font-size: 1.08rem;
   line-height: 1.85;

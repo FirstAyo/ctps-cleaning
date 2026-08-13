@@ -26,6 +26,7 @@ import {
 } from "@ctps/ui/icons";
 import { cn } from "@ctps/ui/utils";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 const demoNavigation = [
   "Dashboard",
@@ -139,6 +140,8 @@ export function AdminShell({
   readonly navigationItems?: readonly AdminNavigationItem[];
   readonly pageTitle: string;
 }) {
+  const pathname = usePathname();
+  const isBlogWriting = /^\/blog\/posts\/(?:new|[0-9a-f-]+)$/.test(pathname);
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const mobileTrigger = useRef<HTMLButtonElement>(null);
@@ -230,13 +233,23 @@ export function AdminShell({
             </button>
           </div>
         </header>
-        <main className="px-4 py-6 sm:px-6 lg:px-8" id="admin-content">
-          <div className="mx-auto max-w-[var(--container-admin)]">
-            <Breadcrumb items={["Admin preview", pageTitle]} />
-            <div className="mt-3 mb-6">
-              <h1 className="admin-page-heading">{pageTitle}</h1>
-              <p className="mt-2 text-sm text-muted-foreground">{description}</p>
-            </div>
+        <main
+          className={cn("px-4 py-6 sm:px-6 lg:px-8", isBlogWriting && "admin-editor-main")}
+          id="admin-content"
+        >
+          <div
+            className={cn(
+              "mx-auto max-w-[var(--container-admin)]",
+              isBlogWriting && "admin-editor-container",
+            )}
+          >
+            {!isBlogWriting ? <Breadcrumb items={["Admin preview", pageTitle]} /> : null}
+            {!isBlogWriting ? (
+              <div className="mt-3 mb-6">
+                <h1 className="admin-page-heading">{pageTitle}</h1>
+                <p className="mt-2 text-sm text-muted-foreground">{description}</p>
+              </div>
+            ) : null}
             {children}
           </div>
         </main>

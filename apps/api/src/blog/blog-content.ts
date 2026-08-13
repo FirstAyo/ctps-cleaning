@@ -3,6 +3,9 @@ import type { BlogContentBlockInput } from "@ctps/validation";
 export function blogContentText(blocks: readonly BlogContentBlockInput[]): string {
   return blocks
     .flatMap((block) => {
+      if (block.type === "richText") return block.content.map(({ text }) => text);
+      if (block.type === "richList")
+        return block.items.flatMap((item) => item.map(({ text }) => text));
       if ("text" in block) return [block.text];
       if ("items" in block) return block.items;
       return [];
@@ -18,5 +21,11 @@ export function blogReadingTime(blocks: readonly BlogContentBlockInput[]): numbe
 }
 
 export function referencedBlogMedia(blocks: readonly BlogContentBlockInput[]): string[] {
-  return [...new Set(blocks.flatMap((block) => (block.type === "image" ? [block.mediaId] : [])))];
+  return [
+    ...new Set(
+      blocks.flatMap((block) =>
+        block.type === "image" || block.type === "managedImage" ? [block.mediaId] : [],
+      ),
+    ),
+  ];
 }

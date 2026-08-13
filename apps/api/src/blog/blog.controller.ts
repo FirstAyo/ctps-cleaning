@@ -19,6 +19,7 @@ import type { Response } from "express";
 import {
   authorProfileSchema,
   blogMediaUpdateSchema,
+  blogMediaListQuerySchema,
   blogPostListQuerySchema,
   blogPostVersionActionSchema,
   blogSlugSchema,
@@ -31,6 +32,7 @@ import {
   updateBlogPostSchema,
   type AuthorProfileInput,
   type BlogMediaUpdateInput,
+  type BlogMediaListQuery,
   type BlogPostListQuery,
   type BlogTagInput,
   type BlogTaxonomyInput,
@@ -140,6 +142,15 @@ export class BlogController {
   ) {
     return this.blog.revisions(id, identity);
   }
+  @Post("admin/blog/posts/:id/revisions/:revisionId/restore")
+  restoreRevision(
+    @Param("id", new ZodValidationPipe(identifierSchema)) id: string,
+    @Param("revisionId", new ZodValidationPipe(identifierSchema)) revisionId: string,
+    @Body(new ZodValidationPipe(blogPostVersionActionSchema)) input: { version: number },
+    @CurrentIdentity() identity: AuthenticatedIdentity,
+  ) {
+    return this.blog.restoreRevision(id, revisionId, input.version, identity);
+  }
 
   @Get("admin/blog/taxonomy")
   taxonomy() {
@@ -240,6 +251,14 @@ function fileHeaders(
 @Controller()
 export class BlogMediaController {
   constructor(@Inject(BlogMediaService) private readonly media: BlogMediaService) {}
+
+  @Get("admin/blog/media")
+  list(
+    @Query(new ZodValidationPipe(blogMediaListQuerySchema)) query: BlogMediaListQuery,
+    @CurrentIdentity() identity: AuthenticatedIdentity,
+  ) {
+    return this.media.list(query, identity);
+  }
 
   @Post("admin/blog/media")
   @UseInterceptors(

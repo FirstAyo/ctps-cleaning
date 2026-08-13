@@ -1,12 +1,24 @@
 import "server-only";
 
+export interface PublicBlogInlineContent {
+  type: "text";
+  text: string;
+  marks: Array<{ type: "bold" | "italic" | "underline" } | { type: "link"; href: string }>;
+}
 export type PublicBlogBlock =
   | { type: "paragraph" | "heading2" | "heading3" | "blockquote"; text: string; emphasis: boolean }
   | { type: "bulletList" | "numberedList"; items: string[] }
   | { type: "link"; text: string; href: string; emphasis: boolean }
   | { type: "image"; mediaId: string }
   | { type: "callout"; title?: string; text: string }
-  | { type: "divider" };
+  | { type: "divider" }
+  | {
+      type: "richText";
+      style: "paragraph" | "heading2" | "heading3" | "heading4" | "blockquote";
+      content: PublicBlogInlineContent[];
+    }
+  | { type: "richList"; style: "bullet" | "numbered"; items: PublicBlogInlineContent[][] }
+  | { type: "managedImage"; mediaId: string; layout: "standard" | "wide" | "full" };
 export interface PublicBlogMedia {
   id: string;
   altText: string;
