@@ -21,6 +21,12 @@ Automated coverage verifies Projects terminology, Featured presentation, Cover/A
 
 Phase 13 adds a deterministic customer-facing development-language scan, Homepage schema-origin regression coverage, legal-foundation sitemap/noindex checks, functional shared General Inquiry coverage, and production initializer Draft safety. General Inquiry tests cover required/optional fields, honeypot, strict validation, origin/rate-limit calls, persistence-before-delivery, outbox records, idempotent replay, Admin permission metadata, read/archive actions, success/error toast behavior, and retry key stability. Manual visual evidence remains required at 320/375/390/768/1024/1280/1440/1920, across themes and representative browsers; unavailable physical/browser checks must be recorded as pending rather than inferred from component tests. See `phase-13-launch-readiness.md`.
 
+### Phase 13.1 evidence
+
+The local Chromium pass covered 26 public route outcomes and signed-out Admin protection. Homepage and Projects were rendered at 390/768/1024/1152/1280/1366/1440/1920 with matching viewport and scroll widths, and representative full-page screenshots were reviewed for Homepage, Projects, Quote, and Contact. Light/dark/system, persisted dark, and reduced motion passed; no hydration error or failed network request was observed. The only non-regression browser error was the deliberate missing route returning 404. A Next.js LCP warning on an autoplay Hero slide was corrected with explicit eager loading and focused regression coverage.
+
+Authenticated Admin navigation, role-specific UI, real SMTP delivery, physical keyboard/screen-reader testing, 200% zoom, and representative Firefox/Safari/real-device testing remain pending. The repository contains one usable Super Admin but no credential was supplied; acceptance must not reset or bypass that account. Estimator and auth runtime fixture CLIs also fail closed when they detect, respectively, a Published business pricing version or an existing Super Admin.
+
 ## Phase 12 SEO and search readiness
 
 | Area                | Automated acceptance                                                                               | Manual acceptance                                        |

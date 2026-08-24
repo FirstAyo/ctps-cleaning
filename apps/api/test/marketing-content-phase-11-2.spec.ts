@@ -1,7 +1,7 @@
 import { marketingPageContentSchema } from "@ctps/validation";
 import { describe, expect, it } from "vitest";
 
-import { systemMarketingPages } from "../src/marketing/marketing-content";
+import { systemMarketingPages, systemNavigation } from "../src/marketing/marketing-content";
 
 const byKey = (key: string) => systemMarketingPages.find((page) => page.pageKey === key)!;
 
@@ -68,5 +68,13 @@ describe("Phase 11.2 fixed marketing catalogue", () => {
     expect(JSON.stringify([byKey("BEFORE_AFTER"), byKey("BLOG")])).not.toMatch(
       /storageKey|rawHtml|script/i,
     );
+  });
+
+  it("uses the canonical Projects label and route in the managed navigation default", () => {
+    expect(systemNavigation.find(([key]) => key === "BEFORE_AFTER")).toEqual([
+      "BEFORE_AFTER",
+      "Projects",
+      "/projects",
+    ]);
   });
 });

@@ -134,11 +134,13 @@ export function ProjectsHero() {
       <Container size="wide">
         <p className="eyebrow">Projects</p>
         <h1>
-          Real work.
-          <br />
-          Visible transformations.
+          Selected work.
+          <br /> Real transformations.
         </h1>
-        <p>Explore completed CTPS projects across the services and communities we serve.</p>
+        <p>
+          Explore completed CTPS projects and see how considered exterior property care changes the
+          details that matter.
+        </p>
       </Container>
     </section>
   );
@@ -182,13 +184,17 @@ export function FeaturedProject({ project }: { readonly project: PublicProject }
 export function ProjectCard({
   project,
   index = 0,
+  lead = false,
 }: {
   readonly project: PublicProject;
   readonly index?: number;
+  readonly lead?: boolean;
 }) {
   const { service, area } = projectMeta(project);
   return (
-    <article className={`project-tile project-tile-${index % 4}`}>
+    <article
+      className={`project-tile project-tile-${index % 4}${lead ? " project-tile-lead" : ""}`}
+    >
       <Link aria-label={`View project: ${project.title}`} href={`/projects/${project.slug}`}>
         <div className="project-tile-media">
           <ProjectImage
@@ -280,12 +286,14 @@ function ProjectNeighbour({
         {direction} Project{direction === "Next" ? " →" : ""}
       </span>
       <span className="project-neighbour-media">
-        <ProjectImage kind="thumbnail" project={project} sizes="(min-width:768px) 38vw,100vw" />
+        <ProjectImage kind="thumbnail" project={project} sizes="(min-width:768px) 180px,112px" />
       </span>
-      <span className="project-meta">
-        {service} · {area}
+      <span className="project-neighbour-copy">
+        <span className="project-meta">
+          {service} · {area}
+        </span>
+        <strong>{project.title}</strong>
       </span>
-      <strong>{project.title}</strong>
     </Link>
   );
 }
@@ -420,7 +428,11 @@ export function ProjectDetail({ context }: { readonly context: PublicProjectCont
             </aside>
           </div>
           {previousProject || nextProject ? (
-            <nav aria-label="Previous and next projects" className="project-neighbours">
+            <nav
+              aria-label="Previous and next projects"
+              className="project-neighbours"
+              id="project-navigation"
+            >
               {previousProject ? (
                 <ProjectNeighbour direction="Previous" project={previousProject} />
               ) : (

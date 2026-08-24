@@ -8,6 +8,24 @@ Managed project media is presented as Cover / Featured, Before, After, then supp
 
 Bundled Phase 11 photography remains development-only and is suppressed in production when no managed asset is selected. Production requires approved CTPS logo, Hero/editorial/service/audience/area/social media, reviewed alt text, focal points, dimensions, crops, and usage. Absence must simplify or hide the visual; it must never promote development photography or private operational media as CTPS work. See `phase-13-launch-readiness.md`.
 
+### Phase 13.1 replacement inventory
+
+The local CMS currently has zero Public Media assets. The following is therefore a production input list, not an instruction to generate or invent media:
+
+| Role                       | Minimum approved input                                                                       | Preferred source/crop                           | Required review                                                         |
+| -------------------------- | -------------------------------------------------------------------------------------------- | ----------------------------------------------- | ----------------------------------------------------------------------- |
+| Brand                      | CTPS primary logo plus compact mark                                                          | SVG where approved; transparent raster fallback | Ownership, legibility, light/dark use, accessible name                  |
+| Homepage Hero              | 1-4 consented CTPS property-care photographs                                                 | Landscape, at least 2400px wide, safe text area | Authenticity, focal point, overlay contrast, contextual alt decision    |
+| Five services              | One representative image per approved service                                                | Landscape/card crops, at least 1200px wide      | Service accuracy, no unsupported result claim, alt text                 |
+| Residential/commercial     | One distinct image for each audience                                                         | Landscape, at least 1800px wide                 | Audience relevance, focal point, CTA contrast                           |
+| Six service areas          | Shared regional imagery only where genuinely relevant; unique images are optional            | Landscape, at least 1200px wide                 | No false landmark/location claim or doorway-page implication            |
+| Final CTA/supporting media | 1-2 complementary exterior-property images                                                   | Landscape, at least 1800px wide                 | Avoid repetition and decorative alt noise                               |
+| Projects                   | At least one consent-approved real project with separate Before and After; Cover recommended | Existing managed project variants               | Customer consent, chronology, accurate captions/alt, no private details |
+| Blog                       | Featured image for every Published article and optional managed article images               | Blog featured/article variants                  | Rights, author/content relevance, alt/caption, no cross-namespace reuse |
+| Social sharing             | Default brand social image plus deliberate page overrides where useful                       | 1200x630 target composition                     | Crop, branding, text legibility, public eligibility                     |
+
+Before approval, verify checksum duplicates, generated variants, dimensions, compression, focal points, alt text, archive/reference state, and that no Quote, Job, Draft Blog, or private Project asset crosses into public delivery. The 13 development Project assets found in the local database are Ready/Private and are not production candidates unless CTPS independently verifies their provenance and replaces all placeholder metadata through the protected workflow.
+
 ## Purpose
 
 This document defines a provider-neutral plan for service, blog, author, project, Open Graph, and customer-upload media. Phase 4 introduced committed development illustrations. Phase 5 adds managed before-and-after storage. Phase 6 adds a separate, private-only customer quote upload workflow. Phase 11 and 11.1 implement the dedicated Public Media Library for controlled marketing-page photography.

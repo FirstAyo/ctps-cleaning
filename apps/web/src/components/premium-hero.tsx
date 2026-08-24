@@ -77,7 +77,8 @@ export function PremiumHero({
               className={index === active ? "is-active" : ""}
               fill
               key={slide.src}
-              priority={index === 0}
+              fetchPriority={index === 0 ? "high" : "auto"}
+              loading="eager"
               sizes="100vw"
               src={slide.src}
               style={

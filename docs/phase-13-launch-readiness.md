@@ -23,9 +23,19 @@ Automated software success does not mean the platform is launch ready. Phase 14 
 
 ## Local content inventory
 
-The Phase 13 audit found 20 locally Published marketing records, no Blog posts, no Before & After projects, and no Public Media assets. All marketing records rely on title/description fallbacks and have no configured social image. Navigation contains eight enabled canonical destinations. Site Settings contains the approved display name/tagline/footer defaults but no contact email or phone.
+The Phase 13.1 audit found 20 locally Published marketing records, no Blog posts, three Draft Before & After projects, and no Public Media assets. All three project records contain confirmed development placeholder copy; they were unpublished through the normal project lifecycle, all 13 related assets are now Ready/Private, and `/projects` renders the honest empty state. All marketing records rely on title/description fallbacks and have no configured social image. Navigation contains eight enabled canonical destinations, including `Projects` at `/projects`. Site Settings contains display-name/tagline/footer fallback data but no verified contact email, phone, logo, or social image.
 
-This is a development database observation, not a production migration or content edit. No records were deleted, rewritten, or created to make readiness appear better.
+This is a development database observation, not a production migration or fabricated content edit. No record was deleted, rewritten into fake production content, or created to make readiness appear better. The legacy system navigation row was narrowly normalized from `Before & After`/`/before-after` to `Projects`/`/projects`; future initializer runs make the same exact-match repair without overwriting unrelated Admin edits.
+
+## Phase 13.1 local acceptance snapshot
+
+- A clean root `pnpm dev` started the public web on 3000, Admin on 3001, and API on 4000; `/health`, `/health/database`, and `/health/ready` returned 200.
+- Browser rendering covered all primary public routes plus an intentional 404. Homepage and Projects were checked at 390, 768, 1024, 1152, 1280, 1366, 1440, and 1920 pixels with no horizontal overflow or failed network request.
+- Light, dark, system, persisted dark, and reduced-motion states rendered correctly. The rotating Hero now declares eager loading explicitly for its above-the-fold slides, removing the observed Next.js LCP console warning.
+- Signed-out `/`, `/jobs`, and the Admin login surface correctly resolved to `/login`. Authenticated Admin acceptance was not attempted because no credential was supplied; the existing single-use bootstrap correctly refuses to replace the usable Super Admin. Resetting, bypassing, or exposing credentials is not an acceptable QA shortcut.
+- Quote runtime verification passed with one persisted submission, idempotent replay, a normalized British Columbia service area, private data boundaries, and cleanup. Estimator and auth runtime CLIs correctly refused destructive fixture setup because a Published pricing version and a Super Admin already exist. Their automated suites remain required evidence; authenticated browser acceptance remains pending.
+- Local email uses the safe default `log-safe` mode with invalid example sender/recipient defaults because SMTP is not configured. This proves durable outbox behavior, not production delivery.
+- The current Published pricing version is `2026-Q3-DRAFT`; its development marker makes business pricing approval and replacement/renaming an explicit launch blocker. No value or status was changed during this pass.
 
 ## Blockers before production
 
@@ -36,6 +46,7 @@ This is a development database observation, not a production migration or conten
 - Production Hero, service, audience, area, and social-sharing images require approval. Bundled Phase 11 photography is development-only and is already suppressed in production when CMS media is absent.
 - Every important marketing page needs an editorial review of its effective title, description, unique body copy, CTA, and image/alt text before indexing.
 - Estimator pricing must be business-approved; development pricing must not become the production Published version.
+- Replace the currently Published `2026-Q3-DRAFT` version with a business-approved production version through the protected pricing workflow; do not edit production prices merely to clear a readiness report.
 - SMTP sender, staff recipient, provider credentials, and delivery monitoring must be approved and configured.
 - Retention, malware-scanning decision, backup RPO/RTO, off-host backup destination, monitoring destination, and incident contacts require owners and approval.
 - Authenticated visual QA, physical keyboard/screen-reader review, and representative real-device/browser review must be completed where automated browser tooling cannot supply evidence.

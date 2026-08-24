@@ -1,6 +1,6 @@
 # Deployment Runbook
 
-Before step 1, complete the blockers and Phase 14 prerequisites in `phase-13-launch-readiness.md`. In particular, confirm production marketing pages were reviewed and explicitly published; `marketing:initialize` creates missing production pages as Drafts. Do not enable indexing while legal, media, contact, or canonical-host approval remains incomplete.
+Before step 1, complete the blockers and Phase 14 prerequisites in `phase-13-launch-readiness.md`. In particular, confirm production marketing pages were reviewed and explicitly published; `marketing:initialize` creates missing production pages as Drafts. Confirm no placeholder Project is Published, no private Project/Blog/Quote/Job asset is publicly reachable, and no development-marked pricing version such as `DEV-*`, `*TEST*`, `*SAMPLE*`, or `*DRAFT*` is the active Published business configuration. Do not enable indexing while legal, media, contact, pricing, SMTP, or canonical-host approval remains incomplete.
 
 1. Provision a supported Linux VPS sized from measured needs; record owner and recovery access.
 2. Create a non-root deployment user and verify key-based SSH before any password/root restriction.

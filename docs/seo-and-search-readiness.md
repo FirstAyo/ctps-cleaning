@@ -10,6 +10,8 @@ The SEO audit known-route catalogue and Published Project audit records use `/pr
 
 The Homepage emits only centralized configured-origin Organization/WebSite data. Privacy, Terms, and Accessibility foundations are `noindex, follow` and omitted from the sitemap until approved final documents replace them. Missing per-page metadata/social images and thin or duplicated development content remain editorial readiness findings; they must not be cleared with fabricated claims or keyword stuffing.
 
+The Phase 13.1 local inventory confirms that all 20 marketing pages currently use controlled metadata fallbacks and none has an explicit SEO title, SEO description, social image, or Published managed media. Blog has no Published posts, and the three placeholder Project records are Draft/Private. Keep indexing disabled until editors supply and approve real page metadata/media, legal documents, project proof, and useful Blog content; an empty but honest public archive is preferable to indexable demonstration content.
+
 ## Scope and policy
 
 Phase 12 centralizes deterministic SEO infrastructure without rewriting approved public copy. Only real Published public content can be indexable. Draft, preview, staff, API, health, private-media, quote-confirmation, and estimator-result routes remain outside the index and sitemap. Robots directives complement authentication and never replace it.

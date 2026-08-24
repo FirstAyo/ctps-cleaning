@@ -4,6 +4,8 @@
 
 Software, content, business configuration, and deployment readiness are separate decisions. A passing release verifier establishes only software evidence. Production remains blocked on the approved domain, logo/media/contact/legal/pricing/email/retention/backup/monitoring facts and on representative authenticated visual/accessibility/browser QA. The authoritative inventory and Phase 14 prerequisites are in `phase-13-launch-readiness.md`.
 
+The Phase 13.1 local acceptance pass safely unpublished three confirmed placeholder Projects and returned all 13 project assets to Private visibility. It also normalized the legacy Projects navigation row and removed the rotating-Hero LCP console warning. These corrections do not make the content or business configuration production-ready: Public Media and Blog remain empty, every marketing page lacks explicit SEO/social media, verified business contact/logo data is absent, `2026-Q3-DRAFT` is still the Published pricing version, SMTP is not configured, and authenticated Admin acceptance awaits a user-supplied credential.
+
 ## Phase 12 search launch gate
 
 Keep `PUBLIC_INDEXING_ENABLED=false` for local development and staging. Production must set a reviewed HTTPS `NEXT_PUBLIC_SITE_URL` matching `WEB_URL`, configure Nginx alternate-host and HTTP redirects to that canonical origin, and enable indexing only after content/legal/media approval. Verify live source metadata, status codes, robots, sitemap, redirects, structured data, and social previews before Search Console/Bing ownership verification and sitemap submission. Phase 12 performs no external submission and the example hostname is not a production claim.

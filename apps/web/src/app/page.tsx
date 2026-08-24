@@ -54,8 +54,9 @@ export default async function HomePage() {
             <Image
               alt="Architectural property exterior"
               className="is-active"
+              fetchPriority="high"
               fill
-              priority
+              loading="eager"
               sizes="100vw"
               src="/images/phase-11/hero-residential.webp"
             />

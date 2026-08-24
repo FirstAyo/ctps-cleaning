@@ -140,6 +140,15 @@ export class MarketingService {
         create: { systemKey, label, href, sortOrder: index, updatedByUserId: actorUserId },
         update: {},
       });
+    await this.database.client.navigationItem.updateMany({
+      where: { systemKey: "BEFORE_AFTER", href: "/before-after" },
+      data: {
+        label: "Projects",
+        href: "/projects",
+        updatedByUserId: actorUserId,
+        version: { increment: 1 },
+      },
+    });
     await this.database.client.siteSetting.upsert({
       where: { key: "PUBLIC_SITE" },
       create: {

@@ -45,7 +45,10 @@ describe("premium Hero", () => {
         }}
       />,
     );
-    expect(container.querySelectorAll("img")).toHaveLength(4);
+    const images = [...container.querySelectorAll("img")];
+    expect(images).toHaveLength(4);
+    expect(images.every((image) => image.getAttribute("loading") === "eager")).toBe(true);
+    expect(images[0]?.getAttribute("fetchpriority")).toBe("high");
     expect(getByRole("link", { name: "Request a Quote" }).getAttribute("href")).toBe(
       "/request-a-quote",
     );

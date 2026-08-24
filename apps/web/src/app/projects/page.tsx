@@ -64,49 +64,56 @@ export default async function Page({
         <Container size="wide">
           <div className="projects-index-heading">
             <div>
-              <p className="eyebrow">Recent projects</p>
+              <p className="eyebrow">{featured ? "More projects" : "Selected projects"}</p>
               <h2 className="public-heading mt-3">Completed work, presented with context.</h2>
             </div>
             <p>
-              Browse by service or community. Filters refine this archive without creating separate
-              indexable pages.
+              Browse transformations by service or community and find work that relates to your
+              property.
             </p>
           </div>
-          <nav aria-label="Filter projects by service" className="project-service-filters">
-            <Link aria-current={!service ? "page" : undefined} href={filterHref(undefined, area)}>
-              All Projects
-            </Link>
-            {services.map((item) => (
-              <Link
-                aria-current={service === item.slug ? "page" : undefined}
-                href={filterHref(item.slug, area)}
-                key={item.slug}
-              >
-                {item.name}
+          <div className="project-filter-bar">
+            <nav aria-label="Filter projects by service" className="project-service-filters">
+              <Link aria-current={!service ? "page" : undefined} href={filterHref(undefined, area)}>
+                All Projects
               </Link>
-            ))}
-          </nav>
-          <form className="project-area-filter">
-            {service ? <input name="service" type="hidden" value={service} /> : null}
-            <label htmlFor="project-area">Community</label>
-            <select defaultValue={area ?? ""} id="project-area" name="area">
-              <option value="">All communities</option>
-              {serviceAreas.map((item) => (
-                <option key={item.slug} value={item.slug}>
+              {services.map((item) => (
+                <Link
+                  aria-current={service === item.slug ? "page" : undefined}
+                  href={filterHref(item.slug, area)}
+                  key={item.slug}
+                >
                   {item.name}
-                </option>
+                </Link>
               ))}
-            </select>
-            <button type="submit">Apply</button>
-            {service || area ? <Link href="/projects">Clear filters</Link> : null}
-          </form>
+            </nav>
+            <form className="project-area-filter">
+              {service ? <input name="service" type="hidden" value={service} /> : null}
+              <label htmlFor="project-area">Community</label>
+              <select defaultValue={area ?? ""} id="project-area" name="area">
+                <option value="">All communities</option>
+                {serviceAreas.map((item) => (
+                  <option key={item.slug} value={item.slug}>
+                    {item.name}
+                  </option>
+                ))}
+              </select>
+              <button type="submit">Apply filters</button>
+              {service || area ? <Link href="/projects">Reset</Link> : null}
+            </form>
+          </div>
           <p aria-live="polite" className="project-result-count">
-            {result.total} published {result.total === 1 ? "project" : "projects"} found.
+            {result.total} {result.total === 1 ? "project" : "projects"}
           </p>
           {projects.length ? (
-            <div className="projects-editorial-grid">
+            <div className="projects-editorial-grid" id="projects-archive">
               {projects.map((project, index) => (
-                <ProjectCard index={index} key={project.id} project={project} />
+                <ProjectCard
+                  index={index}
+                  key={project.id}
+                  lead={!featured && index === 0}
+                  project={project}
+                />
               ))}
             </div>
           ) : featured && result.total === 1 ? null : (

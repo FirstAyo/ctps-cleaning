@@ -90,9 +90,10 @@ describe("public Projects portfolio", () => {
         ),
     );
     const html = renderToStaticMarkup(await ProjectsPage({ searchParams: Promise.resolve({}) }));
-    expect(html).toContain("Real work.");
+    expect(html).toContain("Selected work.");
     expect(html).toContain("Projects will appear here as completed work is published");
-    expect(html).toContain("0 published projects found");
+    expect(html).toContain("0 projects");
+    expect(html).not.toContain("published projects");
     expect(html).not.toContain("No project stories are currently published");
   });
 
@@ -138,6 +139,25 @@ describe("public Projects portfolio", () => {
     expect(dedicated).not.toContain("Clouded glass before cleaning");
     const fallback = renderToStaticMarkup(<ProjectCard project={published} />);
     expect(fallback).toContain("Clear glass after cleaning");
+  });
+
+  it("marks the first unfeatured archive entry as the lead case study", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            items: [{ ...published, featured: false }, another("second")],
+            page: 1,
+            pageSize: 12,
+            total: 2,
+          }),
+        ),
+      ),
+    );
+    const html = renderToStaticMarkup(await ProjectsPage({ searchParams: Promise.resolve({}) }));
+    expect(html).toContain("project-tile-lead");
+    expect(html).toContain("2 projects");
   });
 
   it("renders the case-study Hero, overview, transformation, story, gallery, sidebar, CTA, and neighbours", () => {
