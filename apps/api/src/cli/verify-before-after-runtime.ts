@@ -15,9 +15,11 @@ const email = "phase5-runtime-super@invalid.example";
 const limitedEmail = "phase5-runtime-limited@invalid.example";
 const password = `${randomBytes(24).toString("base64url")} test A1`;
 const projectSlug = `phase5-runtime-${Date.now()}`;
+const incompleteSlug = `${projectSlug}-draft`;
 const mediaIds: string[] = [];
 const userIds: string[] = [];
 let projectId: string | undefined;
+let incompleteProjectId: string | undefined;
 let api: INestApplication | undefined;
 
 function assert(condition: unknown, message: string): asserts condition {
@@ -153,7 +155,61 @@ async function main() {
     assert(updated.response.ok, "Runtime alt text/caption update failed");
   }
 
-  const draft = await mutate("admin/before-after-projects", "POST", cookie, {
+  const rejectedPublication = await mutate("admin/before-after-projects", "POST", cookie, {
+    title: "Runtime incomplete publication",
+    slug: `${projectSlug}-rejected`,
+    summary: "Publication must reject this disposable incomplete project.",
+    description: "This request intentionally omits the transformation pair.",
+    serviceKey: "window-cleaning",
+    serviceAreaKey: "vancouver",
+    featured: false,
+    primaryBeforeMediaId: null,
+    primaryAfterMediaId: null,
+    supportingMedia: [],
+    intent: "PUBLISH",
+  });
+  assert(
+    rejectedPublication.response.status === 400 &&
+      rejectedPublication.body.code === "PUBLISH_VALIDATION_FAILED",
+    "Incomplete direct publication was not rejected",
+  );
+
+  const incompleteDraft = await mutate("admin/before-after-projects", "POST", cookie, {
+    title: "Runtime incomplete draft",
+    slug: incompleteSlug,
+    summary: "",
+    description: "",
+    serviceKey: "window-cleaning",
+    serviceAreaKey: "vancouver",
+    featured: false,
+    primaryBeforeMediaId: null,
+    primaryAfterMediaId: null,
+    supportingMedia: [],
+    intent: "SAVE_DRAFT",
+  });
+  assert(
+    incompleteDraft.response.ok && incompleteDraft.body.status === "DRAFT",
+    "Incomplete Draft project creation failed",
+  );
+  incompleteProjectId = String(incompleteDraft.body.id);
+  assert(
+    (await json(`public/before-after-projects/${incompleteSlug}`)).response.status === 404,
+    "Incomplete Draft was publicly visible",
+  );
+
+  const privatePreview = await fetch(`${base}/admin/media/before-after/${mediaIds[0]}/gallery`, {
+    headers: { cookie },
+  });
+  assert(
+    privatePreview.ok && privatePreview.headers.get("cache-control") === "private, no-store",
+    "Protected private-media preview failed",
+  );
+  assert(
+    (await fetch(`${base}/media/before-after/${mediaIds[0]}/gallery`)).status === 404,
+    "Private project media was publicly accessible before publication",
+  );
+
+  const publication = await mutate("admin/before-after-projects", "POST", cookie, {
     title: "Runtime window restoration",
     slug: projectSlug,
     summary: "A disposable project used to verify the complete managed-media lifecycle.",
@@ -166,34 +222,17 @@ async function main() {
     featured: true,
     primaryBeforeMediaId: mediaIds[0],
     primaryAfterMediaId: mediaIds[1],
+    coverMediaId: mediaIds[1],
     supportingMedia: [
       { mediaId: mediaIds[2], category: "GALLERY", sortOrder: 0, caption: "Final inspection" },
     ],
-  });
-  assert(draft.response.ok && draft.body.status === "DRAFT", "Draft project creation failed");
-  projectId = String(draft.body.id);
-
-  const draftPublic = await json(`public/before-after-projects/${projectSlug}`);
-  assert(draftPublic.response.status === 404, "Draft project was publicly visible");
-  const privatePreview = await fetch(`${base}/admin/media/before-after/${mediaIds[0]}/gallery`, {
-    headers: { cookie },
+    intent: "PUBLISH",
   });
   assert(
-    privatePreview.ok && privatePreview.headers.get("cache-control") === "private, no-store",
-    "Protected Draft preview failed",
+    publication.response.ok && publication.body.status === "PUBLISHED",
+    "Direct publication failed",
   );
-  assert(
-    (await fetch(`${base}/media/before-after/${mediaIds[0]}/gallery`)).status === 404,
-    "Draft media was publicly accessible",
-  );
-
-  const publication = await mutate(
-    `admin/before-after-projects/${projectId}/publish`,
-    "POST",
-    cookie,
-    {},
-  );
-  assert(publication.response.ok && publication.body.status === "PUBLISHED", "Publication failed");
+  projectId = String(publication.body.id);
   const publicDetail = await json(`public/before-after-projects/${projectSlug}`);
   assert(publicDetail.response.ok, "Published detail was unavailable");
   assert(
@@ -243,9 +282,11 @@ async function main() {
       {
         auditEvents: events.length,
         csrf: true,
+        directPublication: true,
         draftPrivate: true,
         filesUploaded: mediaIds.length,
         permissions: { forbidden: true, unauthorized: true },
+        publishValidation: true,
         publishedPublicly: true,
         storageMetadataHidden: true,
         unpublishedPrivate: true,
@@ -268,6 +309,10 @@ void main()
     if (projectId)
       await prisma.beforeAfterProject
         .deleteMany({ where: { id: projectId } })
+        .catch(() => undefined);
+    if (incompleteProjectId)
+      await prisma.beforeAfterProject
+        .deleteMany({ where: { id: incompleteProjectId } })
         .catch(() => undefined);
     if (mediaIds.length)
       await prisma.mediaAsset

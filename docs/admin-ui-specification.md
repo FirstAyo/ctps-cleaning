@@ -1,5 +1,19 @@
 # Admin Dashboard UI Specification
 
+## Projects create and publish workflow
+
+The staff-facing label is Projects, and public customer routes use the Projects portfolio terminology while retaining Before & After for the transformation itself. New Project presents separate Save Draft and Publish Now actions in the sticky command bar. Enter/default form submission is non-destructive and resolves to Save Draft; Publish Now carries an explicit server-validated intent. Drafts may remain incomplete, while publication requires both clearly separated transformation panels and their required media. Title and slug remain full-width at common laptop sizes; compact classification fields may pair below them.
+
+Operation-level feedback uses the global premium toast viewport. Validation remains inline beside actionable fields and media panels, so a missing transformation pair produces one global publication toast plus the relevant Before/After messages rather than competing notifications.
+
+## Before & After project workspace
+
+The editor provides a sticky command row below the global Admin header, a second sticky formatting row, a dominant story/media area, and a restrained settings/readiness sidebar. Mobile layouts stack without horizontal page overflow while toolbars remain horizontally accessible. Admin navigation is built in deterministic permission order and each link is keyed by its unique route; Blog Authors follows the Blog taxonomy entries.
+
+## Phase 13 content-readiness use
+
+Pages, Public Media, Site Settings, Navigation, Blog, Before & After, and SEO remain the authoritative readiness workspaces. Staff must use existing Draft/Preview/Publish and permission boundaries to resolve content findings; Phase 13 adds no parallel editor or fake completion score. Production initialization creates missing default marketing pages as Drafts for explicit review. See `phase-13-launch-readiness.md`.
+
 ## Phase 12 SEO health workspace
 
 The protected `/seo` workspace provides actionable Published-content counts, severity-labeled findings, content-family and issue filters, search, responsive page-audit cards, metadata/social-image state, and deep links to existing editors. It is read-only, requires `seo.view`, and never exposes Draft content, private media, customer data, or environment secrets. Editors remain the mutation surfaces, preserving permissions, versions, previews, publication rules, and audit events. See `seo-and-search-readiness.md`.
@@ -16,7 +30,11 @@ Keyboard users can skip navigation, traverse in visual order, close drawers/menu
 
 ## 2. Sidebar navigation
 
-Potential groups are Dashboard; Quote Requests; Estimates; Services; Service Areas; Before and After; Blog; Authors; Media; Pricing; Users; Roles and Permissions; SEO; Redirects; Audit Logs; Settings. Group and progressively disclose them to avoid a long undifferentiated list.
+Potential groups are Dashboard; Quote Requests; Messages; Estimates; Services; Service Areas; Projects; Blog; Authors; Media; Pricing; Users; Roles and Permissions; SEO; Redirects; Audit Logs; Settings. Group and progressively disclose them to avoid a long undifferentiated list.
+
+## General Inquiry messages
+
+Messages is a small private workspace separate from Quote Requests. `generalInquiries.read` permits list/detail access, `generalInquiries.update` permits read/unread state changes, and `generalInquiries.archive` permits archive/restore. The list supports search, status, and active/archive filters. Detail shows sender data, the message, service interest, timestamp, and outbox state without exposing an internal ID publicly. All mutations pass through the authenticated CSRF-protected Admin BFF and are audited by the API.
 
 Render only entries the user may access and preserve direct-link denial behavior. The API independently checks every list, detail, and mutation. Loading permissions should not flash forbidden navigation. Counts/badges must be authorized, useful, and accessible.
 

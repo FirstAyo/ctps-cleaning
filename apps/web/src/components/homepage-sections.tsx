@@ -44,7 +44,7 @@ function marketingImage(
       }
     : {
         src: process.env.NODE_ENV === "production" ? null : fallback,
-        alt: "Architectural property-care development photography",
+        alt: "Architectural property exterior",
         position: "50% 50%",
       };
 }
@@ -160,6 +160,9 @@ export function FeaturedTransformation({
   readonly section: MarketingSection;
 }) {
   if (!project) return null;
+  const eyebrow = /before\s*(?:&|and)\s*after/i.test(section.eyebrow ?? "")
+    ? "Featured Project"
+    : (section.eyebrow ?? "Featured Project");
   return (
     <section
       className="home-editorial-section featured-transformation"
@@ -168,15 +171,15 @@ export function FeaturedTransformation({
       <Container size="wide">
         <div className="transformation-layout">
           <div className="transformation-visual">
-            <ProjectComparison priority project={project} />
+            <ProjectComparison project={project} />
           </div>
           <div className="transformation-copy">
-            <p className="eyebrow">{section.eyebrow ?? "Before & after"}</p>
+            <p className="eyebrow">{eyebrow}</p>
             <h2 className="public-heading" id={`${section.id}-title`}>
               {project.title}
             </h2>
             <p>{project.summary}</p>
-            <DirectionalLink href={`/before-after/${project.slug}`} label="View project" />
+            <DirectionalLink href={`/projects/${project.slug}`} label="View project" />
           </div>
         </div>
       </Container>
@@ -282,12 +285,9 @@ export function ServiceProcessTimeline({ section }: { readonly section: Marketin
   );
 }
 
-function projectAfterImage(project: PublicProject) {
-  return (
-    project.primaryAfterMedia.variants.large ??
-    project.primaryAfterMedia.variants.gallery ??
-    project.primaryAfterMedia.variants.original!
-  );
+function projectCoverImage(project: PublicProject) {
+  const media = project.coverMedia ?? project.primaryAfterMedia;
+  return media.variants.large ?? media.variants.gallery ?? media.variants.original!;
 }
 
 export function ProjectMosaic({
@@ -315,14 +315,15 @@ export function ProjectMosaic({
         </header>
         <div className="project-mosaic">
           {projects.slice(0, 3).map((project, index) => {
-            const image = projectAfterImage(project);
+            const media = project.coverMedia ?? project.primaryAfterMedia;
+            const image = projectCoverImage(project);
             return (
               <article
                 className={`project-mosaic-item project-mosaic-item-${index + 1}`}
                 key={project.id}
               >
                 <Image
-                  alt={project.primaryAfterMedia.altText}
+                  alt={media.altText}
                   fill
                   sizes={
                     index === 0
@@ -335,7 +336,7 @@ export function ProjectMosaic({
                 <div>
                   <p>Published project</p>
                   <h3>{project.title}</h3>
-                  <DirectionalLink href={`/before-after/${project.slug}`} label="View project" />
+                  <DirectionalLink href={`/projects/${project.slug}`} label="View project" />
                 </div>
               </article>
             );
@@ -383,7 +384,7 @@ function blogImage(post: PublicBlogPost, index: number) {
           process.env.NODE_ENV === "production"
             ? null
             : serviceFallbacks[index % serviceFallbacks.length]!,
-        alt: "Architectural property-care development photography",
+        alt: "Architectural property exterior",
       };
 }
 

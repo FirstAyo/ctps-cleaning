@@ -29,6 +29,8 @@ for (const file of files) {
   const content = readFileSync(file, "utf8");
   for (const [pattern, label] of secretPatterns)
     if (pattern.test(content)) findings.push(`${file}: ${label}`);
+  if (/[A-Za-z]:\\Users\\/i.test(content))
+    findings.push(`${file}: Windows user-profile absolute path`);
   if (!/(?:^|\/)test\//.test(file) && /\b(?:eval\s*\(|new\s+Function\s*\()/.test(content))
     findings.push(`${file}: dynamic code execution`);
   if (

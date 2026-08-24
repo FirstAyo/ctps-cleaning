@@ -1,5 +1,15 @@
 # SEO and search readiness
 
+## Projects canonical migration
+
+`/projects` and Published `/projects/{slug}` are the only project canonicals and sitemap destinations. Breadcrumbs use `Home → Projects → Project title`, and Open Graph/Twitter metadata uses public Cover media with primary After fallback. `/before-after` aliases permanently redirect directly and are excluded from the sitemap and canonical audit catalogue. Filtered/page query variants remain noindex/follow while pointing metadata at the unfiltered Projects canonical.
+
+The SEO audit known-route catalogue and Published Project audit records use `/projects`; protected editor links deliberately remain on the internal Admin `/before-after/{id}` route. Conservative BreadcrumbList data remains appropriate—Product, Review, AggregateRating, and fabricated claims are not introduced.
+
+## Phase 13 content gate
+
+The Homepage emits only centralized configured-origin Organization/WebSite data. Privacy, Terms, and Accessibility foundations are `noindex, follow` and omitted from the sitemap until approved final documents replace them. Missing per-page metadata/social images and thin or duplicated development content remain editorial readiness findings; they must not be cleared with fabricated claims or keyword stuffing.
+
 ## Scope and policy
 
 Phase 12 centralizes deterministic SEO infrastructure without rewriting approved public copy. Only real Published public content can be indexable. Draft, preview, staff, API, health, private-media, quote-confirmation, and estimator-result routes remain outside the index and sitemap. Robots directives complement authentication and never replace it.
@@ -16,8 +26,9 @@ The canonical public origin is configured by `NEXT_PUBLIC_SITE_URL`, with `WEB_U
 | `/services`, `/residential`, `/commercial`, `/about`, `/contact`, `/service-areas` | index/follow                       | self                   | yes     | public             | page-specific where applicable |
 | five `/services/{slug}` routes                                                     | index/follow                       | current system slug    | yes     | public             | Service, BreadcrumbList        |
 | six `/service-areas/{slug}` routes                                                 | index/follow                       | current system slug    | yes     | public             | BreadcrumbList                 |
-| `/before-after`                                                                    | index/follow                       | self                   | yes     | public             | none required                  |
-| Published `/before-after/{slug}`                                                   | index/follow                       | current Published slug | yes     | public             | BreadcrumbList                 |
+| `/projects`                                                                        | index/follow                       | self                   | yes     | public             | none required                  |
+| Published `/projects/{slug}`                                                       | index/follow                       | current Published slug | yes     | public             | BreadcrumbList                 |
+| `/before-after` aliases                                                            | permanent redirect                 | none                   | no      | public alias       | none                           |
 | `/blog` without parameters                                                         | index/follow                       | self                   | yes     | public             | none required                  |
 | `/blog` search/filter/pagination queries                                           | noindex/follow                     | none                   | no      | public             | none                           |
 | Published `/blog/{slug}`                                                           | index/follow                       | current Published slug | yes     | public             | BlogPosting, BreadcrumbList    |
@@ -28,7 +39,7 @@ The canonical public origin is configured by `NEXT_PUBLIC_SITE_URL`, with `WEB_U
 | Blog/marketing previews                                                            | noindex/nofollow, no-store         | none                   | no      | authorized staff   | none                           |
 | Admin/login/design-system                                                          | noindex/nofollow/noarchive         | none                   | no      | staff/development  | none                           |
 | APIs, health, private/protected media                                              | non-indexable                      | none                   | no      | internal/protected | none                           |
-| Privacy, Terms, Accessibility foundations                                          | index/follow only when enabled     | self                   | yes     | public             | none                           |
+| Privacy, Terms, Accessibility foundations                                          | noindex/follow until approved      | none                   | no      | public             | none                           |
 
 Unknown public routes return an actual 404 and noindex metadata. Archived/unpublished Blog posts and projects return 404; no homepage redirect or 410 workflow is currently justified.
 
@@ -44,13 +55,13 @@ Critical headings, article bodies, navigation, breadcrumbs, and links render in 
 
 Builders support factual Organization, WebSite, Service, BlogPosting, and BreadcrumbList entities. They omit absent optional values and safely escape script-sensitive characters. Organization contains only configured identity/origin plus the six approved British Columbia service areas. No address, hours, social profile, phone, rating, review, price, award, or certification is invented.
 
-FAQ schema remains only on the visible general FAQ page and mirrors its rendered questions and answers. It is not a rich-result promise. Before & After uses conservative breadcrumbs instead of Product/Review markup. There is no SearchAction because there is no site-search product.
+FAQ schema remains only on the visible general FAQ page and mirrors its rendered questions and answers. It is not a rich-result promise. Projects uses conservative breadcrumbs instead of Product/Review markup. There is no SearchAction because there is no site-search product.
 
 ## Local SEO and internal links
 
 The only area keys are Vancouver, Richmond, Burnaby, Surrey, Coquitlam, and North Vancouver. Five service pages and six area pages remain separate route families. Phase 12 creates no service-by-area, neighbourhood, or keyword doorway pages. A future combination page requires explicit approval, demonstrable customer value, substantial unique verified content, a durable navigation path, and an editorial owner.
 
-Service and area directories provide crawlable discovery. Detail pages expose visual breadcrumbs synchronized with JSON-LD. Blog and Before & After indexes discover Published details. The audit validates CMS CTA and structured Blog links against known internal destinations without crawling the internet. Sitemap inclusion alone does not prevent an orphan warning.
+Service and area directories provide crawlable discovery. Detail pages expose visual breadcrumbs synchronized with JSON-LD. Blog and Projects indexes discover Published details. The audit validates CMS CTA and structured Blog links against known internal destinations without crawling the internet. Sitemap inclusion alone does not prevent an orphan warning.
 
 ## Sitemap, robots, redirects, and feeds
 

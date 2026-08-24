@@ -1,5 +1,17 @@
 # Security Requirements
 
+## Direct project publication
+
+Direct New Project publication is not a client shortcut or permission bypass. The create request carries a strict intent, and the API independently requires `projects.beforeAfter.publish`, revalidates content and managed-media ownership/readiness, requires primary Before and After photos with alt text, and applies the existing public/private transition rules. Draft creation remains permissive and private. Cover is an optional managed project-media reference and may safely reference the same owned asset as After; it never accepts an external URL or storage path.
+
+## Structured project content
+
+Before & After Summary and Description accept only server-validated structured nodes and marks. Raw HTML, H1 body nodes, scripts, iframes, event handlers, arbitrary styling, unsafe URL protocols, and external image nodes are excluded. Public rendering maps validated nodes to React elements rather than injecting HTML. Draft media authorization, CSRF, storage visibility, and lifecycle transitions are unchanged.
+
+## Phase 13 release-safety additions
+
+Release verification includes a deterministic customer-content readiness scan. Production marketing initialization creates Drafts rather than silently publishing default content. Legal foundations remain noindex until approved. Contact and Request a Quote share a dedicated General Inquiry submission boundary with strict input limits, an empty honeypot, trusted-origin checks, durable rate limiting, hashed idempotency, private persistence, and durable outbox delivery. Admin list/detail/read/archive routes require explicit permissions and mutation audit records. General Inquiries are not Quote Requests and are never exposed through public read routes, sitemap, search, or SEO. All Quote, Job, Draft Blog, private project, preview, session, CSRF, and permission controls remain unchanged.
+
 ## Phase 12 SEO safety
 
 Draft, preview, token, and staff content remains noindex, no-store where private, absent from sitemap, and protected by its original authorization boundary. JSON-LD uses typed builders and escaping rather than raw Admin-authored script. The SEO audit requires `seo.view`, queries Published metadata only, exposes no storage keys/private fields, and makes no outbound request. Robots remains crawl guidance, never access control. Canonical origin and index enablement are environment-controlled.

@@ -1,5 +1,7 @@
 # Deployment Runbook
 
+Before step 1, complete the blockers and Phase 14 prerequisites in `phase-13-launch-readiness.md`. In particular, confirm production marketing pages were reviewed and explicitly published; `marketing:initialize` creates missing production pages as Drafts. Do not enable indexing while legal, media, contact, or canonical-host approval remains incomplete.
+
 1. Provision a supported Linux VPS sized from measured needs; record owner and recovery access.
 2. Create a non-root deployment user and verify key-based SSH before any password/root restriction.
 3. Install supported Docker Engine and Compose; configure staged firewall rules for SSH, 80, and 443 only.

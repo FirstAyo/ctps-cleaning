@@ -8,4 +8,6 @@ export { StatusBadge } from "./status-badge";
 export type { StatusBadgeProps } from "./status-badge";
 export * from "./theme-core";
 export { ThemeProvider, ThemeToggle, applyTheme } from "./theme";
+export { ToastProvider, useToast } from "./toast";
+export type { ToastInput, ToastTone } from "./toast";
 export { cn } from "./utils";

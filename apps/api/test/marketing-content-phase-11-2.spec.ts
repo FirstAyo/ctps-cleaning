@@ -62,7 +62,8 @@ describe("Phase 11.2 fixed marketing catalogue", () => {
   });
 
   it("adds controlled portfolio and journal landing records without changing domain ownership", () => {
-    expect(byKey("BEFORE_AFTER").slug).toBe("/before-after");
+    expect(byKey("BEFORE_AFTER").slug).toBe("/projects");
+    expect(byKey("BEFORE_AFTER").navigationLabel).toBe("Projects");
     expect(byKey("BLOG").slug).toBe("/blog");
     expect(JSON.stringify([byKey("BEFORE_AFTER"), byKey("BLOG")])).not.toMatch(
       /storageKey|rawHtml|script/i,

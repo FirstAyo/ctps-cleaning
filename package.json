@@ -44,6 +44,7 @@
     "backup:media": "sh scripts/deployment/backup-media.sh",
     "smoke": "node scripts/smoke-test.mjs",
     "security:scan": "node scripts/security-scan.mjs",
+    "readiness:scan": "node scripts/content-readiness-scan.mjs",
     "verify:release": "node scripts/verify-release.mjs",
     "db:start": "docker compose up -d postgres",
     "db:stop": "docker compose down",

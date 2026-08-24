@@ -11,52 +11,42 @@ export default async function ProtectedLayout({
   const identity = await currentIdentity();
   if (!identity) redirect("/login");
   if (identity.mustChangePassword) redirect("/change-password");
+  const permits = (permission: string) => identity.permissions.includes(permission);
   const navigation: AdminNavigationItem[] = [
     { href: "/dashboard", label: "Dashboard" },
+    ...(permits("pages.read") ? [{ href: "/pages", label: "Marketing Pages" }] : []),
+    ...(permits("mediaLibrary.read") ? [{ href: "/media-library", label: "Public Media" }] : []),
+    ...(permits("navigation.read") ? [{ href: "/navigation", label: "Navigation" }] : []),
+    ...(permits("siteSettings.read") ? [{ href: "/site-settings", label: "Site Settings" }] : []),
+    ...(permits("seo.view") ? [{ href: "/seo", label: "SEO Health" }] : []),
+    ...(permits("projects.beforeAfter.read") ? [{ href: "/before-after", label: "Projects" }] : []),
+    ...(permits("quoteRequests.read")
+      ? [{ href: "/quote-requests", label: "Quote Requests" }]
+      : []),
+    ...(permits("generalInquiries.read")
+      ? [{ href: "/general-inquiries", label: "Messages" }]
+      : []),
+    ...(permits("pricingVersions.read") ? [{ href: "/pricing/versions", label: "Pricing" }] : []),
+    ...(permits("estimatorResults.read")
+      ? [{ href: "/estimator-results", label: "Estimator Results" }]
+      : []),
+    ...(permits("blogPosts.readOwn") || permits("blogPosts.readAll")
+      ? [{ href: "/blog/posts", label: "Blog Posts" }]
+      : []),
+    ...(permits("blogCategories.manage")
+      ? [{ href: "/blog/categories", label: "Blog Categories" }]
+      : []),
+    ...(permits("blogTags.manage") ? [{ href: "/blog/tags", label: "Blog Tags" }] : []),
+    ...(permits("authorProfiles.read") ? [{ href: "/blog/authors", label: "Blog Authors" }] : []),
+    ...(permits("jobs.read") || permits("jobs.readAssigned")
+      ? [{ href: "/jobs", label: "Jobs" }]
+      : []),
+    ...(permits("jobs.viewCalendar") ? [{ href: "/jobs/calendar", label: "Job Calendar" }] : []),
     { href: "/account", label: "Account & sessions" },
+    ...(permits("users.read") ? [{ href: "/users", label: "Users" }] : []),
+    ...(permits("roles.read") ? [{ href: "/roles", label: "Roles & permissions" }] : []),
+    ...(permits("audit.read") ? [{ href: "/audit-logs", label: "Audit logs" }] : []),
   ];
-  if (identity.permissions.includes("pages.read"))
-    navigation.splice(1, 0, { href: "/pages", label: "Marketing Pages" });
-  if (identity.permissions.includes("mediaLibrary.read"))
-    navigation.splice(2, 0, { href: "/media-library", label: "Public Media" });
-  if (identity.permissions.includes("navigation.read"))
-    navigation.splice(3, 0, { href: "/navigation", label: "Navigation" });
-  if (identity.permissions.includes("siteSettings.read"))
-    navigation.splice(4, 0, { href: "/site-settings", label: "Site Settings" });
-  if (identity.permissions.includes("seo.view"))
-    navigation.splice(5, 0, { href: "/seo", label: "SEO Health" });
-  if (
-    identity.permissions.includes("jobs.read") ||
-    identity.permissions.includes("jobs.readAssigned")
-  )
-    navigation.splice(2, 0, { href: "/jobs", label: "Jobs" });
-  if (identity.permissions.includes("jobs.viewCalendar"))
-    navigation.splice(3, 0, { href: "/jobs/calendar", label: "Job Calendar" });
-  if (identity.permissions.includes("users.read"))
-    navigation.push({ href: "/users", label: "Users" });
-  if (identity.permissions.includes("roles.read"))
-    navigation.push({ href: "/roles", label: "Roles & permissions" });
-  if (identity.permissions.includes("audit.read"))
-    navigation.push({ href: "/audit-logs", label: "Audit logs" });
-  if (identity.permissions.includes("projects.beforeAfter.read"))
-    navigation.splice(2, 0, { href: "/before-after", label: "Before & After" });
-  if (identity.permissions.includes("quoteRequests.read"))
-    navigation.splice(2, 0, { href: "/quote-requests", label: "Quote Requests" });
-  if (identity.permissions.includes("pricingVersions.read"))
-    navigation.splice(2, 0, { href: "/pricing/versions", label: "Pricing" });
-  if (identity.permissions.includes("estimatorResults.read"))
-    navigation.splice(3, 0, { href: "/estimator-results", label: "Estimator Results" });
-  if (
-    identity.permissions.includes("blogPosts.readOwn") ||
-    identity.permissions.includes("blogPosts.readAll")
-  )
-    navigation.splice(2, 0, { href: "/blog/posts", label: "Blog Posts" });
-  if (identity.permissions.includes("blogCategories.manage"))
-    navigation.splice(3, 0, { href: "/blog/categories", label: "Blog Categories" });
-  if (identity.permissions.includes("blogTags.manage"))
-    navigation.splice(4, 0, { href: "/blog/tags", label: "Blog Tags" });
-  if (identity.permissions.includes("authorProfiles.read"))
-    navigation.splice(5, 0, { href: "/blog/authors", label: "Blog Authors" });
   return (
     <AdminShell
       description="Protected staff administration. The API rechecks every permission."

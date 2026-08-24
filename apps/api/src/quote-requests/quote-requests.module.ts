@@ -9,10 +9,13 @@ import { QuoteRequestsService } from "./quote-requests.service";
 import { QuoteSecurityService } from "./quote-security.service";
 import { QuoteCleanupService } from "./quote-cleanup.service";
 import { QuoteReferenceService } from "./quote-reference.service";
+import { GeneralInquiriesController } from "./general-inquiries.controller";
+import { GeneralInquiriesService } from "./general-inquiries.service";
+import { GeneralInquiryEmailService } from "./general-inquiry-email.service";
 
 @Module({
   imports: [DatabaseModule, AuthModule],
-  controllers: [QuoteRequestsController],
+  controllers: [QuoteRequestsController, GeneralInquiriesController],
   providers: [
     QuoteConfigService,
     QuoteSecurityService,
@@ -21,7 +24,9 @@ import { QuoteReferenceService } from "./quote-reference.service";
     QuoteRequestsService,
     QuoteCleanupService,
     QuoteReferenceService,
+    GeneralInquiriesService,
+    GeneralInquiryEmailService,
   ],
-  exports: [QuoteEmailService],
+  exports: [QuoteEmailService, GeneralInquiryEmailService],
 })
 export class QuoteRequestsModule {}

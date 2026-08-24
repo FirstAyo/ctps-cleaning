@@ -1,11 +1,13 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Inject,
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
-import type { Prisma } from "@ctps/database";
+import { Prisma } from "@ctps/database";
+import { PERMISSION_KEYS } from "@ctps/permissions";
 import type {
   BeforeAfterMediaOrderInput,
   CreateBeforeAfterProjectInput,
@@ -13,12 +15,14 @@ import type {
 } from "@ctps/validation";
 
 import { AuditService } from "../auth/audit.service";
+import type { AuthenticatedIdentity } from "../auth/auth.types";
 import { DatabaseService } from "../database/database.service";
 import { LocalMediaStorageService } from "./local-media-storage.service";
 import { MediaConfigService } from "./media-config.service";
 
 const mediaPublicSelect = {
   id: true,
+  originalFilename: true,
   altText: true,
   caption: true,
   width: true,
@@ -30,11 +34,31 @@ const mediaPublicSelect = {
 const projectInclude = {
   primaryBeforeMedia: { select: mediaPublicSelect },
   primaryAfterMedia: { select: mediaPublicSelect },
+  coverMedia: { select: mediaPublicSelect },
   supportingMedia: {
     orderBy: [{ sortOrder: "asc" as const }, { id: "asc" as const }],
     include: { media: { select: mediaPublicSelect } },
   },
 } satisfies Prisma.BeforeAfterProjectInclude;
+
+const publicProjectOrder = [
+  { completedAt: { sort: "desc" as const, nulls: "last" as const } },
+  { publishedAt: { sort: "desc" as const, nulls: "last" as const } },
+  { createdAt: "desc" as const },
+  { id: "asc" as const },
+];
+const publicProjectVisibilityWhere = {
+  status: "PUBLISHED" as const,
+  primaryBeforeMedia: { is: { visibility: "PUBLIC" as const, status: "READY" as const } },
+  primaryAfterMedia: { is: { visibility: "PUBLIC" as const, status: "READY" as const } },
+  OR: [
+    { coverMediaId: null },
+    { coverMedia: { is: { visibility: "PUBLIC" as const, status: "READY" as const } } },
+  ],
+  supportingMedia: {
+    every: { media: { visibility: "PUBLIC" as const, status: "READY" as const } },
+  },
+} satisfies Prisma.BeforeAfterProjectWhereInput;
 
 @Injectable()
 export class BeforeAfterProjectsService {
@@ -48,6 +72,7 @@ export class BeforeAfterProjectsService {
   private mediaResponse(
     media: {
       id: string;
+      originalFilename: string;
       altText: string;
       caption: string | null;
       width: number;
@@ -58,6 +83,7 @@ export class BeforeAfterProjectsService {
     if (!media) return null;
     return {
       id: media.id,
+      originalFilename: media.originalFilename,
       altText: media.altText,
       caption: media.caption,
       width: media.width,
@@ -81,6 +107,8 @@ export class BeforeAfterProjectsService {
       title: project.title,
       summary: project.summary,
       description: project.description,
+      summaryContent: project.summaryContent,
+      descriptionContent: project.descriptionContent,
       status: project.status,
       featured: project.featured,
       publishedAt: project.publishedAt,
@@ -95,6 +123,7 @@ export class BeforeAfterProjectsService {
       updatedAt: project.updatedAt,
       primaryBeforeMedia: this.mediaResponse(project.primaryBeforeMedia),
       primaryAfterMedia: this.mediaResponse(project.primaryAfterMedia),
+      coverMedia: this.mediaResponse(project.coverMedia),
       supportingMedia: project.supportingMedia.map((link) => ({
         id: link.id,
         category: link.category,
@@ -122,6 +151,7 @@ export class BeforeAfterProjectsService {
         [
           project.primaryBeforeMediaId,
           project.primaryAfterMediaId,
+          project.coverMediaId,
           ...project.supportingMedia.map((item) => item.mediaId),
         ].filter((id): id is string => Boolean(id)),
       ),
@@ -130,24 +160,30 @@ export class BeforeAfterProjectsService {
   private date(value: string | null | undefined) {
     return value ? new Date(value) : null;
   }
-  private async validateMedia(ids: readonly string[], currentProjectId?: string) {
-    if (!ids.length) return;
-    if (ids.length !== new Set(ids).size)
+  private validateRoleIds(ids: readonly (string | null | undefined)[]) {
+    const selected = ids.filter((id): id is string => Boolean(id));
+    if (selected.length !== new Set(selected).size)
       throw new ConflictException({
         code: "DUPLICATE_MEDIA",
-        message: "An image can appear only once within a project.",
+        message: "An image can appear only once within the Before, After, and gallery roles.",
       });
+  }
+  private async validateMedia(ids: readonly string[], currentProjectId?: string) {
+    if (!ids.length) return;
+    const uniqueIds = [...new Set(ids)];
     const media = await this.database.client.mediaAsset.findMany({
-      where: { id: { in: [...ids] }, status: "READY" },
+      where: { id: { in: uniqueIds }, status: "READY" },
       select: {
         id: true,
+        altText: true,
         visibility: true,
         primaryBeforeFor: { select: { id: true } },
         primaryAfterFor: { select: { id: true } },
+        coverFor: { select: { id: true } },
         projectLinks: { select: { projectId: true } },
       },
     });
-    if (media.length !== ids.length)
+    if (media.length !== uniqueIds.length)
       throw new ConflictException({
         code: "MEDIA_UNAVAILABLE",
         message: "One or more selected images are unavailable.",
@@ -161,6 +197,7 @@ export class BeforeAfterProjectsService {
       const other = [
         ...item.primaryBeforeFor.map(({ id }) => id),
         ...item.primaryAfterFor.map(({ id }) => id),
+        ...item.coverFor.map(({ id }) => id),
         ...item.projectLinks.map(({ projectId }) => projectId),
       ].some((id) => id !== currentProjectId);
       if (other)
@@ -169,6 +206,7 @@ export class BeforeAfterProjectsService {
           message: "A managed image cannot be shared between projects.",
         });
     }
+    return media;
   }
 
   async list(query: {
@@ -215,17 +253,35 @@ export class BeforeAfterProjectsService {
     return this.response(await this.find(id));
   }
 
-  async create(input: CreateBeforeAfterProjectInput, actorUserId: string) {
+  async create(input: CreateBeforeAfterProjectInput, actor: AuthenticatedIdentity) {
+    const actorUserId = actor.userId;
+    if (
+      input.intent === "PUBLISH" &&
+      !actor.permissions.includes(PERMISSION_KEYS.PROJECTS_BEFORE_AFTER_PUBLISH)
+    )
+      throw new ForbiddenException({
+        code: "PERMISSION_DENIED",
+        message: "You do not have permission to publish projects.",
+      });
     const supportIds = input.supportingMedia.map((item) => item.mediaId);
-    const ids = [input.primaryBeforeMediaId, input.primaryAfterMediaId, ...supportIds].filter(
-      (id): id is string => Boolean(id),
-    );
+    this.validateRoleIds([input.primaryBeforeMediaId, input.primaryAfterMediaId, ...supportIds]);
+    if (input.coverMediaId && input.coverMediaId === input.primaryBeforeMediaId)
+      throw new ConflictException({
+        code: "COVER_ROLE_CONFLICT",
+        message: "Use the After photo or a dedicated image for the project cover.",
+      });
+    const ids = [
+      input.primaryBeforeMediaId,
+      input.primaryAfterMediaId,
+      input.coverMediaId,
+      ...supportIds,
+    ].filter((id): id is string => Boolean(id));
     if (supportIds.length > this.config.value.MEDIA_MAX_PROJECT_SUPPORTING_IMAGES)
       throw new BadRequestException({
         code: "TOO_MANY_SUPPORTING_IMAGES",
         message: "The supporting-image limit was exceeded.",
       });
-    await this.validateMedia(ids);
+    const media = (await this.validateMedia(ids)) ?? [];
     const duplicate = await this.database.client.beforeAfterProject.findUnique({
       where: { slug: input.slug },
       select: { id: true },
@@ -235,22 +291,58 @@ export class BeforeAfterProjectsService {
         code: "SLUG_CONFLICT",
         message: "Another project already uses this slug.",
       });
-    const project = await this.database.client.beforeAfterProject.create({
-      data: {
+    if (input.intent === "PUBLISH") {
+      const fields: string[] = [];
+      if (!input.summary.trim()) fields.push("summary");
+      if (!input.description.trim()) fields.push("description");
+      if (!input.primaryBeforeMediaId) fields.push("primary Before image");
+      else if (!media.find(({ id }) => id === input.primaryBeforeMediaId)?.altText.trim())
+        fields.push("primary Before alt text");
+      if (!input.primaryAfterMediaId) fields.push("primary After image");
+      else if (!media.find(({ id }) => id === input.primaryAfterMediaId)?.altText.trim())
+        fields.push("primary After alt text");
+      if (fields.length)
+        throw new BadRequestException({
+          code: "PUBLISH_VALIDATION_FAILED",
+          message: `Complete these publication requirements: ${fields.join(", ")}.`,
+          fields,
+        });
+    }
+    const moved: string[] = [];
+    try {
+      if (input.intent === "PUBLISH")
+        for (const mediaId of [...new Set(ids)]) {
+          await this.storage.moveMedia(mediaId, "PRIVATE", "PUBLIC");
+          moved.push(mediaId);
+        }
+      const createData: Prisma.BeforeAfterProjectCreateInput = {
         title: input.title,
         slug: input.slug,
         summary: input.summary,
         description: input.description,
+        ...(input.summaryContent !== undefined
+          ? { summaryContent: input.summaryContent ?? Prisma.JsonNull }
+          : {}),
+        ...(input.descriptionContent !== undefined
+          ? { descriptionContent: input.descriptionContent ?? Prisma.JsonNull }
+          : {}),
         serviceKey: input.serviceKey,
         serviceAreaKey: input.serviceAreaKey,
         completedAt: this.date(input.completedAt),
         seoTitle: input.seoTitle || null,
         seoDescription: input.seoDescription || null,
         featured: input.featured,
-        primaryBeforeMediaId: input.primaryBeforeMediaId ?? null,
-        primaryAfterMediaId: input.primaryAfterMediaId ?? null,
-        createdByUserId: actorUserId,
-        updatedByUserId: actorUserId,
+        status: input.intent === "PUBLISH" ? "PUBLISHED" : "DRAFT",
+        publishedAt: input.intent === "PUBLISH" ? new Date() : null,
+        createdBy: { connect: { id: actorUserId } },
+        updatedBy: { connect: { id: actorUserId } },
+        ...(input.primaryBeforeMediaId
+          ? { primaryBeforeMedia: { connect: { id: input.primaryBeforeMediaId } } }
+          : {}),
+        ...(input.primaryAfterMediaId
+          ? { primaryAfterMedia: { connect: { id: input.primaryAfterMediaId } } }
+          : {}),
+        ...(input.coverMediaId ? { coverMedia: { connect: { id: input.coverMediaId } } } : {}),
         supportingMedia: {
           create: input.supportingMedia.map((item) => ({
             mediaId: item.mediaId,
@@ -259,22 +351,75 @@ export class BeforeAfterProjectsService {
             caption: item.caption || null,
           })),
         },
-      },
-      include: projectInclude,
-    });
-    await this.audit.record({
-      actorUserId,
-      action: "before_after_project.created",
-      resourceType: "before_after_project",
-      resourceId: project.id,
-      metadata: {
-        slug: project.slug,
-        serviceKey: project.serviceKey,
-        serviceAreaKey: project.serviceAreaKey,
-        mediaCount: ids.length,
-      },
-    });
-    return this.response(project);
+      };
+      const project =
+        input.intent === "PUBLISH"
+          ? await this.database.client.$transaction(async (transaction) => {
+              await transaction.mediaAsset.updateMany({
+                where: { id: { in: [...new Set(ids)] } },
+                data: { visibility: "PUBLIC" },
+              });
+              const created = await transaction.beforeAfterProject.create({
+                data: createData,
+                include: projectInclude,
+              });
+              await transaction.auditLog.createMany({
+                data: [
+                  {
+                    actorUserId,
+                    action: "before_after_project.created",
+                    resourceType: "before_after_project",
+                    resourceId: created.id,
+                    metadata: {
+                      slug: created.slug,
+                      serviceKey: created.serviceKey,
+                      serviceAreaKey: created.serviceAreaKey,
+                      mediaCount: new Set(ids).size,
+                      intent: input.intent,
+                    },
+                  },
+                  {
+                    actorUserId,
+                    action: "before_after_project.published",
+                    resourceType: "before_after_project",
+                    resourceId: created.id,
+                    metadata: {
+                      previousStatus: null,
+                      mediaCount: new Set(ids).size,
+                      direct: true,
+                    },
+                  },
+                ],
+              });
+              return created;
+            })
+          : await this.database.client.beforeAfterProject.create({
+              data: createData,
+              include: projectInclude,
+            });
+      if (input.intent === "SAVE_DRAFT")
+        await this.audit.record({
+          actorUserId,
+          action: "before_after_project.created",
+          resourceType: "before_after_project",
+          resourceId: project.id,
+          metadata: {
+            slug: project.slug,
+            serviceKey: project.serviceKey,
+            serviceAreaKey: project.serviceAreaKey,
+            mediaCount: new Set(ids).size,
+            intent: input.intent,
+          },
+        });
+      return this.response(project);
+    } catch (error) {
+      await Promise.all(
+        moved.map((mediaId) =>
+          this.storage.moveMedia(mediaId, "PUBLIC", "PRIVATE").catch(() => undefined),
+        ),
+      );
+      throw error;
+    }
   }
 
   async update(id: string, input: UpdateBeforeAfterProjectInput, actorUserId: string) {
@@ -284,6 +429,7 @@ export class BeforeAfterProjectsService {
       (input.slug !== undefined ||
         input.primaryBeforeMediaId !== undefined ||
         input.primaryAfterMediaId !== undefined ||
+        input.coverMediaId !== undefined ||
         input.supportingMedia !== undefined)
     )
       throw new ConflictException({
@@ -318,6 +464,7 @@ export class BeforeAfterProjectsService {
       input.primaryAfterMediaId === undefined
         ? current.primaryAfterMediaId
         : input.primaryAfterMediaId;
+    const cover = input.coverMediaId === undefined ? current.coverMediaId : input.coverMediaId;
     const support =
       input.supportingMedia ??
       current.supportingMedia.map((item) => ({
@@ -326,8 +473,14 @@ export class BeforeAfterProjectsService {
         sortOrder: item.sortOrder,
         caption: item.caption,
       }));
+    this.validateRoleIds([primaryBefore, primaryAfter, ...support.map((item) => item.mediaId)]);
+    if (cover && cover === primaryBefore)
+      throw new ConflictException({
+        code: "COVER_ROLE_CONFLICT",
+        message: "Use the After photo or a dedicated image for the project cover.",
+      });
     await this.validateMedia(
-      [primaryBefore, primaryAfter, ...support.map((item) => item.mediaId)].filter(
+      [primaryBefore, primaryAfter, cover, ...support.map((item) => item.mediaId)].filter(
         (mediaId): mediaId is string => Boolean(mediaId),
       ),
       id,
@@ -340,6 +493,12 @@ export class BeforeAfterProjectsService {
           ...(input.slug !== undefined ? { slug: input.slug } : {}),
           ...(input.summary !== undefined ? { summary: input.summary } : {}),
           ...(input.description !== undefined ? { description: input.description } : {}),
+          ...(input.summaryContent !== undefined
+            ? { summaryContent: input.summaryContent ?? Prisma.JsonNull }
+            : {}),
+          ...(input.descriptionContent !== undefined
+            ? { descriptionContent: input.descriptionContent ?? Prisma.JsonNull }
+            : {}),
           ...(input.serviceKey !== undefined ? { serviceKey: input.serviceKey } : {}),
           ...(input.serviceAreaKey !== undefined ? { serviceAreaKey: input.serviceAreaKey } : {}),
           ...(input.completedAt !== undefined ? { completedAt: this.date(input.completedAt) } : {}),
@@ -354,6 +513,7 @@ export class BeforeAfterProjectsService {
           ...(input.primaryAfterMediaId !== undefined
             ? { primaryAfterMediaId: input.primaryAfterMediaId }
             : {}),
+          ...(input.coverMediaId !== undefined ? { coverMediaId: input.coverMediaId } : {}),
           updatedByUserId: actorUserId,
           version: { increment: 1 },
         },
@@ -440,6 +600,7 @@ export class BeforeAfterProjectsService {
         const media = [
           project.primaryBeforeMedia,
           project.primaryAfterMedia,
+          project.coverMedia,
           ...project.supportingMedia.map((item) => item.media),
         ].find((item) => item?.id === mediaId);
         if (media?.visibility === "PRIVATE") {
@@ -584,7 +745,7 @@ export class BeforeAfterProjectsService {
     featured?: boolean;
   }) {
     const where: Prisma.BeforeAfterProjectWhereInput = {
-      status: "PUBLISHED",
+      ...publicProjectVisibilityWhere,
       ...(query.serviceKey ? { serviceKey: query.serviceKey } : {}),
       ...(query.serviceAreaKey ? { serviceAreaKey: query.serviceAreaKey } : {}),
       ...(query.featured !== undefined ? { featured: query.featured } : {}),
@@ -613,7 +774,7 @@ export class BeforeAfterProjectsService {
   }
   async publicGet(slug: string) {
     const project = await this.database.client.beforeAfterProject.findFirst({
-      where: { slug, status: "PUBLISHED" },
+      where: { ...publicProjectVisibilityWhere, slug },
       include: projectInclude,
     });
     if (!project)
@@ -622,5 +783,94 @@ export class BeforeAfterProjectsService {
         message: "The project was not found.",
       });
     return this.response(project);
+  }
+
+  async publicContext(slug: string) {
+    const project = await this.database.client.beforeAfterProject.findFirst({
+      where: { ...publicProjectVisibilityWhere, slug },
+      include: projectInclude,
+    });
+    if (!project)
+      throw new NotFoundException({
+        code: "PROJECT_NOT_FOUND",
+        message: "The project was not found.",
+      });
+
+    const excludeCurrent = { ...publicProjectVisibilityWhere, id: { not: project.id } };
+    const relatedTiers = await Promise.all([
+      this.database.client.beforeAfterProject.findMany({
+        where: {
+          ...excludeCurrent,
+          serviceKey: project.serviceKey,
+          serviceAreaKey: project.serviceAreaKey,
+        },
+        orderBy: publicProjectOrder,
+        take: 3,
+        include: projectInclude,
+      }),
+      this.database.client.beforeAfterProject.findMany({
+        where: { ...excludeCurrent, serviceKey: project.serviceKey },
+        orderBy: publicProjectOrder,
+        take: 3,
+        include: projectInclude,
+      }),
+      this.database.client.beforeAfterProject.findMany({
+        where: { ...excludeCurrent, serviceAreaKey: project.serviceAreaKey },
+        orderBy: publicProjectOrder,
+        take: 3,
+        include: projectInclude,
+      }),
+      this.database.client.beforeAfterProject.findMany({
+        where: excludeCurrent,
+        orderBy: publicProjectOrder,
+        take: 3,
+        include: projectInclude,
+      }),
+    ]);
+    const related = [] as (typeof project)[];
+    const relatedIds = new Set<string>();
+    for (const candidate of relatedTiers.flat()) {
+      if (related.length === 3) break;
+      if (!relatedIds.has(candidate.id)) {
+        related.push(candidate);
+        relatedIds.add(candidate.id);
+      }
+    }
+
+    const [more, previous, next] = await Promise.all([
+      this.database.client.beforeAfterProject.findMany({
+        where: {
+          ...publicProjectVisibilityWhere,
+          id: { notIn: [project.id, ...relatedIds] },
+        },
+        orderBy: publicProjectOrder,
+        take: 3,
+        include: projectInclude,
+      }),
+      this.database.client.beforeAfterProject.findMany({
+        where: publicProjectVisibilityWhere,
+        cursor: { id: project.id },
+        skip: 1,
+        take: -1,
+        orderBy: publicProjectOrder,
+        include: projectInclude,
+      }),
+      this.database.client.beforeAfterProject.findMany({
+        where: publicProjectVisibilityWhere,
+        cursor: { id: project.id },
+        skip: 1,
+        take: 1,
+        orderBy: publicProjectOrder,
+        include: projectInclude,
+      }),
+    ]);
+
+    return {
+      project: this.response(project),
+      relatedProjects: related.map((item) => this.response(item)),
+      moreProjects: more.map((item) => this.response(item)),
+      previousProject: previous[0] ? this.response(previous[0]) : null,
+      nextProject: next[0] ? this.response(next[0]) : null,
+    };
   }
 }

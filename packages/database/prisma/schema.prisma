@@ -70,6 +70,11 @@ enum EmailOutboxStatus {
   FAILED
 }
 
+enum GeneralInquiryStatus {
+  NEW
+  READ
+}
+
 enum PricingVersionStatus {
   DRAFT
   PUBLISHED
@@ -517,6 +522,25 @@ model QuoteRequest {
   @@index([archivedAt])
 }
 
+model GeneralInquiry {
+  id                 String               @id @default(uuid()) @db.Uuid
+  idempotencyKeyHash String               @unique @db.Char(64)
+  name               String               @db.VarChar(120)
+  email              String               @db.VarChar(254)
+  phone              String?              @db.VarChar(32)
+  serviceKey         String?              @db.VarChar(64)
+  message            String               @db.VarChar(3000)
+  status             GeneralInquiryStatus @default(NEW)
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  archivedAt         DateTime?
+  emailMessages      EmailOutbox[]
+
+  @@index([status, createdAt(sort: Desc)])
+  @@index([email])
+  @@index([archivedAt])
+}
+
 model PricingVersion {
   id              String                  @id @default(uuid()) @db.Uuid
   versionCode     String                  @unique @db.VarChar(64)
@@ -683,6 +707,7 @@ model EmailOutbox {
   id             String            @id @default(uuid()) @db.Uuid
   quoteRequestId String?           @db.Uuid
   serviceJobId   String?           @db.Uuid
+  generalInquiryId String?         @db.Uuid
   deduplicationKey String?         @unique @db.VarChar(160)
   templateKey    String            @db.VarChar(64)
   recipient      String            @db.VarChar(254)
@@ -695,10 +720,12 @@ model EmailOutbox {
   updatedAt      DateTime          @updatedAt
   quoteRequest   QuoteRequest?     @relation(fields: [quoteRequestId], references: [id], onDelete: Cascade)
   serviceJob     ServiceJob?       @relation(fields: [serviceJobId], references: [id], onDelete: Cascade)
+  generalInquiry GeneralInquiry?   @relation(fields: [generalInquiryId], references: [id], onDelete: Cascade)
 
   @@index([status, createdAt])
   @@index([quoteRequestId])
   @@index([serviceJobId, createdAt(sort: Desc)])
+  @@index([generalInquiryId])
 }
 
 model ServiceJob {
@@ -960,6 +987,7 @@ model MediaAsset {
   variants         MediaVariant[]
   primaryBeforeFor BeforeAfterProject[]      @relation("ProjectPrimaryBefore")
   primaryAfterFor  BeforeAfterProject[]      @relation("ProjectPrimaryAfter")
+  coverFor         BeforeAfterProject[]      @relation("ProjectCover")
   projectLinks     BeforeAfterProjectMedia[]
 
   @@index([visibility, status])
@@ -989,6 +1017,8 @@ model BeforeAfterProject {
   title                String                    @db.VarChar(160)
   summary              String                    @db.VarChar(500)
   description          String                    @db.Text
+  summaryContent       Json?
+  descriptionContent   Json?
   status               BeforeAfterProjectStatus  @default(DRAFT)
   featured             Boolean                   @default(false)
   publishedAt          DateTime?
@@ -997,6 +1027,7 @@ model BeforeAfterProject {
   serviceAreaKey       String                    @db.VarChar(64)
   primaryBeforeMediaId String?                   @db.Uuid
   primaryAfterMediaId  String?                   @db.Uuid
+  coverMediaId         String?                   @db.Uuid
   seoTitle             String?                   @db.VarChar(70)
   seoDescription       String?                   @db.VarChar(170)
   displayOrder         Int                       @default(0)
@@ -1010,6 +1041,7 @@ model BeforeAfterProject {
   updatedBy            User                      @relation("BeforeAfterUpdatedBy", fields: [updatedByUserId], references: [id], onDelete: Restrict)
   primaryBeforeMedia   MediaAsset?               @relation("ProjectPrimaryBefore", fields: [primaryBeforeMediaId], references: [id], onDelete: Restrict)
   primaryAfterMedia    MediaAsset?               @relation("ProjectPrimaryAfter", fields: [primaryAfterMediaId], references: [id], onDelete: Restrict)
+  coverMedia           MediaAsset?               @relation("ProjectCover", fields: [coverMediaId], references: [id], onDelete: Restrict)
   supportingMedia      BeforeAfterProjectMedia[]
 
   @@index([status, publishedAt(sort: Desc)])
@@ -1018,6 +1050,7 @@ model BeforeAfterProject {
   @@index([serviceAreaKey, status])
   @@index([primaryBeforeMediaId])
   @@index([primaryAfterMediaId])
+  @@index([coverMediaId])
 }
 
 model BeforeAfterProjectMedia {

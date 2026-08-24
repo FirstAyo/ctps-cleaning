@@ -12,6 +12,7 @@ const commands = [
   ["docker", ["compose", "config", "--quiet"]],
   ["docker", ["compose", "-f", "compose.production.yml", "config", "--quiet"]],
   ["node", ["scripts/security-scan.mjs"]],
+  ["node", ["scripts/content-readiness-scan.mjs"]],
   ["git", ["-c", "safe.directory=*", "diff", "--check"]],
   ...(runSmoke ? [["node", ["scripts/smoke-test.mjs"]]] : []),
 ];

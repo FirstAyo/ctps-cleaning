@@ -1,14 +1,6 @@
 import { Accordion } from "@ctps/ui/navigation";
 import { Container, Section } from "@ctps/ui/layout";
-import {
-  Button,
-  FieldGroup,
-  FormDescription,
-  Input,
-  Label,
-  Select,
-  Textarea,
-} from "@ctps/ui/primitives";
+import { Button, FieldGroup, FormDescription, Label, Select, Textarea } from "@ctps/ui/primitives";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -24,6 +16,7 @@ import {
   PageHero,
 } from "./marketing";
 import { PublicLayout } from "./public-shell";
+import { GeneralInquiryForm } from "./general-inquiry-form";
 
 export function ServicesOverviewPage() {
   return (
@@ -32,7 +25,7 @@ export function ServicesOverviewPage() {
         description="Explore five CTPS property-care categories for residential and commercial inquiries. Scope and availability are confirmed through quote review."
         eyebrow="Services"
         image="/images/home/hero-property.svg"
-        imageAlt="Original development illustration of a modern property exterior"
+        imageAlt="Stylized illustration of a modern property exterior"
         title="One property. A coordinated view of care."
       />
       <Section>
@@ -116,7 +109,7 @@ export function AudiencePage({ commercial = false }: { readonly commercial?: boo
         description={`${commercial ? "Commercial" : "Residential"} inquiries can combine relevant CTPS services while keeping access, property context, and quote review explicit.`}
         eyebrow={commercial ? "Commercial" : "Residential"}
         image="/images/home/hero-property.svg"
-        imageAlt="Original development property illustration"
+        imageAlt="Stylized property illustration"
         title={title}
       />
       <Section>
@@ -174,8 +167,8 @@ export function BeforeAfterPage() {
   return (
     <PublicLayout>
       <PageHero
-        description="An accessible public portfolio structure using original local development visuals until approved CTPS project media is available."
-        eyebrow="Before & After"
+        description="Explore CTPS project records that have been reviewed and published for the public portfolio."
+        eyebrow="Projects"
         title="A project foundation that stays honest."
       />
       <Section>
@@ -186,7 +179,7 @@ export function BeforeAfterPage() {
       <Section className="bg-surface-muted/55">
         <Container size="wide">
           <SectionHeading
-            copy="This retained design demonstration uses visual labels only. The live /before-after route now uses published database records and server-side filters."
+            copy="This retained design demonstration uses visual transformation labels only. The live /projects route uses published database records and server-side filters."
             eyebrow="Portfolio preview"
             title="Three demonstration compositions."
           />
@@ -242,9 +235,9 @@ export function BlogPage() {
       <Section>
         <Container size="wide">
           <SectionHeading
-            copy="Every item is explicitly a topic placeholder—not published advice or a claim of CTPS expertise."
-            eyebrow="Editorial roadmap"
-            title="Planned topics, clearly labeled."
+            copy="Published articles will appear here when they are available."
+            eyebrow="CTPS Journal"
+            title="Property-care articles."
           />
           <PlannedArticleGrid />
         </Container>
@@ -349,7 +342,7 @@ export function AboutPage() {
         description="CTPS is presented as a residential and commercial property-care business serving six confirmed Metro Vancouver communities."
         eyebrow="About CTPS"
         image="/images/about/ctps-purpose.svg"
-        imageAlt="Original development illustration expressing the CTPS property-care purpose"
+        imageAlt="Stylized illustration expressing the CTPS property-care purpose"
         title="A business purpose built around clear property-care inquiries."
       />
       <Section>
@@ -414,36 +407,9 @@ export function ContactPage() {
                 </Link>
               </div>
             </div>
-            <form
-              aria-describedby="contact-status"
-              className="grid gap-5 rounded-xl border border-border bg-card p-6"
-            >
-              <p
-                className="rounded-md bg-surface-muted p-3 text-sm font-semibold"
-                id="contact-status"
-              >
-                General contact submission is currently unavailable. Property-specific inquiries can
-                use Request a Quote.
-              </p>
-              {[
-                ["contact-name", "Name", "text"],
-                ["contact-email", "Email", "email"],
-                ["contact-phone", "Phone", "tel"],
-                ["contact-subject", "Subject", "text"],
-              ].map(([id, label, type]) => (
-                <FieldGroup key={id}>
-                  <Label htmlFor={id}>{label}</Label>
-                  <Input disabled id={id} type={type} />
-                </FieldGroup>
-              ))}
-              <FieldGroup>
-                <Label htmlFor="contact-message">Message</Label>
-                <Textarea disabled id="contact-message" />
-              </FieldGroup>
-              <Button disabled type="submit">
-                General contact unavailable
-              </Button>
-            </form>
+            <aside aria-label="General inquiry form">
+              <GeneralInquiryForm />
+            </aside>
           </div>
         </Container>
       </Section>

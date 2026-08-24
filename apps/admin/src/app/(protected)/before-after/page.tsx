@@ -34,14 +34,14 @@ export default async function Page({
     <div className="grid gap-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-semibold">Before & After projects</h2>
+          <h2 className="text-2xl font-semibold">All Projects</h2>
           <p className="mt-1 text-sm text-muted-foreground">
             Manage draft, published, and archived portfolio records.
           </p>
         </div>
         {can(identity, "projects.beforeAfter.create") ? (
           <Link href="/before-after/new">
-            <Button>Create project</Button>
+            <Button>New Project</Button>
           </Link>
         ) : null}
       </div>
@@ -96,7 +96,7 @@ export default async function Page({
         <>
           <div className="admin-table-wrap">
             <table className="admin-table">
-              <caption className="sr-only">Before-and-after projects</caption>
+              <caption className="sr-only">Projects</caption>
               <thead>
                 <tr>
                   <th>Preview</th>
@@ -111,11 +111,11 @@ export default async function Page({
                 {result.items.map((project) => (
                   <tr key={project.id}>
                     <td>
-                      {project.primaryAfterMedia ? (
+                      {(project.coverMedia ?? project.primaryAfterMedia) ? (
                         <img
                           alt=""
                           className="h-14 w-20 rounded-sm object-cover"
-                          src={`/api/admin-media/${project.primaryAfterMedia.id}/thumbnail`}
+                          src={`/api/admin-media/${(project.coverMedia ?? project.primaryAfterMedia)!.id}/thumbnail`}
                         />
                       ) : (
                         <span className="text-xs text-muted-foreground">No image</span>

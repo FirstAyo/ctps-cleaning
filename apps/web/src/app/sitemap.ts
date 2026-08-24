@@ -10,7 +10,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...services.map(({ slug }) => `/services/${slug}`),
     "/residential",
     "/commercial",
-    "/before-after",
+    "/projects",
     "/service-areas",
     ...serviceAreas.map(({ slug }) => `/service-areas/${slug}`),
     "/about",
@@ -19,9 +19,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/blog",
     "/estimate",
     "/request-a-quote",
-    "/privacy",
-    "/terms",
-    "/accessibility",
   ];
   const first = await getPublishedProjects({ pageSize: "24" });
   const [firstBlog, taxonomy] = await Promise.all([
@@ -46,7 +43,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     ...staticEntries,
     ...projects.map((project) => ({
-      url: new URL(`/before-after/${project.slug}`, site.url).toString(),
+      url: new URL(`/projects/${project.slug}`, site.url).toString(),
       lastModified: new Date(project.updatedAt ?? project.publishedAt),
     })),
     ...posts.map((post) => ({

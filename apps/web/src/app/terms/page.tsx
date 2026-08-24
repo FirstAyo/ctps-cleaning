@@ -1,10 +1,9 @@
 import { PolicyFoundation } from "@/components/public-pages";
-import { metadataFor } from "@/lib/seo";
+import { noIndexFollowMetadata } from "@/lib/seo";
 
-export const metadata = metadataFor(
+export const metadata = noIndexFollowMetadata(
   "Terms",
   "Service-terms foundation requiring CTPS and legal review.",
-  "/terms",
 );
 export default function Page() {
   return (

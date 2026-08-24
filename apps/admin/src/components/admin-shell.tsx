@@ -20,6 +20,7 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Settings,
+  Send,
   ShieldCheck,
   Users,
   X,
@@ -72,10 +73,12 @@ function SidebarNavigation({
   collapsed = false,
   items,
   onNavigate,
+  pathname,
 }: {
   readonly collapsed?: boolean;
   readonly items: readonly AdminNavigationItem[];
   readonly onNavigate?: () => void;
+  readonly pathname: string;
 }) {
   return (
     <nav aria-label="Administration navigation" className="grid gap-1 p-3">
@@ -99,27 +102,36 @@ function SidebarNavigation({
                           ? BookOpen
                           : item.href.startsWith("/pricing") || item.href.startsWith("/estimator")
                             ? CircleDollarSign
-                            : item.href.startsWith("/quote") ||
-                                item.href.startsWith("/before-after")
-                              ? ClipboardList
-                              : item.href.startsWith("/users") || item.href.startsWith("/account")
-                                ? Users
-                                : item.href.startsWith("/roles") || item.href.startsWith("/audit")
-                                  ? ShieldCheck
-                                  : Gauge;
+                            : item.href.startsWith("/general-inquiries")
+                              ? Send
+                              : item.href.startsWith("/quote") ||
+                                  item.href.startsWith("/before-after")
+                                ? ClipboardList
+                                : item.href.startsWith("/users") || item.href.startsWith("/account")
+                                  ? Users
+                                  : item.href.startsWith("/roles") || item.href.startsWith("/audit")
+                                    ? ShieldCheck
+                                    : Gauge;
         return (
           <Link
             {...(collapsed ? { "aria-label": item.label } : {})}
             className={cn(
               "flex min-h-10 items-center gap-3 rounded-md px-3 text-sm font-medium text-sidebar-muted hover:bg-sidebar-accent hover:text-sidebar-foreground",
-              item.href === "/dashboard" && "bg-sidebar-accent text-sidebar-foreground",
+              (pathname === item.href || pathname.startsWith(`${item.href}/`)) &&
+                "bg-sidebar-accent text-sidebar-foreground",
             )}
             href={item.href}
-            key={`${item.href}:${item.label}`}
+            key={item.href}
             {...(onNavigate ? { onClick: onNavigate } : {})}
           >
-            <Icon aria-hidden="true" className="size-4 shrink-0" strokeWidth={1.8} />
-            {collapsed ? <span className="sr-only">{item.label}</span> : <span>{item.label}</span>}
+            <span className="contents">
+              <Icon aria-hidden="true" className="size-4 shrink-0" strokeWidth={1.8} />
+              {collapsed ? (
+                <span className="sr-only">{item.label}</span>
+              ) : (
+                <span>{item.label}</span>
+              )}
+            </span>
           </Link>
         );
       })}
@@ -131,7 +143,10 @@ export function AdminShell({
   children,
   description = "Unprotected Phase 2 component demonstration. No staff session or permissions exist.",
   identity,
-  navigationItems = demoNavigation.map((label) => ({ href: "/design-system", label })),
+  navigationItems = demoNavigation.map((label) => ({
+    href: `/design-system#${label.toLowerCase().replaceAll(" ", "-")}`,
+    label,
+  })),
   pageTitle,
 }: {
   readonly children: React.ReactNode;
@@ -140,7 +155,7 @@ export function AdminShell({
   readonly navigationItems?: readonly AdminNavigationItem[];
   readonly pageTitle: string;
 }) {
-  const pathname = usePathname();
+  const pathname = usePathname() ?? "/";
   const isBlogWriting = /^\/blog\/posts\/(?:new|[0-9a-f-]+)$/.test(pathname);
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -192,7 +207,7 @@ export function AdminShell({
           </IconButton>
         </div>
         <div className="overflow-y-auto">
-          <SidebarNavigation collapsed={collapsed} items={navigationItems} />
+          <SidebarNavigation collapsed={collapsed} items={navigationItems} pathname={pathname} />
         </div>
         <p
           className={cn(
@@ -278,7 +293,11 @@ export function AdminShell({
                 <X aria-hidden="true" />
               </IconButton>
             </div>
-            <SidebarNavigation items={navigationItems} onNavigate={() => setMobileOpen(false)} />
+            <SidebarNavigation
+              items={navigationItems}
+              onNavigate={() => setMobileOpen(false)}
+              pathname={pathname}
+            />
           </aside>
         </div>
       ) : null}

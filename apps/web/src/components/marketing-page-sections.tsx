@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import type { PublicProject } from "@/lib/before-after-api";
+import { GeneralInquiryForm } from "./general-inquiry-form";
 import type { MarketingSection, PublishedMarketingPage } from "@/lib/marketing-api";
 import { ProjectComparison } from "./portfolio";
 
@@ -321,7 +322,7 @@ export function EditorialProjectProof({
           <p className="eyebrow">{section.eyebrow ?? "Published work"}</p>
           <h2 className="public-heading">{project.title}</h2>
           <p>{project.summary}</p>
-          <Action href={`/before-after/${project.slug}`} label="View project" />
+          <Action href={`/projects/${project.slug}`} label="View project" />
         </div>
       </Container>
     </section>
@@ -352,32 +353,9 @@ export function EditorialContact({
             ) : null}
           </div>
         </div>
-        <form aria-describedby="general-contact-status" className="marketing-contact-form">
-          <h3>General inquiry</h3>
-          <label>
-            Name
-            <input autoComplete="name" disabled name="name" />
-          </label>
-          <label>
-            Email
-            <input autoComplete="email" disabled name="email" type="email" />
-          </label>
-          <label>
-            Subject
-            <input autoComplete="off" disabled name="subject" />
-          </label>
-          <label>
-            Message
-            <textarea autoComplete="off" disabled name="message" rows={5} />
-          </label>
-          <button disabled type="submit">
-            Send general inquiry
-          </button>
-          <p id="general-contact-status">
-            This contact form is unavailable until CTPS configures its receiving address. For
-            service requests, use Request a Quote.
-          </p>
-        </form>
+        <aside className="marketing-contact-form" aria-label="General inquiry form">
+          <GeneralInquiryForm headingLevel="h3" />
+        </aside>
       </Container>
     </section>
   );

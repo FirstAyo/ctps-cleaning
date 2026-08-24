@@ -1,3 +1,5 @@
+import type { StructuredTextDocument } from "@ctps/types";
+
 export interface AdminMedia {
   readonly id: string;
   readonly originalFilename: string;
@@ -13,6 +15,8 @@ export interface AdminProject {
   readonly title: string;
   readonly summary: string;
   readonly description: string;
+  readonly summaryContent: StructuredTextDocument | null;
+  readonly descriptionContent: StructuredTextDocument | null;
   readonly status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
   readonly featured: boolean;
   readonly completedAt: string | null;
@@ -24,6 +28,7 @@ export interface AdminProject {
   readonly updatedAt: string;
   readonly primaryBeforeMedia: AdminMedia | null;
   readonly primaryAfterMedia: AdminMedia | null;
+  readonly coverMedia: AdminMedia | null;
   readonly supportingMedia: readonly {
     readonly id: string;
     readonly category: "BEFORE" | "AFTER" | "GALLERY";

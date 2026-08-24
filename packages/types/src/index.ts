@@ -44,3 +44,27 @@ export interface FoundationHealthStatus {
   readonly api: AvailabilityState;
   readonly database: AvailabilityState;
 }
+
+export type StructuredTextMark =
+  | { readonly type: "bold" | "italic" | "underline" }
+  | { readonly type: "link"; readonly href: string };
+
+export interface StructuredTextInline {
+  readonly type: "text";
+  readonly text: string;
+  readonly marks: readonly StructuredTextMark[];
+}
+
+export type StructuredTextBlock =
+  | {
+      readonly type: "richText";
+      readonly style: "paragraph" | "heading2" | "heading3" | "blockquote";
+      readonly content: readonly StructuredTextInline[];
+    }
+  | {
+      readonly type: "richList";
+      readonly style: "bullet" | "numbered";
+      readonly items: readonly (readonly StructuredTextInline[])[];
+    };
+
+export type StructuredTextDocument = readonly StructuredTextBlock[];

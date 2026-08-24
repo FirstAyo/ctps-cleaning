@@ -64,9 +64,11 @@ export function PublicHeader() {
       })
       .catch(() => undefined);
   }, []);
-  const navigation = (managedNavigation ?? primaryNavigation).filter(
-    (item) => item.href !== "/services",
-  );
+  const navigation = (managedNavigation ?? primaryNavigation)
+    .map((item) =>
+      item.href === "/before-after" ? { ...item, href: "/projects", label: "Projects" } : item,
+    )
+    .filter((item) => item.href !== "/services");
   return (
     <>
       <div className="bg-secondary py-2 text-center text-xs font-semibold tracking-wide text-secondary-foreground">
@@ -223,7 +225,7 @@ const footerGroups = [
   {
     title: "Resources",
     links: [
-      { label: "Before & After", href: "/before-after" },
+      { label: "Projects", href: "/projects" },
       { label: "Blog", href: "/blog" },
       { label: "Estimate", href: "/estimate" },
       { label: "Privacy", href: "/privacy" },

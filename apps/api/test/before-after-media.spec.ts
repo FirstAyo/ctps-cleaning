@@ -148,6 +148,7 @@ describe("managed media service", () => {
         visibility: "PRIVATE",
         primaryBeforeFor: [{ id: "project" }],
         primaryAfterFor: [],
+        coverFor: [],
         projectLinks: [],
       });
     const service = new BeforeAfterMediaService(

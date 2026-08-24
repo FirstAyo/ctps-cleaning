@@ -56,6 +56,7 @@ export class MarketingService {
   async initialize(actorUserId: string) {
     let created = 0;
     let upgraded = 0;
+    const publishDefaults = process.env.NODE_ENV !== "production";
     for (const definition of systemMarketingPages) {
       const exists = await this.database.client.marketingPage.findUnique({
         where: { pageKey: definition.pageKey },
@@ -69,7 +70,7 @@ export class MarketingService {
           Array.isArray(sections) &&
           sections.length <= 3 &&
           sections.every(({ id }) => ["hero", "content", "final-cta", "areas"].includes(id ?? ""));
-        if (isUntouchedPhase11Placeholder) {
+        if (publishDefaults && isUntouchedPhase11Placeholder) {
           await this.database.client.$transaction(async (transaction) => {
             const revision = await transaction.marketingPageRevision.create({
               data: {
@@ -107,13 +108,13 @@ export class MarketingService {
             title: definition.title,
             navigationLabel: definition.navigationLabel ?? null,
             pageType: definition.pageType,
-            status: "PUBLISHED",
+            status: publishDefaults ? "PUBLISHED" : "DRAFT",
             draftContent: json(definition.content),
-            publishedContent: json(definition.content),
+            publishedContent: publishDefaults ? json(definition.content) : Prisma.JsonNull,
             createdByUserId: actorUserId,
             updatedByUserId: actorUserId,
-            publishedByUserId: actorUserId,
-            publishedAt: new Date(),
+            publishedByUserId: publishDefaults ? actorUserId : null,
+            publishedAt: publishDefaults ? new Date() : null,
           },
         });
         const revision = await transaction.marketingPageRevision.create({
@@ -125,10 +126,11 @@ export class MarketingService {
             createdByUserId: actorUserId,
           },
         });
-        await transaction.marketingPage.update({
-          where: { id: page.id },
-          data: { publishedRevisionId: revision.id },
-        });
+        if (publishDefaults)
+          await transaction.marketingPage.update({
+            where: { id: page.id },
+            data: { publishedRevisionId: revision.id },
+          });
       });
       created += 1;
     }

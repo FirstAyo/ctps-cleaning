@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@ctps/ui/content";
+import { Card, CardContent, CardHeader } from "@ctps/ui/content";
 import { redirect } from "next/navigation";
 import { LoginForm, LoginThemeToggle } from "@/components/auth-forms";
 import { currentIdentity } from "@/lib/admin-api";
@@ -21,7 +21,7 @@ export default async function LoginPage({
         </div>
         <Card>
           <CardHeader>
-            <CardTitle>Staff sign in</CardTitle>
+            <h1 className="text-lg font-semibold tracking-tight">Staff sign in</h1>
             <p className="text-sm text-muted-foreground">
               Authorized CTPS staff only. Contact a Super Admin for account recovery.
             </p>

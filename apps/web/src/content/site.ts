@@ -47,7 +47,7 @@ export const services: readonly Service[] = [
       "Managed-property common areas",
     ],
     image: "/images/services/window-cleaning.svg",
-    alt: "Abstract development illustration of a bright building window",
+    alt: "Stylized illustration of a bright building window",
     faqs: [
       {
         title: "Are interior windows included?",
@@ -81,7 +81,7 @@ export const services: readonly Service[] = [
       "Managed exterior common areas",
     ],
     image: "/images/services/pressure-washing.svg",
-    alt: "Abstract development illustration of a clean exterior walkway",
+    alt: "Stylized illustration of a clean exterior walkway",
     faqs: [
       {
         title: "Can every exterior surface be pressure washed?",
@@ -115,7 +115,7 @@ export const services: readonly Service[] = [
       "Accessible multi-unit common areas",
     ],
     image: "/images/services/gutter-cleaning.svg",
-    alt: "Abstract development illustration of a roof edge and gutter",
+    alt: "Stylized illustration of a roof edge and gutter",
     faqs: [
       {
         title: "Does this include roof repair?",
@@ -149,7 +149,7 @@ export const services: readonly Service[] = [
       "Commercial exterior inquiries",
     ],
     image: "/images/services/moss-removal.svg",
-    alt: "Abstract development illustration of a roof with restrained green detail",
+    alt: "Stylized illustration of a roof with restrained green detail",
     faqs: [
       {
         title: "What treatment products are used?",
@@ -182,7 +182,7 @@ export const services: readonly Service[] = [
       "Commercial vent inquiries",
     ],
     image: "/images/services/vent-cleaning.svg",
-    alt: "Abstract development illustration of a circular ventilation grille",
+    alt: "Stylized illustration of a circular ventilation grille",
     faqs: [
       {
         title: "Are all vent types currently offered?",
@@ -233,7 +233,7 @@ export const serviceAreas: readonly ServiceArea[] = [
   {
     slug: "surrey",
     name: "Surrey",
-    summary: "Surrey is included in the planned CTPS Metro Vancouver service-area coverage.",
+    summary: "CTPS accepts residential and commercial property-care inquiries in Surrey.",
     perspective:
       "CTPS reviews location, service type, property context, and access before confirming whether a Surrey request can proceed.",
   },
@@ -282,9 +282,9 @@ export const generalFaqs = [
       "The quote request accepts multiple optional JPEG, PNG, or WebP property photos. They remain private and are available only to authorized staff reviewing the request.",
   },
   {
-    title: "Are the before-and-after images real CTPS projects?",
+    title: "What appears in the Projects portfolio?",
     content:
-      "Not yet. Current visuals are clearly labeled development demonstrations and are not represented as customer projects.",
+      "The public portfolio displays only project records that CTPS has reviewed and published. When no project is published, the portfolio shows a clear empty state instead of demonstration work.",
   },
 ] as const;
 
@@ -297,7 +297,7 @@ export const plannedArticles = [
 ] as const;
 
 export const primaryNavigation = [
-  { label: "Before & After", href: "/before-after" },
+  { label: "Projects", href: "/projects" },
   { label: "Service Areas", href: "/service-areas" },
   { label: "Estimate", href: "/estimate" },
   { label: "Blog", href: "/blog" },

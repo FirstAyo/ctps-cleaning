@@ -1,5 +1,21 @@
 # Public Website UI Specification
 
+## Public Projects portfolio
+
+The visitor-facing portfolio is **Projects** at canonical `/projects` and `/projects/{slug}` routes. Legacy `/before-after` aliases permanently redirect directly to the corresponding Projects URL. Before & After remains the name of the transformation comparison inside a project case study, not the portfolio brand.
+
+The Projects index uses a restrained editorial Hero, an optional Published Featured Project using Cover then primary After fallback, compact service filters, retained community filtering, crawlable pagination, and a controlled asymmetric photography-first archive. It collapses to a single-column reading order on mobile and presents an honest public empty state without simulated projects.
+
+Project Detail is a server-rendered case study with a Cover/After Hero, Projects breadcrumb, factual overview strip, large accessible Before & After comparison, safe structured story, conditional supporting gallery, contextual quote CTA, and deterministic portfolio navigation. Related Projects rank same service plus area, same service, same area, then recent Published work. More Projects excludes the current and Related IDs. Previous/Next use completion date, then publication/creation time and stable ID; bounded server queries avoid downloading the archive. The contextual sidebar begins only at wide desktop and moves below the story/gallery on laptop, tablet, and mobile.
+
+## Phase 13 launch-safe presentation
+
+Customer-facing fallbacks use neutral factual wording, production never substitutes bundled development photography for missing CMS media, and Contact uses the shared functional General Inquiry form alongside verified configured methods. Request a Quote presents the detailed quote workflow and the simpler General Inquiry as two semantically distinct paths. Disabled imitation forms are prohibited. Unapproved legal foundations remain visibly provisional, noindex, and outside the sitemap. The Homepage process remains a timeline with slightly tighter vertical rhythm. See `phase-13-launch-readiness.md`.
+
+## General Inquiry
+
+The shared form asks for name, email, and a bounded message, with optional phone and service interest. Field errors are inline and associated with their controls; operation success/failure uses the shared toast system and an accessible in-form success state. The browser retains one idempotency key across a failed retry and discards it only after a successful response. General Inquiry does not request property measurements, estimator inputs, project media, or detailed Quote Request answers.
+
 ## Phase 12 search presentation
 
 Indexable pages share deterministic title, description, canonical, Open Graph, Twitter, and environment-aware robots rules. Service and area details add visible semantic breadcrumbs synchronized with structured data. Tags, authors, filtered Blog URLs, previews, tokens, Admin, and design tooling remain noindex. Exactly five services and six approved British Columbia areas are represented; no service-area combination pages were generated. See `seo-and-search-readiness.md`.
@@ -21,7 +37,7 @@ This specification defines the public screen structure, responsive behavior, sta
 
 ## 2. Header behavior
 
-The primary bar supports the CTPS logo; Services; Before and After; Service Areas; Price Estimator; Blog; About; Contact; Request a Quote; theme toggle; and mobile trigger. To avoid crowding, Services and possibly company links use clearly labeled menus; priority items and quote CTA remain visible at wide widths.
+The primary bar supports the CTPS logo; Services; Projects; Service Areas; Price Estimator; Blog; About; Contact; Request a Quote; theme toggle; and mobile trigger. To avoid crowding, Services and possibly company links use clearly labeled menus; priority items and quote CTA remain visible at wide widths.
 
 Services opens on click/keyboard, not hover alone. The trigger exposes expanded state and menu relationship; Arrow keys/Escape and focus return work predictably. Pointer hover may supplement this behavior. The mobile drawer traps focus, closes with Escape/backdrop/close button, restores trigger focus, prevents background interaction, and uses expandable subnavigation. Theme controls have an accessible name and indicate the selected theme.
 
@@ -136,7 +152,7 @@ contact/legal guarantees. Release QA and content approval gates are tracked in `
 - Five service pages vary by identity across Hero, positioning, media, inclusions, property relevance, Published proof, process, areas, FAQs, related services, and CTA.
 - About uses image-led philosophy and numbered principles. Residential and Commercial use different warmth and structure.
 - Service Areas uses large city typography; six details contain approved city-level context only.
-- Before & After uses a featured transformation and asymmetrical mosaic while retaining keyboard/touch comparison. Blog uses an editorial lead and semantic article measure.
+- Projects uses a featured project and asymmetrical portfolio while retaining a keyboard/touch Before & After comparison inside each case study. Blog uses an editorial lead and semantic article measure.
 - Presentation selects Hero, Large, Card, and Thumbnail variants. Themes, reduced motion, focus, native FAQ disclosure, breadcrumbs, and 320px-up reflow remain mandatory.
 
 ## Phase 11 premium marketing surfaces

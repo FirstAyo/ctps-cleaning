@@ -1,5 +1,23 @@
 # Premium UI and marketing CMS
 
+## Public Projects presentation
+
+The internal `BEFORE_AFTER` page identity and BeforeAfter database/API model names remain stable, while public defaults, navigation labels, internal links, and canonical presentation use Projects and `/projects`. Existing managed navigation entries pointing to `/before-after` are normalized for visitors until an operator republishes the updated navigation default; no redirect chain is introduced.
+
+Published Featured projects remain eligible for Homepage proof. Homepage, service-page, and area-page project links use `/projects/{slug}` and use dedicated Cover media before primary After fallback. A matching service or area project may fill an unconfigured proof section, while explicit Published selections retain priority. Draft, Archived, operational, and private media remain ineligible.
+
+## Project publishing feedback
+
+Projects use the Admin-wide semantic toast provider for save, publish, update, unpublish, upload, conflict, permission, and network outcomes. The provider uses existing Lucide icons and CTPS theme tokens, supports success/error/warning/info, remains within the mobile viewport, and removes motion under `prefers-reduced-motion`. New Project keeps Save Draft and Publish Now visible as separate sticky actions; the Before and After panels remain adjacent where useful and stack on mobile.
+
+## Shared structured-editing direction
+
+Before & After reuses the repository's Tiptap/ProseMirror runtime, formatting-control styling, safe-link policy, selection-preserving link dialog, paste filtering, and canonical node approach. Project content excludes Blog-only media blocks, callouts, H4, and arbitrary embeds.
+
+## Phase 13 publication safety
+
+Production `marketing:initialize` creates missing fixed pages as Drafts and never silently publishes default marketing content. Development keeps convenient safe defaults. Existing pages and Admin edits are not overwritten. Contact renders verified Site Settings values when present and otherwise routes property-specific inquiries to Request a Quote without a disabled imitation form. See `phase-13-launch-readiness.md`.
+
 ## Phase 12 SEO integration
 
 Existing Marketing and Blog SEO fields remain authoritative; Phase 12 adds no duplicate editor or storage. Public metadata consumes Published values through the centralized canonical/social/robots system. The read-only SEO health workspace deep-links to existing editors and reports deterministic missing, duplicate, thin-content, image/alt, broken-link, and orphan findings. Canonical host and index enablement cannot be changed through CMS.
@@ -48,7 +66,7 @@ Audits record draft save, publish, restore, marketing-media selection changes, m
 
 The Homepage remains the benchmark and is not redesigned. Services uses an alternating editorial catalogue. Individual services use page-key-varied Hero, positioning, media/text, scope, property contexts, Published proof, process, areas, FAQ, related services, and CTA. About uses philosophy and numbered principles. Residential is warmer and image-led; Commercial is more structured without invented contracts, clients, response times, credentials, or insurance claims.
 
-Service Areas presents exactly Vancouver, Richmond, Burnaby, Surrey, Coquitlam, and North Vancouver without manufactured local claims. Contact separates general inquiries from the private quote workflow. Before & After remains a Published-only canonical project portfolio. Blog becomes an editorial journal while Blog Admin remains unchanged. Optional proof renders nothing without a valid Published selection.
+Service Areas presents exactly Vancouver, Richmond, Burnaby, Surrey, Coquitlam, and North Vancouver without manufactured local claims. Contact separates general inquiries from the private quote workflow. Projects is the Published-only canonical project portfolio; Before & After names only its transformation component. Blog becomes an editorial journal while Blog Admin remains unchanged. Optional proof renders nothing without a valid Published selection.
 
 General photography reuses `MarketingImageField`, the Media Picker, focal metadata, optimized variants, lifecycle references, and deletion protection. Strict fields reject arbitrary HTML, external images, CSS, scripts, embeds, and layout code. Initialisation upgrades only untouched version-1 placeholders. Missing production photography uses neutral treatment or hidden optional sections.
 

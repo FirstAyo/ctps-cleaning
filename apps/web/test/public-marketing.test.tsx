@@ -2,6 +2,7 @@ import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
+import { ToastProvider } from "@ctps/ui/toast";
 
 import sitemap from "../src/app/sitemap";
 import HomePage from "../src/app/page";
@@ -47,7 +48,7 @@ describe("Phase 4 public marketing", () => {
       const html = markup(<ServicePageContent service={service} />);
       expect(html).toContain(service.name);
       expect(html).toContain("Inquiry before confirmation");
-      expect(html).toContain("Development demonstration");
+      expect(html).toContain("Comparison preview");
     }
   });
 
@@ -62,18 +63,30 @@ describe("Phase 4 public marketing", () => {
   });
 
   it("keeps the quote workflow active without implying booking or final pricing", () => {
-    const quote = markup(<RequestQuotePage />);
+    const quote = markup(
+      <ToastProvider>
+        <RequestQuotePage />
+      </ToastProvider>,
+    );
     expect(quote).toContain("Step 1 of 8");
     expect(quote).toContain("Property type");
     expect(quote).toContain("This is not a price, appointment, or booking");
-    expect(markup(<ContactPage />)).toContain("General contact unavailable");
+    const contact = markup(
+      <ToastProvider>
+        <ContactPage />
+      </ToastProvider>,
+    );
+    expect(contact).toContain("Serving six primary communities");
+    expect(contact).toContain("general-inquiry-form");
+    expect(quote).toContain("Detailed quote request");
+    expect(quote).toContain("general-inquiry-form");
   });
 
   it("renders accessible FAQ, comparison, and editorial foundations without fake records", () => {
     expect(markup(<FaqPage />)).toContain("Can I book a service online?");
     expect(markup(<BeforeAfterPage />)).toContain("Before and after comparison");
     const blog = markup(<BlogPage />);
-    expect(blog).toContain("Planned topic");
+    expect(blog).toContain("CTPS Journal");
     expect(blog).not.toContain("Published on");
   });
 
@@ -88,12 +101,12 @@ describe("Phase 4 public marketing", () => {
 
   it("publishes all marketing routes while excluding development/admin routes", async () => {
     const urls = (await sitemap()).map((item) => item.url);
-    expect(urls).toHaveLength(26);
+    expect(urls).toHaveLength(23);
     expect(urls.some((url) => url.endsWith("/services/window-cleaning"))).toBe(true);
     expect(urls.some((url) => url.endsWith("/service-areas/north-vancouver"))).toBe(true);
-    expect(urls.some((url) => url.endsWith("/privacy"))).toBe(true);
-    expect(urls.some((url) => url.endsWith("/terms"))).toBe(true);
-    expect(urls.some((url) => url.endsWith("/accessibility"))).toBe(true);
+    expect(urls.some((url) => url.endsWith("/privacy"))).toBe(false);
+    expect(urls.some((url) => url.endsWith("/terms"))).toBe(false);
+    expect(urls.some((url) => url.endsWith("/accessibility"))).toBe(false);
     expect(urls.some((url) => url.includes("design-system"))).toBe(false);
     expect(urls.some((url) => url.includes("admin"))).toBe(false);
   });

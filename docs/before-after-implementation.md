@@ -1,5 +1,29 @@
 # Before-and-After Implementation
 
+## Public Projects routing and context
+
+The public portfolio is branded **Projects**. `/projects` and `/projects/{slug}` are canonical; `/before-after` and `/before-after/{slug}` issue direct permanent redirects. Internal Admin routes, public API paths, storage namespaces, permissions, and `BeforeAfterProject`/`BeforeAfterMedia` names are intentionally unchanged.
+
+The public list and detail/context queries require a Published project, Ready public primary Before/After media, a Ready public Cover when configured, and Ready public supporting media. Listing, Featured, Homepage, service, and area representations select Cover first and primary After second. No Before image is selected automatically as a cover.
+
+`GET /public/before-after-projects/:slug/context` adds bounded server context for case studies. Related ranking is deterministic: same service and area, then same service, then same area, then recent Published work, deduplicated to three. More Projects is a separate recent Published query limited to three and excludes current/Related IDs. Previous and Next use descending completion date with nulls last, then descending publication and creation timestamps, then ascending ID; cursor queries return at most one record in either direction and do not wrap.
+
+## Direct creation, publication, and project media roles
+
+The protected New Project workspace submits an explicit `SAVE_DRAFT` or `PUBLISH` create intent. `SAVE_DRAFT` keeps the intentionally permissive Draft rules, including missing transformation photos. `PUBLISH` is one server operation: it rechecks publication permission and all required content, requires a ready Before photo and After photo with alt text, transitions unique managed files, creates the Published project in a database transaction, and compensates file movement if persistence fails. Staff do not need to create a Draft first.
+
+Project media has four staff-facing roles: optional Cover / Featured image, required Before photo, required After photo, and optional supporting gallery. A dedicated cover may be uploaded or the primary After photo may be referenced without duplicating the physical asset. Cover is recommended rather than publication-blocking; public cards, Homepage featured work, and service-page previews use the dedicated cover and deterministically fall back to the primary After photo. Matching `serviceKey` and the Published/featured filters remain the central service-page and Homepage selection rules.
+
+The Admin uses a shared toast provider for operation-level success, error, warning, and information feedback. Field and media errors remain inline. Toasts use semantic live roles, dismiss controls, restrained semantic-variable styling, responsive placement, and reduced-motion handling.
+
+## Corrected project publishing workspace
+
+The protected Create/Edit workspace snapshots ordinary form fields from a verified, stable form reference before any managed-media upload awaits. Save is guarded while active to prevent duplicate creates. A sticky command bar reports saved, unsaved, saving, and failed states; all lifecycle, slug, media, and formatting controls other than Save are explicit non-submit buttons.
+
+Project title drives a normalized lowercase slug during creation until manual override. Existing slugs do not change with title edits, published slugs remain locked until unpublish, and Regenerate restores title-driven behavior. Server validation and the database unique constraint remain authoritative.
+
+Summary and Description use the self-hosted Tiptap/ProseMirror infrastructure with project-specific structured content. Additive JSON fields preserve formatting while original plain-text columns continue to support listings, metadata, publication checks, and legacy records. Legacy text opens as editor paragraphs and remains publicly readable when structured fields are absent.
+
 ## Scope and status
 
 Phase 5 implements a database-backed CTPS portfolio for staff-managed before-and-after projects. It includes private draft media, protected administration, publication transitions, public gallery/detail pages, a featured homepage project, filters, SEO metadata, and sitemap entries. It does not implement customer uploads, quote requests, pricing, blog publishing, scheduling, or a general-purpose media library.
@@ -103,6 +127,7 @@ Public endpoints:
 ```text
 GET /public/before-after-projects
 GET /public/before-after-projects/:slug
+GET /public/before-after-projects/:slug/context
 GET /media/before-after/:id/:variant
 ```
 
@@ -118,8 +143,9 @@ The editor preserves failed form state, exposes API publication validation, conf
 
 ## Public routes, SEO, and accessibility
 
-- `/before-after` renders only database-published projects, announced result counts, service/area filters, pagination, and an honest empty state.
-- `/before-after/:slug` renders a comparison, project copy, service/area links, completion month, and lazy supporting gallery.
+- `/projects` renders only database-published projects, a Featured Project when eligible, announced result counts, service/area filters, pagination, an asymmetric editorial archive, and an honest empty state.
+- `/projects/:slug` renders the project case study, comparison, structured story, service/area facts and links, completion month, conditional gallery, bounded Related/More groups, contextual CTA, and Previous/Next navigation.
+- `/before-after` and `/before-after/:slug` are direct permanent aliases for the corresponding canonical Projects routes.
 - The homepage requests one featured Published project and otherwise displays an honest managed empty state.
 - The sitemap fetches all Published project pages and omits Draft/Archived/unpublished records.
 - Detail metadata uses approved SEO overrides with title/summary fallbacks, canonical routes, and managed Open Graph media.

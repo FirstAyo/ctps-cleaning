@@ -1,5 +1,10 @@
 # Release Checklist
 
+- [ ] Phase 13 software, content, business-configuration, and deployment readiness reviewed separately
+- [ ] `pnpm readiness:scan` passes; default production marketing pages require explicit review/publish
+- [ ] Contact exposes only verified methods or the real Request a Quote path; no disabled imitation form
+- [ ] Legal foundations remain noindex/outside sitemap until final business/legal approval
+
 - [ ] Clean Git state; immutable release/tag recorded; Phase 10 review approved
 - [ ] `.env.production` validated; placeholders removed; secrets protected/rotatable
 - [ ] Database and media backups verified off-host; restore rehearsal current

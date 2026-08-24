@@ -453,6 +453,66 @@ export const beforeAfterSlugSchema = z
     (slug) => !["new", "admin", "api", "design-system"].includes(slug),
     "This slug is reserved",
   );
+const projectRichTextLinkSchema = z
+  .string()
+  .trim()
+  .max(2048)
+  .refine((href) => {
+    if (href.startsWith("/") && !href.startsWith("//")) return true;
+    try {
+      return ["http:", "https:"].includes(new URL(href).protocol);
+    } catch {
+      return false;
+    }
+  }, "Use an internal path or an HTTP/HTTPS URL");
+const projectRichTextMarkSchema = z.discriminatedUnion("type", [
+  z.object({ type: z.enum(["bold", "italic", "underline"]) }).strict(),
+  z.object({ type: z.literal("link"), href: projectRichTextLinkSchema }).strict(),
+]);
+const projectRichTextInlineSchema = z
+  .array(
+    z
+      .object({
+        type: z.literal("text"),
+        text: z
+          .string()
+          .min(1)
+          .max(5000)
+          .refine((value) => !/<\s*\/?\s*[a-z!][^>]*>/i.test(value), {
+            message: "Raw HTML and executable content are not supported",
+          }),
+        marks: z
+          .array(projectRichTextMarkSchema)
+          .max(4)
+          .default([])
+          .refine((marks) => new Set(marks.map(({ type }) => type)).size === marks.length, {
+            message: "Inline formatting marks must be unique",
+          }),
+      })
+      .strict(),
+  )
+  .min(1)
+  .max(250);
+export const projectRichTextSchema = z
+  .array(
+    z.discriminatedUnion("type", [
+      z
+        .object({
+          type: z.literal("richText"),
+          style: z.enum(["paragraph", "heading2", "heading3", "blockquote"]),
+          content: projectRichTextInlineSchema,
+        })
+        .strict(),
+      z
+        .object({
+          type: z.literal("richList"),
+          style: z.enum(["bullet", "numbered"]),
+          items: z.array(projectRichTextInlineSchema).min(1).max(30),
+        })
+        .strict(),
+    ]),
+  )
+  .max(100);
 const optionalNullableDateSchema = z
   .union([z.iso.datetime({ offset: true }), z.literal(""), z.null()])
   .optional();
@@ -473,11 +533,13 @@ const beforeAfterSupportingMediaSchema = z
       context.addIssue({ code: "custom", message: "Supporting media positions must be unique" });
   });
 
-export const createBeforeAfterProjectSchema = z.object({
+const beforeAfterProjectFieldsSchema = z.object({
   title: z.string().trim().min(3).max(160),
   slug: beforeAfterSlugSchema,
   summary: z.string().trim().max(500).default(""),
   description: z.string().trim().max(10_000).default(""),
+  summaryContent: projectRichTextSchema.optional().nullable(),
+  descriptionContent: projectRichTextSchema.optional().nullable(),
   serviceKey: beforeAfterServiceKeySchema,
   serviceAreaKey: beforeAfterServiceAreaKeySchema,
   completedAt: optionalNullableDateSchema,
@@ -486,9 +548,13 @@ export const createBeforeAfterProjectSchema = z.object({
   featured: z.boolean().default(false),
   primaryBeforeMediaId: identifierSchema.optional().nullable(),
   primaryAfterMediaId: identifierSchema.optional().nullable(),
+  coverMediaId: identifierSchema.optional().nullable(),
   supportingMedia: beforeAfterSupportingMediaSchema.default([]),
 });
-export const updateBeforeAfterProjectSchema = createBeforeAfterProjectSchema
+export const createBeforeAfterProjectSchema = beforeAfterProjectFieldsSchema.extend({
+  intent: z.enum(["SAVE_DRAFT", "PUBLISH"]).default("SAVE_DRAFT"),
+});
+export const updateBeforeAfterProjectSchema = beforeAfterProjectFieldsSchema
   .partial()
   .extend({ version: z.number().int().positive() })
   .refine((value) => Object.keys(value).length > 1, "At least one field must be updated");
@@ -859,6 +925,36 @@ export type QuoteListQuery = z.infer<typeof quoteListQuerySchema>;
 export type QuoteStatusUpdateInput = z.infer<typeof quoteStatusUpdateSchema>;
 export type QuoteAssignmentInput = z.infer<typeof quoteAssignmentSchema>;
 export type QuoteInternalNoteInput = z.infer<typeof quoteInternalNoteSchema>;
+
+export const generalInquiryStatusSchema = z.enum(["NEW", "READ"]);
+export const generalInquirySubmissionSchema = z
+  .object({
+    idempotencyKey: z.uuid(),
+    honeypot: z.string().max(0).default(""),
+    name: safeText(120).min(2),
+    email: normalizedEmailSchema,
+    phone: z
+      .string()
+      .trim()
+      .max(32)
+      .regex(/^[+()\- .0-9]*$/)
+      .optional(),
+    serviceKey: quoteServiceKeySchema.optional(),
+    message: safeText(3000).min(10),
+  })
+  .strict();
+export const generalInquiryListQuerySchema = paginationSchema.extend({
+  search: safeText(120).optional(),
+  status: generalInquiryStatusSchema.optional(),
+  archived: z
+    .enum(["true", "false"])
+    .transform((value) => value === "true")
+    .default(false),
+});
+export const generalInquiryReadSchema = z.object({ read: z.boolean() }).strict();
+export const generalInquiryArchiveSchema = z.object({ archive: z.boolean() }).strict();
+export type GeneralInquirySubmissionInput = z.infer<typeof generalInquirySubmissionSchema>;
+export type GeneralInquiryListQuery = z.infer<typeof generalInquiryListQuerySchema>;
 
 const blogPlainTextSchema = (maximum: number) =>
   z

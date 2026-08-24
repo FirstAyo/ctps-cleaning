@@ -1,22 +1,82 @@
+import type { StructuredTextDocument, StructuredTextInline } from "@ctps/types";
 import { Container, Section } from "@ctps/ui/layout";
-import { ImageComparison } from "@ctps/ui/image-comparison";
 import Image from "next/image";
 import Link from "next/link";
 
 import { getService, getServiceArea } from "@/content/site";
-import type { ManagedMedia, PublicProject } from "@/lib/before-after-api";
-import { SectionHeading } from "./marketing";
+import type { ManagedMedia, PublicProject, PublicProjectContext } from "@/lib/before-after-api";
+import { ImageComparison } from "@ctps/ui/image-comparison";
 
 function variant(media: ManagedMedia, preferred: "large" | "gallery" | "thumbnail" = "gallery") {
-  return media.variants[preferred] ?? media.variants.original!;
+  return media.variants[preferred] ?? media.variants.large ?? media.variants.original!;
 }
-export function ProjectComparison({
-  project,
-  priority = false,
+
+function cover(project: PublicProject) {
+  return project.coverMedia ?? project.primaryAfterMedia;
+}
+
+function projectMeta(project: PublicProject) {
+  const service = getService(project.serviceKey);
+  const area = getServiceArea(project.serviceAreaKey);
+  return {
+    service: service?.name ?? project.serviceKey,
+    area: area?.name ?? project.serviceAreaKey,
+  };
+}
+
+function completionDate(value: string | null) {
+  return value
+    ? new Intl.DateTimeFormat("en-CA", { year: "numeric", month: "long" }).format(new Date(value))
+    : null;
+}
+
+function ProjectInline({ content }: { readonly content: readonly StructuredTextInline[] }) {
+  return content.map((node, index) => {
+    let child: React.ReactNode = node.text;
+    for (const mark of node.marks) {
+      if (mark.type === "bold") child = <strong>{child}</strong>;
+      else if (mark.type === "italic") child = <em>{child}</em>;
+      else if (mark.type === "underline") child = <u>{child}</u>;
+      else if (mark.type === "link") child = <Link href={mark.href}>{child}</Link>;
+    }
+    return <span key={`${index}:${node.text}`}>{child}</span>;
+  });
+}
+
+function StructuredProjectContent({
+  blocks,
+  className,
 }: {
-  readonly project: PublicProject;
-  readonly priority?: boolean;
+  readonly blocks: StructuredTextDocument;
+  readonly className?: string;
 }) {
+  return (
+    <div className={className}>
+      {blocks.map((block, index) => {
+        const key = `${block.type}:${index}`;
+        if (block.type === "richList") {
+          const ListTag = block.style === "bullet" ? "ul" : "ol";
+          return (
+            <ListTag key={key}>
+              {block.items.map((item, itemIndex) => (
+                <li key={itemIndex}>
+                  <ProjectInline content={item} />
+                </li>
+              ))}
+            </ListTag>
+          );
+        }
+        const content = <ProjectInline content={block.content} />;
+        if (block.style === "heading2") return <h2 key={key}>{content}</h2>;
+        if (block.style === "heading3") return <h3 key={key}>{content}</h3>;
+        if (block.style === "blockquote") return <blockquote key={key}>{content}</blockquote>;
+        return <p key={key}>{content}</p>;
+      })}
+    </div>
+  );
+}
+
+export function ProjectComparison({ project }: { readonly project: PublicProject }) {
   const before = variant(project.primaryBeforeMedia, "large");
   const after = variant(project.primaryAfterMedia, "large");
   return (
@@ -26,8 +86,7 @@ export function ProjectComparison({
           alt={project.primaryBeforeMedia.altText}
           className="object-cover"
           fill
-          priority={priority}
-          sizes="(min-width:1024px) 55vw,100vw"
+          sizes="(min-width:1280px) 64vw,(min-width:768px) 90vw,100vw"
           src={before.path}
         />
       }
@@ -36,173 +95,342 @@ export function ProjectComparison({
           alt={project.primaryAfterMedia.altText}
           className="object-cover"
           fill
-          priority={priority}
-          sizes="(min-width:1024px) 55vw,100vw"
+          sizes="(min-width:1280px) 64vw,(min-width:768px) 90vw,100vw"
           src={after.path}
         />
       }
     />
   );
 }
-export function ProjectCard({
+
+function ProjectImage({
   project,
-  featured = false,
+  kind = "gallery",
+  priority = false,
+  sizes,
 }: {
   readonly project: PublicProject;
-  readonly featured?: boolean;
+  readonly kind?: "large" | "gallery" | "thumbnail";
+  readonly priority?: boolean;
+  readonly sizes: string;
 }) {
-  const service = getService(project.serviceKey);
-  const area = getServiceArea(project.serviceAreaKey);
+  const media = cover(project);
+  const image = variant(media, kind);
   return (
-    <article className={`portfolio-project-card${featured ? " portfolio-project-featured" : ""}`}>
-      <ProjectComparison project={project} />
-      <div className="portfolio-project-copy">
-        <p className="eyebrow">
-          {service?.name ?? project.serviceKey} · {area?.name ?? project.serviceAreaKey}
-        </p>
-        <h2 className="mt-3 text-2xl font-semibold">
-          <Link href={`/before-after/${project.slug}`}>{project.title}</Link>
-        </h2>
-        <p className="mt-3 text-muted-foreground">{project.summary}</p>
-        <Link
-          className="mt-5 inline-block font-semibold text-primary"
-          href={`/before-after/${project.slug}`}
-        >
-          View project details →
-        </Link>
-      </div>
-    </article>
+    <Image
+      alt={media.altText}
+      className="object-cover"
+      fill
+      priority={priority}
+      sizes={sizes}
+      src={image.path}
+    />
   );
 }
-export function PortfolioEmpty() {
+
+export function ProjectsHero() {
   return (
-    <div className="rounded-[var(--radius-xl)] border border-dashed border-border bg-card p-10 text-center">
-      <h2 className="text-2xl font-semibold">Published project stories are coming soon.</h2>
-      <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
-        The managed portfolio is ready, but CTPS has not published an approved before-and-after
-        project yet. No demonstration imagery is presented as customer work.
-      </p>
-    </div>
+    <section className="projects-hero">
+      <Container size="wide">
+        <p className="eyebrow">Projects</p>
+        <h1>
+          Real work.
+          <br />
+          Visible transformations.
+        </h1>
+        <p>Explore completed CTPS projects across the services and communities we serve.</p>
+      </Container>
+    </section>
   );
 }
-export function FeaturedProject({ project }: { readonly project: PublicProject | null }) {
-  if (!project) return null;
+
+export function FeaturedProject({ project }: { readonly project: PublicProject }) {
+  const { service, area } = projectMeta(project);
   return (
-    <Section className="bg-surface-muted/55">
-      <Container>
-        {project ? (
-          <div className="grid items-center gap-10 lg:grid-cols-[.75fr_1.25fr]">
-            <div>
-              <p className="eyebrow">Featured published project</p>
-              <h2 className="public-heading mt-3">{project.title}</h2>
-              <p className="mt-5 text-muted-foreground">{project.summary}</p>
-              <Link
-                className="mt-6 inline-block font-semibold text-primary"
-                href={`/before-after/${project.slug}`}
-              >
-                Explore this project →
-              </Link>
-            </div>
-            <ProjectComparison priority project={project} />
+    <Section className="featured-project-section">
+      <Container size="wide">
+        <article className="featured-project">
+          <Link
+            aria-label={`View featured project: ${project.title}`}
+            className="featured-project-media"
+            href={`/projects/${project.slug}`}
+          >
+            <ProjectImage
+              kind="large"
+              priority
+              project={project}
+              sizes="(min-width:1024px) 68vw,100vw"
+            />
+          </Link>
+          <div className="featured-project-copy">
+            <p className="eyebrow">Featured Project</p>
+            <p className="project-meta">
+              {service} · {area}
+            </p>
+            <h2>{project.title}</h2>
+            <p>{project.summary}</p>
+            <Link href={`/projects/${project.slug}`}>
+              View Project <span aria-hidden="true">→</span>
+            </Link>
           </div>
-        ) : null}
+        </article>
       </Container>
     </Section>
   );
 }
-export function ProjectDetail({ project }: { readonly project: PublicProject }) {
-  const service = getService(project.serviceKey);
-  const area = getServiceArea(project.serviceAreaKey);
+
+export function ProjectCard({
+  project,
+  index = 0,
+}: {
+  readonly project: PublicProject;
+  readonly index?: number;
+}) {
+  const { service, area } = projectMeta(project);
+  return (
+    <article className={`project-tile project-tile-${index % 4}`}>
+      <Link aria-label={`View project: ${project.title}`} href={`/projects/${project.slug}`}>
+        <div className="project-tile-media">
+          <ProjectImage
+            project={project}
+            sizes="(min-width:1100px) 58vw,(min-width:768px) 50vw,100vw"
+          />
+        </div>
+        <div className="project-tile-copy">
+          <p className="project-meta">
+            {service} · {area}
+          </p>
+          <h2>{project.title}</h2>
+          <p>{project.summary}</p>
+          <span className="project-tile-link">
+            View Project <span aria-hidden="true">→</span>
+          </span>
+        </div>
+      </Link>
+    </article>
+  );
+}
+
+export function PortfolioEmpty() {
+  return (
+    <div className="projects-empty-state">
+      <h2>Projects will appear here as completed work is published.</h2>
+      <p>Explore CTPS services or tell us about the property care you need.</p>
+      <Link href="/services">
+        Explore Services <span aria-hidden="true">→</span>
+      </Link>
+    </div>
+  );
+}
+
+function CompactProject({ project }: { readonly project: PublicProject }) {
+  const { service, area } = projectMeta(project);
+  return (
+    <li>
+      <Link aria-label={`View project: ${project.title}`} href={`/projects/${project.slug}`}>
+        <div className="project-sidebar-thumb">
+          <ProjectImage project={project} sizes="96px" kind="thumbnail" />
+        </div>
+        <span>
+          <small>
+            {service} · {area}
+          </small>
+          <strong>{project.title}</strong>
+        </span>
+      </Link>
+    </li>
+  );
+}
+
+function ProjectGroup({
+  title,
+  projects,
+}: {
+  readonly title: string;
+  readonly projects: readonly PublicProject[];
+}) {
+  if (!projects.length) return null;
+  return (
+    <section className="project-sidebar-group">
+      <h2>{title}</h2>
+      <ul>
+        {projects.map((project) => (
+          <CompactProject key={project.id} project={project} />
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+function ProjectNeighbour({
+  project,
+  direction,
+}: {
+  readonly project: PublicProject;
+  readonly direction: "Previous" | "Next";
+}) {
+  const { service, area } = projectMeta(project);
+  return (
+    <Link
+      className={`project-neighbour project-neighbour-${direction.toLowerCase()}`}
+      href={`/projects/${project.slug}`}
+    >
+      <span className="project-neighbour-label">
+        {direction === "Previous" ? "← " : ""}
+        {direction} Project{direction === "Next" ? " →" : ""}
+      </span>
+      <span className="project-neighbour-media">
+        <ProjectImage kind="thumbnail" project={project} sizes="(min-width:768px) 38vw,100vw" />
+      </span>
+      <span className="project-meta">
+        {service} · {area}
+      </span>
+      <strong>{project.title}</strong>
+    </Link>
+  );
+}
+
+export function ProjectDetail({ context }: { readonly context: PublicProjectContext }) {
+  const { project, relatedProjects, moreProjects, previousProject, nextProject } = context;
+  const { service, area } = projectMeta(project);
+  const completed = completionDate(project.completedAt);
+  const heroMedia = cover(project);
+  const heroImage = variant(heroMedia, "large");
+
   return (
     <>
-      <section className="project-detail-hero">
-        <Container size="wide">
+      <section className="project-case-hero">
+        <div className="project-case-hero-media">
+          <Image
+            alt={heroMedia.altText}
+            className="object-cover"
+            fill
+            priority
+            sizes="100vw"
+            src={heroImage.path}
+          />
+          <div className="project-case-hero-shade" />
+        </div>
+        <Container className="project-case-hero-content" size="wide">
           <nav aria-label="Breadcrumb" className="project-breadcrumb">
             <Link href="/">Home</Link>
-            <span>/</span>
-            <Link href="/before-after">Before & After</Link>
-            <span>/</span>
-            <span>{project.title}</span>
+            <span aria-hidden="true">/</span>
+            <Link href="/projects">Projects</Link>
+            <span aria-hidden="true">/</span>
+            <span aria-current="page">{project.title}</span>
           </nav>
-          <p className="eyebrow text-primary">
-            {service?.name} · {area?.name}
+          <p className="eyebrow">
+            {service} · {area}
           </p>
-          <h1 className="public-display mt-4 max-w-4xl">{project.title}</h1>
-          <p className="mt-6 max-w-2xl text-lg text-sidebar-muted">{project.summary}</p>
+          <h1>{project.title}</h1>
+          <p>{project.summary}</p>
         </Container>
       </section>
-      <Section className="project-detail-main">
+
+      <Section className="project-case-body">
         <Container size="wide">
-          <div className="project-detail-comparison">
-            <ProjectComparison priority project={project} />
-          </div>
-          <div className="project-detail-overview">
-            <h2 className="public-heading">Project overview</h2>
-            {project.description
-              .split(/\n+/)
-              .filter(Boolean)
-              .map((paragraph) => (
-                <p className="mt-5 text-lg text-muted-foreground" key={paragraph}>
-                  {paragraph}
-                </p>
-              ))}
-            {project.completedAt ? (
-              <p className="mt-6 text-sm">
-                <strong>Completion:</strong>{" "}
-                {new Intl.DateTimeFormat("en-CA", { year: "numeric", month: "long" }).format(
-                  new Date(project.completedAt),
-                )}
-              </p>
+          <dl className="project-facts">
+            <div>
+              <dt>Service</dt>
+              <dd>{service}</dd>
+            </div>
+            <div>
+              <dt>Area</dt>
+              <dd>{area}</dd>
+            </div>
+            {completed ? (
+              <div>
+                <dt>Completed</dt>
+                <dd>{completed}</dd>
+              </div>
             ) : null}
-            <div className="mt-6 flex flex-wrap gap-4 text-sm">
-              {service ? (
-                <Link className="font-semibold text-primary" href={`/services/${service.slug}`}>
-                  Related service: {service.name}
-                </Link>
-              ) : null}
-              {area ? (
-                <Link className="font-semibold text-primary" href={`/service-areas/${area.slug}`}>
-                  Service area: {area.name}
-                </Link>
+          </dl>
+          <div className="project-case-layout">
+            <div className="project-case-main">
+              <section aria-labelledby="transformation-heading" className="project-transformation">
+                <p className="eyebrow">The transformation</p>
+                <h2 id="transformation-heading">Before &amp; After</h2>
+                <p>Move the comparison control to inspect the completed transformation.</p>
+                <div className="project-comparison-frame">
+                  <ProjectComparison project={project} />
+                </div>
+              </section>
+              <section aria-labelledby="story-heading" className="project-story">
+                <p className="eyebrow">Project story</p>
+                <h2 id="story-heading">The work, from assessment to result.</h2>
+                {project.descriptionContent?.length ? (
+                  <StructuredProjectContent
+                    blocks={project.descriptionContent}
+                    className="project-public-content"
+                  />
+                ) : (
+                  <div className="project-public-content">
+                    {project.description
+                      .split(/\n+/)
+                      .filter(Boolean)
+                      .map((paragraph) => (
+                        <p key={paragraph}>{paragraph}</p>
+                      ))}
+                  </div>
+                )}
+              </section>
+              {project.supportingMedia.length ? (
+                <section aria-labelledby="gallery-heading" className="project-gallery">
+                  <p className="eyebrow">Project gallery</p>
+                  <h2 id="gallery-heading">More views from the project.</h2>
+                  <div className="project-gallery-grid">
+                    {project.supportingMedia.map((link, index) => {
+                      const image = variant(link.media, index === 0 ? "large" : "gallery");
+                      return (
+                        <figure key={link.id}>
+                          <div className="project-gallery-media">
+                            <Image
+                              alt={link.media.altText}
+                              className="object-cover"
+                              fill
+                              sizes={
+                                index === 0
+                                  ? "(min-width:1280px) 64vw,100vw"
+                                  : "(min-width:768px) 32vw,100vw"
+                              }
+                              src={image.path}
+                            />
+                          </div>
+                          {link.caption || link.media.caption ? (
+                            <figcaption>{link.caption ?? link.media.caption}</figcaption>
+                          ) : null}
+                        </figure>
+                      );
+                    })}
+                  </div>
+                </section>
               ) : null}
             </div>
+            <aside aria-label="Explore more projects" className="project-case-sidebar">
+              <ProjectGroup projects={relatedProjects} title="Related Projects" />
+              <ProjectGroup projects={moreProjects} title="More Projects" />
+              <section className="project-context-cta">
+                <p className="eyebrow">Have a similar property?</p>
+                <h2>Tell us about the work you need.</h2>
+                <p>Share the property details and CTPS can review your request.</p>
+                <Link href="/request-a-quote">
+                  Request a Quote <span aria-hidden="true">→</span>
+                </Link>
+              </section>
+            </aside>
           </div>
+          {previousProject || nextProject ? (
+            <nav aria-label="Previous and next projects" className="project-neighbours">
+              {previousProject ? (
+                <ProjectNeighbour direction="Previous" project={previousProject} />
+              ) : (
+                <span />
+              )}
+              {nextProject ? <ProjectNeighbour direction="Next" project={nextProject} /> : null}
+            </nav>
+          ) : null}
         </Container>
       </Section>
-      {project.supportingMedia.length ? (
-        <Section className="bg-surface-muted/55">
-          <Container size="wide">
-            <SectionHeading eyebrow="Supporting gallery" title="More views from this project." />
-            <div className="mt-9 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {project.supportingMedia.map((link) => {
-                const image = variant(link.media);
-                return (
-                  <figure
-                    className="overflow-hidden rounded-lg border border-border bg-card"
-                    key={link.id}
-                  >
-                    <div className="relative aspect-[4/3]">
-                      <Image
-                        alt={link.media.altText}
-                        className="object-cover"
-                        fill
-                        loading="lazy"
-                        sizes="(min-width:1024px) 33vw,(min-width:640px) 50vw,100vw"
-                        src={image.path}
-                      />
-                    </div>
-                    {link.caption || link.media.caption ? (
-                      <figcaption className="p-4 text-sm text-muted-foreground">
-                        {link.caption ?? link.media.caption}
-                      </figcaption>
-                    ) : null}
-                  </figure>
-                );
-              })}
-            </div>
-          </Container>
-        </Section>
-      ) : null}
     </>
   );
 }

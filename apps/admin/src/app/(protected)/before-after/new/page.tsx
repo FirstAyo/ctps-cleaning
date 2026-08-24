@@ -8,7 +8,7 @@ export default async function Page() {
     <BeforeAfterEditor
       canArchive={false}
       canDelete={false}
-      canPublish={false}
+      canPublish={can(identity, "projects.beforeAfter.publish")}
       canUpload={can(identity, "media.beforeAfter.upload")}
       canUpdateMedia={can(identity, "media.beforeAfter.update")}
       canDeleteMedia={can(identity, "media.beforeAfter.delete")}

@@ -47,4 +47,23 @@ describe("admin shell demonstration", () => {
     expect(screen.queryByRole("dialog", { name: "Mobile admin navigation" })).toBeNull();
     expect(document.activeElement).toBe(trigger);
   });
+
+  it("renders stable unique navigation links without React key warnings", () => {
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    render(
+      <AdminShell
+        navigationItems={[
+          { href: "/blog/posts", label: "Blog Posts" },
+          { href: "/blog/categories", label: "Blog Categories" },
+          { href: "/blog/tags", label: "Blog Tags" },
+          { href: "/blog/authors", label: "Blog Authors" },
+        ]}
+        pageTitle="Blog"
+      >
+        <p>Content</p>
+      </AdminShell>,
+    );
+    expect(screen.getByRole("link", { name: "Blog Authors" })).not.toBeNull();
+    expect(consoleError.mock.calls.flat().join(" ")).not.toContain("unique key");
+  });
 });

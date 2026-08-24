@@ -35,15 +35,17 @@ describe("theme behavior", () => {
     expect(resolveTheme("light", true)).toBe("light");
   });
 
-  it("cycles, applies, and persists a manual preference", async () => {
+  it("starts with an icon-only system preference, then toggles and persists light or dark", async () => {
     const user = userEvent.setup();
     render(<ThemeToggle />);
     const toggle = screen.getByRole("button", { name: /Theme: system/i });
+    expect(toggle.textContent).toBe("");
     await user.click(toggle);
-    expect(window.localStorage.getItem(themeStorageKey)).toBe("light");
-    await user.click(screen.getByRole("button", { name: /Theme: light/i }));
     expect(window.localStorage.getItem(themeStorageKey)).toBe("dark");
     expect(document.documentElement.classList.contains("dark")).toBe(true);
+    await user.click(screen.getByRole("button", { name: /Theme: dark/i }));
+    expect(window.localStorage.getItem(themeStorageKey)).toBe("light");
+    expect(document.documentElement.classList.contains("dark")).toBe(false);
   });
 });
 

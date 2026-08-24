@@ -139,7 +139,7 @@ export const ROUTE_INDEXABILITY_MATRIX: readonly RouteIndexabilityRule[] = [
     structuredData: [],
   },
   {
-    route: "/before-after",
+    route: "/projects",
     kind: "PROJECT",
     indexability: "INDEX",
     follow: true,
@@ -149,7 +149,7 @@ export const ROUTE_INDEXABILITY_MATRIX: readonly RouteIndexabilityRule[] = [
     structuredData: [],
   },
   {
-    route: "/before-after/{published-project}",
+    route: "/projects/{published-project}",
     kind: "PROJECT",
     indexability: "INDEX",
     follow: true,
@@ -236,6 +236,16 @@ export const ROUTE_INDEXABILITY_MATRIX: readonly RouteIndexabilityRule[] = [
     sitemap: true,
     authentication: "PUBLIC",
     canonical: "SELF",
+    structuredData: [],
+  },
+  {
+    route: "/privacy|/terms|/accessibility",
+    kind: "TECHNICAL",
+    indexability: "NOINDEX",
+    follow: true,
+    sitemap: false,
+    authentication: "PUBLIC",
+    canonical: "NONE",
     structuredData: [],
   },
   {

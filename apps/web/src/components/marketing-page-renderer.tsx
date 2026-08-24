@@ -72,8 +72,12 @@ function StandardSection({
   if (section.type === "RELATED_SERVICES")
     return <EditorialRelated page={page} section={section} />;
   if (section.type === "FEATURED_PROJECT") {
-    const selected = projects.find((project) => section.projectIds?.includes(project.id)) ?? null;
-    return <EditorialProjectProof project={selected} section={section} />;
+    const selected =
+      projects.find((project) => section.projectIds?.includes(project.id)) ?? projects[0] ?? null;
+    const visitorSection = /before\s*(?:&|and)\s*after/i.test(section.eyebrow ?? "")
+      ? { ...section, eyebrow: "Recent Projects" }
+      : section;
+    return <EditorialProjectProof project={selected} section={visitorSection} />;
   }
   if (section.type === "CONTACT")
     return <EditorialContact section={section} {...(settings !== undefined ? { settings } : {})} />;

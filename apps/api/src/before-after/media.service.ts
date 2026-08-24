@@ -169,6 +169,7 @@ export class BeforeAfterMediaService {
         visibility: true,
         primaryBeforeFor: { select: { id: true }, take: 1 },
         primaryAfterFor: { select: { id: true }, take: 1 },
+        coverFor: { select: { id: true }, take: 1 },
         projectLinks: { select: { id: true }, take: 1 },
       },
     });
@@ -177,7 +178,12 @@ export class BeforeAfterMediaService {
         code: "MEDIA_NOT_FOUND",
         message: "The managed image was not found.",
       });
-    if (media.primaryBeforeFor.length || media.primaryAfterFor.length || media.projectLinks.length)
+    if (
+      media.primaryBeforeFor.length ||
+      media.primaryAfterFor.length ||
+      media.coverFor.length ||
+      media.projectLinks.length
+    )
       throw new ConflictException({
         code: "MEDIA_REFERENCED",
         message: "Remove this image from its project before deleting it.",

@@ -1,5 +1,9 @@
 # Production Readiness
 
+## Phase 13 readiness classification
+
+Software, content, business configuration, and deployment readiness are separate decisions. A passing release verifier establishes only software evidence. Production remains blocked on the approved domain, logo/media/contact/legal/pricing/email/retention/backup/monitoring facts and on representative authenticated visual/accessibility/browser QA. The authoritative inventory and Phase 14 prerequisites are in `phase-13-launch-readiness.md`.
+
 ## Phase 12 search launch gate
 
 Keep `PUBLIC_INDEXING_ENABLED=false` for local development and staging. Production must set a reviewed HTTPS `NEXT_PUBLIC_SITE_URL` matching `WEB_URL`, configure Nginx alternate-host and HTTP redirects to that canonical origin, and enable indexing only after content/legal/media approval. Verify live source metadata, status codes, robots, sitemap, redirects, structured data, and social previews before Search Console/Bing ownership verification and sitemap submission. Phase 12 performs no external submission and the example hostname is not a production claim.

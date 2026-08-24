@@ -1,10 +1,9 @@
 import { PolicyFoundation } from "@/components/public-pages";
-import { metadataFor } from "@/lib/seo";
+import { noIndexFollowMetadata } from "@/lib/seo";
 
-export const metadata = metadataFor(
+export const metadata = noIndexFollowMetadata(
   "Privacy",
   "Privacy-information foundation requiring CTPS and legal review.",
-  "/privacy",
 );
 export default function Page() {
   return (
@@ -22,7 +21,7 @@ export default function Page() {
         },
         {
           title: "Retention and communication",
-          body: "CTPS must approve retention periods before production. Email is used for requested workflow messages; submitted information is not a booking, payment, or customer account.",
+          body: "Retention periods have not been approved. This foundation is not a final privacy policy. Workflow emails do not turn a submission into a booking, payment, or customer account.",
         },
         {
           title: "Cookies and requests",

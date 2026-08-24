@@ -1,5 +1,7 @@
 import "server-only";
 
+import type { StructuredTextDocument } from "@ctps/types";
+
 export interface ManagedMedia {
   readonly id: string;
   readonly altText: string;
@@ -17,6 +19,8 @@ export interface PublicProject {
   readonly title: string;
   readonly summary: string;
   readonly description: string;
+  readonly summaryContent: StructuredTextDocument | null;
+  readonly descriptionContent: StructuredTextDocument | null;
   readonly status: "PUBLISHED";
   readonly featured: boolean;
   readonly publishedAt: string;
@@ -28,6 +32,7 @@ export interface PublicProject {
   readonly seoDescription: string | null;
   readonly primaryBeforeMedia: ManagedMedia;
   readonly primaryAfterMedia: ManagedMedia;
+  readonly coverMedia: ManagedMedia | null;
   readonly supportingMedia: readonly {
     readonly id: string;
     readonly category: "BEFORE" | "AFTER" | "GALLERY";
@@ -35,6 +40,13 @@ export interface PublicProject {
     readonly caption: string | null;
     readonly media: ManagedMedia;
   }[];
+}
+export interface PublicProjectContext {
+  readonly project: PublicProject;
+  readonly relatedProjects: readonly PublicProject[];
+  readonly moreProjects: readonly PublicProject[];
+  readonly previousProject: PublicProject | null;
+  readonly nextProject: PublicProject | null;
 }
 function apiUrl(path: string) {
   const base = process.env.API_URL;
@@ -73,6 +85,23 @@ export async function getPublishedProject(slug: string): Promise<PublicProject |
     });
     if (!response.ok) return null;
     return (await response.json()) as PublicProject;
+  } catch {
+    return null;
+  }
+}
+
+export async function getPublishedProjectContext(
+  slug: string,
+): Promise<PublicProjectContext | null> {
+  const url = apiUrl(`public/before-after-projects/${encodeURIComponent(slug)}/context`);
+  if (!url) return null;
+  try {
+    const response = await fetch(url, {
+      cache: "no-store",
+      headers: { accept: "application/json" },
+    });
+    if (!response.ok) return null;
+    return (await response.json()) as PublicProjectContext;
   } catch {
     return null;
   }

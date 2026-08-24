@@ -45,6 +45,10 @@
       "types": "./dist/theme-core.d.ts",
       "default": "./dist/theme-core.js"
     },
+    "./toast": {
+      "types": "./dist/toast.d.ts",
+      "default": "./dist/toast.js"
+    },
     "./utils": {
       "types": "./dist/utils.d.ts",
       "default": "./dist/utils.js"

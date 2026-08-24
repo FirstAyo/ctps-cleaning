@@ -89,6 +89,35 @@ export function staffQuoteNotification(input: {
   };
 }
 
+export function customerGeneralInquiryReceipt(input: {
+  to: string;
+  from: string;
+  name: string;
+}): QuoteEmailMessage {
+  return {
+    to: input.to,
+    from: input.from,
+    subject: "We received your message to CTPS",
+    text: `Hello ${input.name},\n\nThanks for contacting CTPS. Your message has been received. This acknowledgement is not a quote, booking, or appointment confirmation.`,
+    html: `<p>Hello ${escapeHtml(input.name)},</p><p>Thanks for contacting CTPS. Your message has been received.</p><p>This acknowledgement is not a quote, booking, or appointment confirmation.</p>`,
+  };
+}
+
+export function staffGeneralInquiryNotification(input: {
+  to: string;
+  from: string;
+  serviceLabel?: string;
+}): QuoteEmailMessage {
+  const context = input.serviceLabel ? ` about ${input.serviceLabel}` : "";
+  return {
+    to: input.to,
+    from: input.from,
+    subject: "New general inquiry received",
+    text: `A new general inquiry${context} was submitted. Sign in to the admin site to review the private sender details and message.`,
+    html: `<p>A new general inquiry${escapeHtml(context)} was submitted.</p><p>Sign in to the admin site to review the private sender details and message.</p>`,
+  };
+}
+
 export function customerJobNotification(input: {
   to: string;
   from: string;

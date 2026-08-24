@@ -55,4 +55,53 @@ describe("before-and-after validation", () => {
       false,
     );
   });
+
+  it("defaults creation to Draft and accepts only explicit publication intent", () => {
+    const base = {
+      title: "Window restoration",
+      slug: "window-restoration",
+      serviceKey: "window-cleaning",
+      serviceAreaKey: "vancouver",
+    } as const;
+    expect(createBeforeAfterProjectSchema.parse(base).intent).toBe("SAVE_DRAFT");
+    expect(createBeforeAfterProjectSchema.parse({ ...base, intent: "PUBLISH" }).intent).toBe(
+      "PUBLISH",
+    );
+    expect(createBeforeAfterProjectSchema.safeParse({ ...base, intent: "DELETE" }).success).toBe(
+      false,
+    );
+  });
+
+  it("accepts controlled project rich text and rejects unsafe links and raw HTML", () => {
+    const base = {
+      title: "Window restoration",
+      slug: "window-restoration",
+      serviceKey: "window-cleaning",
+      serviceAreaKey: "vancouver",
+    } as const;
+    const content = (href: string, text = "A safe summary") => [
+      {
+        type: "richText",
+        style: "paragraph",
+        content: [{ type: "text", text, marks: [{ type: "link", href }] }],
+      },
+    ];
+    expect(
+      createBeforeAfterProjectSchema.safeParse({
+        ...base,
+        summaryContent: content("/services/window-cleaning"),
+      }).success,
+    ).toBe(true);
+    for (const unsafe of ["javascript:alert(1)", "data:text/html,bad", "vbscript:bad"])
+      expect(
+        createBeforeAfterProjectSchema.safeParse({ ...base, summaryContent: content(unsafe) })
+          .success,
+      ).toBe(false);
+    expect(
+      createBeforeAfterProjectSchema.safeParse({
+        ...base,
+        descriptionContent: content("/", "<script>alert(1)</script>"),
+      }).success,
+    ).toBe(false);
+  });
 });

@@ -192,13 +192,13 @@ export function DemonstrationComparison() {
   return (
     <div className="grid items-center gap-10 lg:grid-cols-[.85fr_1.15fr]">
       <div>
-        <p className="eyebrow">Development demonstration</p>
+        <p className="eyebrow">Comparison preview</p>
         <h2 className="public-heading mt-3">A comparison built for every input.</h2>
         <p className="mt-5 text-muted-foreground">
           These original local illustrations demonstrate the accessible comparison experience. They
           are not a CTPS customer property or completed project.
         </p>
-        <Link className="mt-6 inline-block font-semibold text-primary" href="/before-after">
+        <Link className="mt-6 inline-block font-semibold text-primary" href="/projects">
           Visit the portfolio foundation →
         </Link>
       </div>
@@ -212,11 +212,10 @@ export function PlannedArticleGrid({ limit = 5 }: { readonly limit?: number }) {
     <div className="mt-9 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
       {plannedArticles.slice(0, limit).map((title, index) => (
         <article className="rounded-lg border border-border bg-card p-6" key={title}>
-          <p className="eyebrow">Planned topic 0{index + 1}</p>
+          <p className="eyebrow">Article topic 0{index + 1}</p>
           <h3 className="mt-3 text-xl font-semibold">{title}</h3>
           <p className="mt-3 text-sm text-muted-foreground">
-            Editorial development placeholder. No article, author, or publication date is
-            represented.
+            This topic is not a published article and contains no author or publication date.
           </p>
         </article>
       ))}
@@ -239,7 +238,7 @@ export function PhotoPreview() {
           </h2>
         </div>
         <span className="rounded-full border border-border bg-surface px-3 py-1 text-sm">
-          Static preview · 4 of 8 example slots
+          Property-photo guidance
         </span>
       </div>
       <p className="mt-4 max-w-2xl text-muted-foreground">
@@ -382,7 +381,7 @@ export function AreaPageContent({ area }: { readonly area: ServiceArea }) {
         description={area.summary}
         eyebrow="Service area"
         image="/images/service-areas/metro-vancouver.svg"
-        imageAlt="Abstract development map showing the six CTPS service areas"
+        imageAlt="Stylized map showing the six CTPS service areas"
         title={`${area.name} property-care inquiries`}
       />
       <Section>

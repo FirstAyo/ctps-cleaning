@@ -1,5 +1,13 @@
 # Media Strategy
 
+## Project cover and transformation hierarchy
+
+Managed project media is presented as Cover / Featured, Before, After, then supporting gallery. Before and After are separate publication-required references; Cover is recommended. A project may reference its primary After asset as Cover without a duplicate upload, and every lifecycle operation deduplicates physical file transitions. Published cards and featured/service previews use Cover when present and otherwise primary After. Draft/Archived assets remain private, and dedicated cover assets follow the same signature validation, WebP processing, metadata stripping, ownership, visibility, and deletion-reference controls as all project media.
+
+## Phase 13 production-media gate
+
+Bundled Phase 11 photography remains development-only and is suppressed in production when no managed asset is selected. Production requires approved CTPS logo, Hero/editorial/service/audience/area/social media, reviewed alt text, focal points, dimensions, crops, and usage. Absence must simplify or hide the visual; it must never promote development photography or private operational media as CTPS work. See `phase-13-launch-readiness.md`.
+
 ## Purpose
 
 This document defines a provider-neutral plan for service, blog, author, project, Open Graph, and customer-upload media. Phase 4 introduced committed development illustrations. Phase 5 adds managed before-and-after storage. Phase 6 adds a separate, private-only customer quote upload workflow. Phase 11 and 11.1 implement the dedicated Public Media Library for controlled marketing-page photography.

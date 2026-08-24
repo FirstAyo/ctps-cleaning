@@ -1,5 +1,26 @@
 # QA Matrix
 
+## Public Projects portfolio correction
+
+Automated coverage verifies Projects terminology, Featured presentation, Cover/After selection, filters, empty state, canonical links and metadata, permanent legacy redirects, canonical sitemap entries, safe structured story rendering, comparison/gallery output, Related/More deduplication and limits, deterministic cursor neighbour queries, Published/public-media predicates, Homepage links, service/area proof integration, and Admin project regression. Responsive structure is mobile-first, becomes a two-column archive at tablet, a controlled 12-column editorial rhythm at 1100px, and enables the case-study sidebar only from 1280px; actual viewport/theme/console visual QA remains mandatory when browser integration is available.
+
+## Projects direct-publish and feedback correction
+
+- API coverage verifies incomplete Draft creation, both-missing/Before-only/After-only publication rejection, ready-pair direct publication, explicit permission enforcement, one project creation, managed-media visibility, and expected audit events.
+- Admin interaction coverage verifies distinct Save Draft/Publish Now intents, one combined missing-pair toast plus inline panel errors, upload/API failure feedback, non-submit controls, and absence of `alert()`.
+- Public coverage verifies dedicated-cover use and deterministic primary-After fallback for cards while detail comparison and Published-only filtering remain intact.
+- Manual QA covers sticky actions, transformation panels, toast placement, themes, keyboard use, console state, and 390/768/1024/1152/1280/1366/1440 widths.
+
+## Before & After editor correction
+
+- Save following an awaited private-media upload uses a pre-await form snapshot and issues one project request.
+- Slug normalization, safe structured conversion, legacy normalization, unsafe links/raw HTML, semantic public rendering, non-submit controls, and sidebar key warnings have focused automated coverage.
+- Browser-only viewport, console, keyboard, theme, reload, and create/publish/cleanup checks remain required when browser integration is available.
+
+## Phase 13 finalization
+
+Phase 13 adds a deterministic customer-facing development-language scan, Homepage schema-origin regression coverage, legal-foundation sitemap/noindex checks, functional shared General Inquiry coverage, and production initializer Draft safety. General Inquiry tests cover required/optional fields, honeypot, strict validation, origin/rate-limit calls, persistence-before-delivery, outbox records, idempotent replay, Admin permission metadata, read/archive actions, success/error toast behavior, and retry key stability. Manual visual evidence remains required at 320/375/390/768/1024/1280/1440/1920, across themes and representative browsers; unavailable physical/browser checks must be recorded as pending rather than inferred from component tests. See `phase-13-launch-readiness.md`.
+
 ## Phase 12 SEO and search readiness
 
 | Area                | Automated acceptance                                                                               | Manual acceptance                                        |

@@ -62,7 +62,7 @@ export class BeforeAfterProjectsController {
     input: CreateBeforeAfterProjectInput,
     @CurrentIdentity() actor: AuthenticatedIdentity,
   ) {
-    return this.projects.create(input, actor.userId);
+    return this.projects.create(input, actor);
   }
   @Patch("admin/before-after-projects/:id")
   @RequirePermissions(PERMISSION_KEYS.PROJECTS_BEFORE_AFTER_UPDATE)
@@ -129,6 +129,11 @@ export class BeforeAfterProjectsController {
     },
   ) {
     return this.projects.publicList(query);
+  }
+  @Get("public/before-after-projects/:slug/context")
+  @PublicRoute()
+  publicContext(@Param("slug", new ZodValidationPipe(beforeAfterSlugSchema)) slug: string) {
+    return this.projects.publicContext(slug);
   }
   @Get("public/before-after-projects/:slug")
   @PublicRoute()

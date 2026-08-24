@@ -20,20 +20,7 @@ export function generateMetadata() {
 }
 
 function WebsiteSchema() {
-  return (
-    <JsonLd
-      data={[
-        organizationSchema,
-        websiteSchema,
-        {
-          "@context": "https://schema.org",
-          "@type": "WebSite",
-          name: "CTPS",
-          url: "http://localhost:3000",
-        },
-      ]}
-    />
-  );
+  return <JsonLd data={[organizationSchema, websiteSchema]} />;
 }
 
 export default async function HomePage() {

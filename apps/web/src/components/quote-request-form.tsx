@@ -306,7 +306,7 @@ export function QuoteRequestForm({
     }
   }
   return (
-    <div className="mx-auto max-w-4xl rounded-xl border border-border bg-card p-5 shadow-sm sm:p-8">
+    <div className="quote-request-workflow rounded-xl border border-border bg-card p-5 shadow-sm sm:p-8">
       {estimateNotice ? (
         <p className="mb-5 rounded-md border border-primary/25 bg-primary/5 p-3 text-sm">
           {estimateNotice}

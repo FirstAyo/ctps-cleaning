@@ -1,10 +1,9 @@
 import { PolicyFoundation } from "@/components/public-pages";
-import { metadataFor } from "@/lib/seo";
+import { noIndexFollowMetadata } from "@/lib/seo";
 
-export const metadata = metadataFor(
+export const metadata = noIndexFollowMetadata(
   "Accessibility",
   "Accessibility statement foundation requiring review and verified contact details.",
-  "/accessibility",
 );
 export default function Page() {
   return (
@@ -22,7 +21,7 @@ export default function Page() {
         },
         {
           title: "Feedback channel required",
-          body: "CTPS must provide and approve a monitored accessibility-feedback contact before production launch.",
+          body: "A monitored accessibility-feedback contact has not been approved. This foundation is not a final accessibility statement.",
         },
       ]}
     />

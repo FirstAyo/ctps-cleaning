@@ -1,8 +1,9 @@
 "use client";
 
+import { MonitorCog, Moon, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { Button } from "./primitives";
+import { IconButton } from "./primitives";
 import { resolveTheme, themeStorageKey, type ThemePreference } from "./theme-core";
 
 export function applyTheme(preference: ThemePreference, systemPrefersDark: boolean) {
@@ -38,25 +39,24 @@ export function ThemeToggle() {
   }, []);
 
   const cycleTheme = () => {
-    const next: ThemePreference =
-      preference === "system" ? "light" : preference === "light" ? "dark" : "system";
-    if (next === "system") window.localStorage.removeItem(themeStorageKey);
-    else window.localStorage.setItem(themeStorageKey, next);
+    const systemPrefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const current = resolveTheme(preference, systemPrefersDark);
+    const next: ThemePreference = current === "dark" ? "light" : "dark";
+    window.localStorage.setItem(themeStorageKey, next);
     setPreference(next);
-    applyTheme(next, window.matchMedia("(prefers-color-scheme: dark)").matches);
+    applyTheme(next, systemPrefersDark);
   };
 
+  const ThemeIcon = preference === "system" ? MonitorCog : preference === "dark" ? Moon : Sun;
+  const label = `${preference[0]?.toUpperCase()}${preference.slice(1)} theme`;
+
   return (
-    <Button
+    <IconButton
       aria-label={`Theme: ${preference}. Activate to change theme`}
       onClick={cycleTheme}
-      size="sm"
-      variant="ghost"
+      title={label}
     >
-      <span aria-hidden="true" className="text-base">
-        ◐
-      </span>
-      <span className="capitalize">{preference}</span>
-    </Button>
+      <ThemeIcon aria-hidden="true" className="size-5" />
+    </IconButton>
   );
 }

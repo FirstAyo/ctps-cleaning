@@ -81,7 +81,7 @@ export const homeContent: MarketingPageContent = {
         {
           key: "lower-mainland",
           title: "Lower Mainland Service",
-          body: "Six confirmed communities",
+          body: "Six British Columbia communities",
         },
         {
           key: "multiple-services",
@@ -99,8 +99,8 @@ export const homeContent: MarketingPageContent = {
       type: "SERVICE_SHOWCASE",
       enabled: true,
       eyebrow: "Services",
-      title: "Property care without template thinking.",
-      body: "Five service families presented with enough context to begin the right inquiry.",
+      title: "Property care shaped around the site.",
+      body: "Five property-care services with context to help begin the right inquiry.",
       items: services,
       mediaIds: [],
       projectIds: [],
@@ -111,14 +111,14 @@ export const homeContent: MarketingPageContent = {
       id: "featured-project",
       type: "FEATURED_PROJECT",
       enabled: true,
-      eyebrow: "Selected transformation",
+      eyebrow: "Featured Project",
       title: "Published work, presented with clarity.",
-      body: "Only published before-and-after projects can appear in this proof section.",
+      body: "Only published projects can appear in this proof section.",
       items: [],
       mediaIds: [],
       projectIds: [],
       postIds: [],
-      primaryCta: { label: "View Before & After", href: "/before-after" },
+      primaryCta: { label: "Explore Projects", href: "/projects" },
     },
     {
       id: "property-types",
@@ -188,7 +188,7 @@ export const homeContent: MarketingPageContent = {
       mediaIds: [],
       projectIds: [],
       postIds: [],
-      primaryCta: { label: "Explore the portfolio", href: "/before-after" },
+      primaryCta: { label: "Explore Projects", href: "/projects" },
     },
     {
       id: "areas",
@@ -448,7 +448,7 @@ function serviceDetailContent(
           "Selected published work",
           "Relevant proof appears only when an approved Published project is selected.",
         ),
-        eyebrow: "Before & After",
+        eyebrow: "Featured Project",
       },
       {
         ...standard("process", "PROCESS", "From inquiry to confirmed scope", undefined, [
@@ -510,7 +510,7 @@ function areaDetailContent(area: (typeof areaItems)[number]): MarketingPageConte
           "available-services",
           "SERVICE_SHOWCASE",
           `Services available for ${area.title} inquiries`,
-          "Explore the five CTPS service families and request only what is relevant to the property.",
+          "Explore the five CTPS services and request only what is relevant to the property.",
           services,
         ),
         eyebrow: "Property care",
@@ -601,7 +601,7 @@ export const systemMarketingPages: readonly SystemMarketingPage[] = [
       sections: [
         hero(
           "Property care shaped around the site.",
-          "Explore five CTPS service families for residential and commercial properties.",
+          "Explore five CTPS services for residential and commercial properties.",
           "Services",
         ),
         {
@@ -664,7 +664,7 @@ export const systemMarketingPages: readonly SystemMarketingPage[] = [
             "Selected transformations",
             "Published project proof appears only when approved work is selected.",
           ),
-          eyebrow: "Before & After",
+          eyebrow: "Featured Projects",
         },
         {
           ...standard(
@@ -890,7 +890,7 @@ export const systemMarketingPages: readonly SystemMarketingPage[] = [
             "Selected residential work",
             "This section stays hidden until an appropriate Published project is selected.",
           ),
-          eyebrow: "Before & After",
+          eyebrow: "Recent Projects",
         },
         {
           ...standard("process", "PROCESS", "A considered residential request", undefined, [
@@ -1112,16 +1112,16 @@ export const systemMarketingPages: readonly SystemMarketingPage[] = [
   },
   {
     pageKey: "BEFORE_AFTER",
-    slug: "/before-after",
-    title: "Before & After",
-    navigationLabel: "Before & After",
+    slug: "/projects",
+    title: "Projects",
+    navigationLabel: "Projects",
     pageType: "LANDING",
     content: {
       sections: [
         hero(
           "Property transformations, shown with context.",
           "Explore Published CTPS project records through accessible comparisons and service-aware filtering.",
-          "Before & After",
+          "Projects",
         ),
         finalCta(
           "Have a property-care project in mind?",
@@ -1158,7 +1158,7 @@ export const systemNavigation = [
   ["SERVICES", "Services", "/services"],
   ["RESIDENTIAL", "Residential", "/residential"],
   ["COMMERCIAL", "Commercial", "/commercial"],
-  ["BEFORE_AFTER", "Before & After", "/before-after"],
+  ["BEFORE_AFTER", "Projects", "/projects"],
   ["SERVICE_AREAS", "Service Areas", "/service-areas"],
   ["ABOUT", "About", "/about"],
   ["BLOG", "Blog", "/blog"],

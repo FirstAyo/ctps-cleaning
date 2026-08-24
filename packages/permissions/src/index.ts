@@ -38,6 +38,9 @@ export const PERMISSION_KEYS = {
   QUOTE_REQUESTS_READ_PRIVATE_MEDIA: "quoteRequests.readPrivateMedia",
   QUOTE_REQUESTS_ARCHIVE: "quoteRequests.archive",
   QUOTE_REQUESTS_DELETE: "quoteRequests.delete",
+  GENERAL_INQUIRIES_READ: "generalInquiries.read",
+  GENERAL_INQUIRIES_UPDATE: "generalInquiries.update",
+  GENERAL_INQUIRIES_ARCHIVE: "generalInquiries.archive",
   PRICING_VERSIONS_READ: "pricingVersions.read",
   PRICING_VERSIONS_CREATE: "pricingVersions.create",
   PRICING_VERSIONS_UPDATE: "pricingVersions.update",
@@ -133,6 +136,7 @@ export type PermissionGroup =
   | "Projects"
   | "Media"
   | "Quote Requests"
+  | "General Inquiries"
   | "Pricing"
   | "Estimator Results"
   | "Blog Posts"
@@ -340,6 +344,24 @@ export const PERMISSION_DEFINITIONS: readonly PermissionDefinition[] = [
     label: "Delete quote requests",
     description: "Permanently delete eligible quote requests after confirmation.",
     group: "Quote Requests",
+  },
+  {
+    key: PERMISSION_KEYS.GENERAL_INQUIRIES_READ,
+    label: "Read general inquiries",
+    description: "View private general messages submitted by website visitors.",
+    group: "General Inquiries",
+  },
+  {
+    key: PERMISSION_KEYS.GENERAL_INQUIRIES_UPDATE,
+    label: "Update general inquiries",
+    description: "Mark general inquiries as read or unread.",
+    group: "General Inquiries",
+  },
+  {
+    key: PERMISSION_KEYS.GENERAL_INQUIRIES_ARCHIVE,
+    label: "Archive general inquiries",
+    description: "Archive or restore general inquiries while preserving their records.",
+    group: "General Inquiries",
   },
   ...(
     [

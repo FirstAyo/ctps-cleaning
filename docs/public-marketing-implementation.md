@@ -1,5 +1,7 @@
 # Public Marketing Website Implementation
 
+The public project portfolio now uses canonical `/projects` and `/projects/{slug}` routes. Primary/mobile navigation, footer, Homepage proof, service proof, area proof, sitemap, breadcrumbs, and metadata use Projects terminology and links. Legacy `/before-after` paths remain direct permanent aliases; the accessible transformation itself continues to use explicit Before and After labels.
+
 ## Scope and status
 
 Phase 4 implements the static, customer-facing CTPS marketing website. It uses the Phase 2 design system and preserves the Phase 3 protected administration system. Public marketing pages are rendered without the API or database. Quote submission, estimator calculations, uploads, project records, blog publishing, customer accounts, email, and scheduling remain deferred.
@@ -8,7 +10,7 @@ Phase 4 implements the static, customer-facing CTPS marketing website. It uses t
 
 ## Routes
 
-The implementation includes `/`; `/services` and five service routes; `/residential`; `/commercial`; `/before-after`; `/service-areas` and six area routes; `/about`; `/contact`; `/faq`; `/blog`; `/estimate`; and `/request-a-quote`. `/design-system` remains available as the Phase 2 preview and is excluded from production indexing.
+The implementation includes `/`; `/services` and five service routes; `/residential`; `/commercial`; `/projects`; `/service-areas` and six area routes; `/about`; `/contact`; `/faq`; `/blog`; `/estimate`; and `/request-a-quote`. `/before-after` remains a permanent legacy alias. `/design-system` remains available as the Phase 2 preview and is excluded from production indexing.
 
 ## Page and content architecture
 
@@ -26,7 +28,7 @@ The footer groups all five services, six service areas, company pages, resources
 
 Each service page contains a hero, accurate overview, conditional inclusions, residential/commercial uses, quote-based process, local comparison demonstration, visible FAQs, related areas, planned editorial topics, and quote CTA. Service-area pages use unique approved wording, service categories, residential/commercial context, workflow, visible FAQs, and related CTAs without neighborhood doorway content or local statistics.
 
-`/before-after` uses the shared accessible range-based comparison with Next.js images, persistent labels, pointer/touch/native range support, keyboard steps, Home/End, written instructions, live output, and reduced-motion handling. All entries are labeled development demonstrations. Phase 5 owns records, uploads, and admin management.
+`/projects/{slug}` uses the shared accessible range-based comparison with Next.js images, persistent labels, pointer/touch/native range support, keyboard steps, Home/End, written instructions, live output, and reduced-motion handling. Only database-published project records and public managed media render. Phase 5 owns records, uploads, and admin management.
 
 `/blog`, `/estimate`, and `/request-a-quote` are honest foundations. The blog contains only labeled planned topics. The estimator contains no pricing or calculation logic. The quote page uses disabled fields and a static multi-photo presentation; it creates no records, references, uploads, object URLs, emails, or submitted state.
 

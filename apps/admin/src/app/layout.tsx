@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import type { ReactNode } from "react";
 import { ThemeProvider } from "@ctps/ui/theme";
+import { ToastProvider } from "@ctps/ui/toast";
 import { themeInitScript } from "@ctps/ui/theme-core";
 
 import "./globals.css";
@@ -21,7 +22,9 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
         </Script>
       </head>
       <body>
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          <ToastProvider>{children}</ToastProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

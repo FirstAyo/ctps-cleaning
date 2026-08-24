@@ -6,7 +6,7 @@ export function MarketingComparison({ className }: { readonly className?: string
     <ImageComparison
       after={
         <Image
-          alt="Development demonstration of a clean property exterior"
+          alt="Stylized clean property exterior"
           className="object-cover"
           fill
           sizes="(min-width: 1024px) 50vw, 100vw"
@@ -15,7 +15,7 @@ export function MarketingComparison({ className }: { readonly className?: string
       }
       before={
         <Image
-          alt="Development demonstration of a property exterior before care"
+          alt="Stylized property exterior before care"
           className="object-cover"
           fill
           sizes="(min-width: 1024px) 50vw, 100vw"

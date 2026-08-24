@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { apiEnvironmentSchema } from "@ctps/validation";
 import { requestIdFrom } from "../src/common/request-context.middleware";
 
@@ -20,6 +22,15 @@ const productionEnvironment = {
 };
 
 describe("Phase 10 production hardening", () => {
+  it("keeps default marketing content in Draft during production initialization", () => {
+    const source = readFileSync(
+      resolve(process.cwd(), "src/marketing/marketing.service.ts"),
+      "utf8",
+    );
+    expect(source).toContain('process.env.NODE_ENV !== "production"');
+    expect(source).toContain('status: publishDefaults ? "PUBLISHED" : "DRAFT"');
+    expect(source).toContain("publishedContent: publishDefaults");
+  });
   it("accepts a complete HTTPS production boundary", () => {
     expect(apiEnvironmentSchema.safeParse(productionEnvironment).success).toBe(true);
   });

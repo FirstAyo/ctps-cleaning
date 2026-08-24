@@ -90,8 +90,8 @@ describe("Phase 12 public SEO", () => {
       "contact/page.tsx",
       "service-areas/page.tsx",
       "service-areas/[slug]/page.tsx",
-      "before-after/page.tsx",
-      "before-after/[slug]/page.tsx",
+      "projects/page.tsx",
+      "projects/[slug]/page.tsx",
       "blog/page.tsx",
       "blog/[slug]/page.tsx",
       "request-a-quote/page.tsx",
@@ -101,5 +101,11 @@ describe("Phase 12 public SEO", () => {
       const source = readFileSync(`src/app/${page}`, "utf8");
       expect(source, page).toMatch(/metadataFor|getMarketingMetadata/);
     }
+  });
+
+  it("does not emit a duplicate hardcoded Homepage schema origin", () => {
+    const source = readFileSync("src/app/page.tsx", "utf8");
+    expect(source).not.toContain("http://localhost:3000");
+    expect(source).toContain("data={[organizationSchema, websiteSchema]}");
   });
 });
