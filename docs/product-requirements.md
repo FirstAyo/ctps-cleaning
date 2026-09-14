@@ -27,6 +27,12 @@ The first release does not confirm appointments online:
 
 `Browse -> estimate or request quote -> provide details/photos -> submit -> receive reference -> staff review -> staff contact`
 
+The default public customer flow requires no account:
+
+`Anonymous visitor -> browse the public site and Published Projects -> Request a Quote or send a General Inquiry -> persist the lead -> enqueue the configured staff notification and optional customer acknowledgement -> authenticated staff review the lead in Admin and follow up`
+
+Public and staff responsibilities remain separate. Visitors use the public website for discovery and guest submissions. Authenticated staff use protected Quotes and Messages views as the operational source of truth; email is a retriable notification channel, never the only copy of a lead.
+
 A **preliminary estimate** is a non-binding computed range. A **formal quote** is prepared or approved by CTPS after review. A **booking** is a separately confirmed future appointment. UI and email must never collapse these terms.
 
 ## Users and access

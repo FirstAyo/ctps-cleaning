@@ -6,6 +6,20 @@ Software, content, business configuration, and deployment readiness are separate
 
 The Phase 13.1 local acceptance pass safely unpublished three confirmed placeholder Projects and returned all 13 project assets to Private visibility. It also normalized the legacy Projects navigation row and removed the rotating-Hero LCP console warning. These corrections do not make the content or business configuration production-ready: Public Media and Blog remain empty, every marketing page lacks explicit SEO/social media, verified business contact/logo data is absent, `2026-Q3-DRAFT` is still the Published pricing version, SMTP is not configured, and authenticated Admin acceptance awaits a user-supplied credential.
 
+Phase 13.2 adds protected Site Settings fields for managed logo/default social imagery, business
+display identity, optional contact methods, announcement, footer content, and verified HTTPS social
+profiles. These are configuration paths, not approved values. Production estimator reads now reject
+development-marked Published pricing and incomplete/ambiguous effective configuration with a neutral
+quote-request alternative. `2026-Q3-DRAFT` remains unchanged and therefore remains a production
+estimator blocker rather than publicly usable production pricing.
+
+The production environment checklist includes release identity, PostgreSQL credentials, session and
+throttle policy, public/Admin/internal API origins, canonical URL/indexing switch, CORS, SMTP
+transport and approved sender name/address/recipient, every public/private media root and upload
+limit, backup roots/retention/source, trusted proxy hops, smoke/health URLs, and scheduler lock paths
+documented in `environment-reference.md`, `.env.production.example`, and `scheduled-tasks.md`. Values
+remain placeholders until supplied through the protected deployment environment.
+
 ## Phase 12 search launch gate
 
 Keep `PUBLIC_INDEXING_ENABLED=false` for local development and staging. Production must set a reviewed HTTPS `NEXT_PUBLIC_SITE_URL` matching `WEB_URL`, configure Nginx alternate-host and HTTP redirects to that canonical origin, and enable indexing only after content/legal/media approval. Verify live source metadata, status codes, robots, sitemap, redirects, structured data, and social previews before Search Console/Bing ownership verification and sitemap submission. Phase 12 performs no external submission and the example hostname is not a production claim.

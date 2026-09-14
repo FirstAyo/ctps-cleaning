@@ -98,8 +98,36 @@ export function JsonLd({ data }: { readonly data: SchemaObject | readonly Schema
   );
 }
 
-export const organizationSchema = organizationStructuredData({ name: site.name, origin: site.url });
-export const websiteSchema = websiteStructuredData({ name: site.name, origin: site.url });
+export function organizationSchema(settings?: {
+  readonly businessDisplayName?: string;
+  readonly contactEmail?: string;
+  readonly contactPhone?: string;
+  readonly logoMediaId?: string | null;
+  readonly socialProfiles?: Readonly<
+    Partial<Record<"facebook" | "instagram" | "linkedin" | "youtube" | "x", string>>
+  >;
+}) {
+  return organizationStructuredData({
+    name: settings?.businessDisplayName || site.name,
+    origin: site.url,
+    ...(settings?.logoMediaId
+      ? { logoUrl: canonicalUrl(site.url, `/media/marketing/${settings.logoMediaId}/original`) }
+      : {}),
+    ...(settings?.contactEmail ? { email: settings.contactEmail } : {}),
+    ...(settings?.contactPhone ? { telephone: settings.contactPhone } : {}),
+    ...(settings?.socialProfiles && Object.values(settings.socialProfiles).some(Boolean)
+      ? {
+          sameAs: Object.values(settings.socialProfiles).filter((value): value is string =>
+            Boolean(value),
+          ),
+        }
+      : {}),
+  });
+}
+
+export function websiteSchema(businessDisplayName?: string) {
+  return websiteStructuredData({ name: businessDisplayName || site.name, origin: site.url });
+}
 
 export function breadcrumbSchema(items: readonly BreadcrumbInput[]) {
   return breadcrumbStructuredData(site.url, items);

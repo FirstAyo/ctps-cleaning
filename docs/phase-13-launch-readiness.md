@@ -37,6 +37,36 @@ This is a development database observation, not a production migration or fabric
 - Local email uses the safe default `log-safe` mode with invalid example sender/recipient defaults because SMTP is not configured. This proves durable outbox behavior, not production delivery.
 - The current Published pricing version is `2026-Q3-DRAFT`; its development marker makes business pricing approval and replacement/renaming an explicit launch blocker. No value or status was changed during this pass.
 
+## Phase 13.2 business-configuration controls
+
+Protected Site Settings now provides one authoritative path for the business display name, optional
+public email and phone, footer copy, announcement text/visibility, verified HTTPS social profiles,
+an approved managed logo, and a default managed social image. Logo and social-image selection uses
+the existing Public Media picker/upload/validation/focal workflow. The API accepts only active
+managed assets, records Site Settings usage, and blocks referenced deletion. Empty optional values
+are omitted from public presentation and Organization structured data. The managed logo is shared
+by desktop/mobile Header and Footer; the local CTPS treatment remains only when no logo is selected.
+The default social image is used only when a page lacks its own deliberate managed image; 1200 × 630
+is the preferred editorial source composition.
+
+Production estimator selection now fails closed when the only effective Published version is
+development-marked (`DEV`, `DEVELOPMENT`, `TEST`, `SAMPLE`, or `DRAFT` as a version-code segment),
+when there is not exactly one effective Published version, or when the five-service configuration is
+incomplete/invalid. The customer receives only “Online estimates are temporarily unavailable.
+Request a quote instead.” Internal version codes and prices are not exposed by this unavailable
+state. This does not approve, rename, archive, or change any pricing value; an authorised operator
+must create/review/publish a business-approved replacement through the protected Pricing workflow.
+
+The content-readiness scan now also checks its bounded customer-facing source list for Lorem Ipsum,
+Edgar, demo/test project wording, and placeholder-customer-content wording. Tests and fixtures remain
+outside that production-content scope so rejection tests do not create false release failures.
+
+SMTP host, port, transport security, username, password, approved sender address, approved sender
+display name (`EMAIL_FROM_NAME`), and staff notification recipient remain environment-managed. Site
+Settings does not store SMTP credentials. Email templates contain no configured phone/address or
+localhost link; production validation continues to reject non-SMTP delivery, `.invalid` addresses,
+and `CHANGE_ME` values. No real message is sent by Phase 13.2.
+
 ## Blockers before production
 
 - **REAL CTPS LOGO REQUIRED.** The current symbol/wordmark treatment is a development brand treatment, not an approved logo asset.

@@ -20,6 +20,23 @@ afterEach(() => {
 });
 
 describe("public mobile navigation", () => {
+  it("presents the complete anonymous customer navigation without Admin links", () => {
+    render(<PublicHeader />);
+    for (const href of [
+      "/services",
+      "/projects",
+      "/residential",
+      "/commercial",
+      "/service-areas",
+      "/about",
+      "/blog",
+      "/contact",
+      "/request-a-quote",
+    ])
+      expect(document.querySelector(`a[href='${href}']`)).not.toBeNull();
+    expect(document.querySelector("a[href*='admin'], a[href*='login']")).toBeNull();
+  });
+
   it("opens, locks page scroll, closes with Escape, and restores focus", async () => {
     const user = userEvent.setup();
     render(<PublicHeader />);

@@ -424,6 +424,9 @@ export function ProjectDetail({ context }: { readonly context: PublicProjectCont
                 <Link href="/request-a-quote">
                   Request a Quote <span aria-hidden="true">→</span>
                 </Link>
+                <Link href="/contact">
+                  Contact Us <span aria-hidden="true">→</span>
+                </Link>
               </section>
             </aside>
           </div>

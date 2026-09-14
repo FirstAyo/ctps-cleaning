@@ -9,6 +9,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import { QuoteEmailService } from "../src/quote-requests/quote-email.service";
+import { QuoteRequestsController } from "../src/quote-requests/quote-requests.controller";
 import { QuoteMediaService } from "../src/quote-requests/quote-media.service";
 import {
   QUOTE_REFERENCE_ALPHABET,
@@ -17,6 +18,7 @@ import {
 } from "../src/quote-requests/quote-reference.service";
 import { QuoteRequestsService } from "../src/quote-requests/quote-requests.service";
 import { QuoteSecurityService } from "../src/quote-requests/quote-security.service";
+import { IS_PUBLIC_KEY } from "../src/auth/security.decorators";
 
 const validSubmission = {
   draftToken: "a".repeat(43),
@@ -133,6 +135,45 @@ function request(origin = "http://localhost:3000") {
 }
 
 describe("guest request security", () => {
+  it("marks every guest quote and confirmation handler as public", () => {
+    for (const handler of [
+      "createDraft",
+      "upload",
+      "removeUpload",
+      "reorderUploads",
+      "submit",
+      "confirmation",
+    ] as const)
+      expect(Reflect.getMetadata(IS_PUBLIC_KEY, QuoteRequestsController.prototype[handler])).toBe(
+        true,
+      );
+  });
+
+  it("routes the acknowledgement to the customer and the notification to configuration", () => {
+    const email = new QuoteEmailService(
+      {} as never,
+      { value: { EMAIL_DELIVERY_MODE: "disabled" } } as never,
+    );
+    const records = email.records({
+      quoteRequestId: "quote-id",
+      reference: "CTPS-2026-7K3M9QXZ",
+      customerName: "Alex Customer",
+      customerEmail: "alex@example.com",
+      customerPhone: "+1 604 555 0100",
+      services: ["Window Cleaning"],
+      propertyType: "Residential",
+      serviceArea: "Vancouver",
+      from: "CTPS <sender@example.test>",
+      staffEmail: "configured-staff@example.test",
+    });
+    expect(records.map(({ recipient }) => recipient)).toEqual([
+      "alex@example.com",
+      "configured-staff@example.test",
+    ]);
+    expect(JSON.stringify(records[1])).toContain("Window Cleaning");
+    expect(JSON.stringify(records[1])).not.toMatch(/storage|csrf|session/i);
+  });
+
   it("uses opaque 256-bit tokens and rejects an untrusted origin", () => {
     const service = new QuoteSecurityService(
       {} as never,

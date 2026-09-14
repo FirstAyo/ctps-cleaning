@@ -26,6 +26,13 @@ The local CMS currently has zero Public Media assets. The following is therefore
 
 Before approval, verify checksum duplicates, generated variants, dimensions, compression, focal points, alt text, archive/reference state, and that no Quote, Job, Draft Blog, or private Project asset crosses into public delivery. The 13 development Project assets found in the local database are Ready/Private and are not production candidates unless CTPS independently verifies their provenance and replaces all placeholder metadata through the protected workflow.
 
+Phase 13.2 makes the primary logo and default social image selectable from Site Settings through the
+same Public Media picker. Both selections count as managed usage and block deletion until removed or
+replaced. The logo is shared by desktop/mobile Header and Footer, with the link's accessible name
+coming from the configured business display name. The social default should be composed at 1200 ×
+630 and is used only when a page has no page-specific image. No logo or social asset is generated or
+approved by this software change.
+
 ## Purpose
 
 This document defines a provider-neutral plan for service, blog, author, project, Open Graph, and customer-upload media. Phase 4 introduced committed development illustrations. Phase 5 adds managed before-and-after storage. Phase 6 adds a separate, private-only customer quote upload workflow. Phase 11 and 11.1 implement the dedicated Public Media Library for controlled marketing-page photography.

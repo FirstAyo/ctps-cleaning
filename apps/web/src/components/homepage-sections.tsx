@@ -342,6 +342,9 @@ export function ProjectMosaic({
             );
           })}
         </div>
+        <div className="mt-8">
+          <DirectionalLink href="/projects" label="View all Projects" />
+        </div>
       </Container>
     </section>
   );

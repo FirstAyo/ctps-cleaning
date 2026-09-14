@@ -47,8 +47,8 @@ describe("Phase 12 public SEO", () => {
   });
 
   it("uses centralized factual schemas and exact area/service identities", () => {
-    expect(organizationSchema.areaServed).toHaveLength(6);
-    expect(websiteSchema["@type"]).toBe("WebSite");
+    expect(organizationSchema().areaServed).toHaveLength(6);
+    expect(websiteSchema()["@type"]).toBe("WebSite");
     expect(
       serviceSchema({
         name: services[0]!.name,
@@ -106,6 +106,25 @@ describe("Phase 12 public SEO", () => {
   it("does not emit a duplicate hardcoded Homepage schema origin", () => {
     const source = readFileSync("src/app/page.tsx", "utf8");
     expect(source).not.toContain("http://localhost:3000");
-    expect(source).toContain("data={[organizationSchema, websiteSchema]}");
+    expect(source).toContain("organizationSchema(settings ?? undefined)");
+  });
+
+  it("adds only configured business identity fields to Organization data", () => {
+    const minimal = organizationSchema();
+    expect(minimal).not.toHaveProperty("email");
+    expect(minimal).not.toHaveProperty("telephone");
+    expect(minimal).not.toHaveProperty("sameAs");
+
+    expect(
+      organizationSchema({
+        businessDisplayName: "CTPS",
+        contactEmail: "contact@example.com",
+        socialProfiles: { instagram: "https://instagram.com/ctps" },
+      }),
+    ).toMatchObject({
+      name: "CTPS",
+      email: "contact@example.com",
+      sameAs: ["https://instagram.com/ctps"],
+    });
   });
 });

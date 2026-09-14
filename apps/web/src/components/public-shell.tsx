@@ -5,10 +5,12 @@ import { Container } from "@ctps/ui/layout";
 import { Button, IconButton, LinkButton } from "@ctps/ui/primitives";
 import { ThemeToggle } from "@ctps/ui/theme";
 import { ChevronDown, Menu, Sparkles, X } from "@ctps/ui/icons";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { primaryNavigation, serviceAreas, services } from "@/content/site";
+import type { PublicSiteSettings } from "@/lib/marketing-api";
 
 function trapTab(event: KeyboardEvent, container: HTMLElement | null) {
   if (event.key !== "Tab" || !container) return;
@@ -39,6 +41,7 @@ export function PublicHeader() {
   const [managedNavigation, setManagedNavigation] = useState<
     readonly { label: string; href: string }[] | null
   >(null);
+  const [settings, setSettings] = useState<PublicSiteSettings>({});
   const triggerRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLElement>(null);
   useEffect(() => {
@@ -64,6 +67,12 @@ export function PublicHeader() {
       })
       .catch(() => undefined);
   }, []);
+  useEffect(() => {
+    void fetch("/api/marketing/site-settings")
+      .then((response) => response.json())
+      .then((value: PublicSiteSettings) => setSettings(value))
+      .catch(() => undefined);
+  }, []);
   const navigation = (managedNavigation ?? primaryNavigation)
     .map((item) =>
       item.href === "/before-after" ? { ...item, href: "/projects", label: "Projects" } : item,
@@ -71,28 +80,46 @@ export function PublicHeader() {
     .filter((item) => item.href !== "/services");
   return (
     <>
-      <div className="bg-secondary py-2 text-center text-xs font-semibold tracking-wide text-secondary-foreground">
-        Residential and commercial service across Vancouver and surrounding communities
-      </div>
+      {(settings.announcementEnabled ?? true) &&
+      (settings.announcementText ??
+        "Residential and commercial service across Vancouver and surrounding communities") ? (
+        <div className="bg-secondary py-2 text-center text-xs font-semibold tracking-wide text-secondary-foreground">
+          {settings.announcementText ??
+            "Residential and commercial service across Vancouver and surrounding communities"}
+        </div>
+      ) : null}
       <header className="sticky top-0 z-40 border-b border-border/80 bg-background/95 backdrop-blur">
         <Container className="flex min-h-18 items-center justify-between gap-4" size="wide">
           <Link
-            aria-label="CTPS home"
+            aria-label={`${settings.businessDisplayName ?? "CTPS"} home`}
             className="flex items-center gap-3 font-bold tracking-tight"
             href="/"
           >
-            <span
-              aria-hidden="true"
-              className="grid size-10 place-items-center rounded-md bg-secondary text-secondary-foreground"
-            >
-              <Sparkles aria-hidden="true" className="size-5" />
-            </span>
-            <span>
-              CTPS{" "}
-              <span className="hidden font-normal text-muted-foreground sm:inline">
-                Clean Precision
-              </span>
-            </span>
+            {settings.logoMediaId ? (
+              <Image
+                alt=""
+                className="h-10 w-auto max-w-40 object-contain"
+                height={48}
+                priority
+                src={`/media/marketing/${settings.logoMediaId}/standard`}
+                width={160}
+              />
+            ) : (
+              <>
+                <span
+                  aria-hidden="true"
+                  className="grid size-10 place-items-center rounded-md bg-secondary text-secondary-foreground"
+                >
+                  <Sparkles aria-hidden="true" className="size-5" />
+                </span>
+                <span>
+                  {settings.businessDisplayName ?? "CTPS"}{" "}
+                  <span className="hidden font-normal text-muted-foreground sm:inline">
+                    {settings.brandTagline ?? "Clean Precision"}
+                  </span>
+                </span>
+              </>
+            )}
           </Link>
           <nav aria-label="Primary navigation" className="hidden items-center gap-0.5 xl:flex">
             <details className="group relative">
@@ -208,7 +235,10 @@ export function PublicHeader() {
 const footerGroups = [
   {
     title: "Services",
-    links: services.map((item) => ({ label: item.name, href: `/services/${item.slug}` })),
+    links: [
+      { label: "All Services", href: "/services" },
+      ...services.map((item) => ({ label: item.name, href: `/services/${item.slug}` })),
+    ],
   },
   {
     title: "Service areas",
@@ -219,6 +249,8 @@ const footerGroups = [
     links: [
       { label: "About", href: "/about" },
       { label: "Contact", href: "/contact" },
+      { label: "Residential", href: "/residential" },
+      { label: "Commercial", href: "/commercial" },
       { label: "FAQ", href: "/faq" },
     ],
   },
@@ -228,6 +260,7 @@ const footerGroups = [
       { label: "Projects", href: "/projects" },
       { label: "Blog", href: "/blog" },
       { label: "Estimate", href: "/estimate" },
+      { label: "Request a Quote", href: "/request-a-quote" },
       { label: "Privacy", href: "/privacy" },
       { label: "Terms", href: "/terms" },
       { label: "Accessibility", href: "/accessibility" },
@@ -236,11 +269,11 @@ const footerGroups = [
 ] as const;
 
 export function PublicFooter() {
-  const [settings, setSettings] = useState<Record<string, string>>({});
+  const [settings, setSettings] = useState<PublicSiteSettings>({});
   useEffect(() => {
     void fetch("/api/marketing/site-settings")
       .then((response) => response.json())
-      .then((value: Record<string, string>) => setSettings(value))
+      .then((value: PublicSiteSettings) => setSettings(value))
       .catch(() => undefined);
   }, []);
   return (
@@ -248,7 +281,17 @@ export function PublicFooter() {
       <Container size="wide">
         <div className="grid gap-10 md:grid-cols-2 xl:grid-cols-[1.4fr_repeat(4,1fr)]">
           <div>
-            <p className="text-2xl font-bold">CTPS</p>
+            {settings.logoMediaId ? (
+              <Image
+                alt=""
+                className="h-12 w-auto max-w-48 object-contain"
+                height={56}
+                src={`/media/marketing/${settings.logoMediaId}/standard`}
+                width={192}
+              />
+            ) : (
+              <p className="text-2xl font-bold">{settings.businessDisplayName ?? "CTPS"}</p>
+            )}
             <p className="mt-3 max-w-xs text-sm text-sidebar-muted">
               {settings.footerDescription ??
                 "Residential and commercial property-care inquiries across six British Columbia communities."}
@@ -257,6 +300,26 @@ export function PublicFooter() {
               <p className="mt-4 max-w-xs text-sm text-sidebar-muted">
                 {[settings.contactEmail, settings.contactPhone].filter(Boolean).join(" · ")}
               </p>
+            ) : null}
+            {settings.socialProfiles && Object.values(settings.socialProfiles).some(Boolean) ? (
+              <nav aria-label="Social profiles" className="mt-4">
+                <ul className="flex list-none flex-wrap gap-3 p-0">
+                  {Object.entries(settings.socialProfiles)
+                    .filter((entry): entry is [string, string] => Boolean(entry[1]))
+                    .map(([platform, href]) => (
+                      <li key={platform}>
+                        <a
+                          className="text-sm text-sidebar-muted hover:text-sidebar-foreground"
+                          href={href}
+                        >
+                          {platform === "x"
+                            ? "X"
+                            : `${platform[0]!.toUpperCase()}${platform.slice(1)}`}
+                        </a>
+                      </li>
+                    ))}
+                </ul>
+              </nav>
             ) : null}
           </div>
           {footerGroups.map((group) => (
@@ -278,7 +341,9 @@ export function PublicFooter() {
           ))}
         </div>
         <div className="mt-10 flex flex-wrap justify-between gap-3 border-t border-sidebar-border pt-6 text-sm text-sidebar-muted">
-          <span>© {new Date().getFullYear()} CTPS.</span>
+          <span>
+            © {new Date().getFullYear()} {settings.businessDisplayName ?? "CTPS"}.
+          </span>
         </div>
       </Container>
     </footer>

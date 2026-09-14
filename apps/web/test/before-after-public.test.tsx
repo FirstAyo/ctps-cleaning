@@ -172,6 +172,8 @@ describe("public Projects portfolio", () => {
     expect(html).toContain("Previous Project");
     expect(html).toContain("Next Project");
     expect(html).toContain("Request a Quote");
+    expect(html).toContain("Contact Us");
+    expect(html).toContain('href="/contact"');
     expect(html).not.toMatch(/storageKey|privateRoot|\\private\\/i);
   });
 

@@ -6,6 +6,7 @@ import { QUOTE_SERVICE_DEFINITIONS } from "@ctps/validation";
 
 import { AuditService } from "../auth/audit.service";
 import { DatabaseService } from "../database/database.service";
+import { emailFromAddress } from "../common/email-address";
 import { GeneralInquiryEmailService } from "./general-inquiry-email.service";
 import { QuoteConfigService } from "./quote-config.service";
 import { QuoteSecurityService } from "./quote-security.service";
@@ -51,8 +52,10 @@ export class GeneralInquiriesService {
             generalInquiryId: created.id,
             customerEmail: created.email,
             customerName: created.name,
+            ...(created.phone ? { customerPhone: created.phone } : {}),
             ...(serviceLabel ? { serviceLabel } : {}),
-            from: this.config.value.EMAIL_FROM,
+            message: created.message,
+            from: emailFromAddress(this.config.value.EMAIL_FROM_NAME, this.config.value.EMAIL_FROM),
             staffEmail: this.config.value.QUOTE_STAFF_EMAIL,
           }),
         });

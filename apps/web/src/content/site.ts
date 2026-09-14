@@ -298,10 +298,11 @@ export const plannedArticles = [
 
 export const primaryNavigation = [
   { label: "Projects", href: "/projects" },
+  { label: "Residential", href: "/residential" },
+  { label: "Commercial", href: "/commercial" },
   { label: "Service Areas", href: "/service-areas" },
-  { label: "Estimate", href: "/estimate" },
-  { label: "Blog", href: "/blog" },
   { label: "About", href: "/about" },
+  { label: "Blog", href: "/blog" },
   { label: "Contact", href: "/contact" },
 ] as const;
 

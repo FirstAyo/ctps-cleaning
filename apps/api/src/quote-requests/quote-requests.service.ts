@@ -15,9 +15,11 @@ import type {
   QuoteStatusUpdateInput,
   QuoteSubmissionInput,
 } from "@ctps/validation";
+import { QUOTE_SERVICE_AREA_DEFINITIONS, QUOTE_SERVICE_DEFINITIONS } from "@ctps/validation";
 import { ESTIMATOR_QUESTIONS } from "@ctps/pricing";
 import { AuditService } from "../auth/audit.service";
 import { DatabaseService } from "../database/database.service";
+import { emailFromAddress } from "../common/email-address";
 import { QuoteConfigService } from "./quote-config.service";
 import { QuoteEmailService } from "./quote-email.service";
 import { QuoteSecurityService } from "./quote-security.service";
@@ -218,8 +220,18 @@ export class QuoteRequestsService {
                 reference,
                 customerEmail: quote.customerEmail,
                 customerName: quote.customerName,
-                services: input.services,
-                from: this.config.value.EMAIL_FROM,
+                ...(quote.customerPhone ? { customerPhone: quote.customerPhone } : {}),
+                services: input.services.map(
+                  (key) => QUOTE_SERVICE_DEFINITIONS.find((service) => service.key === key)!.label,
+                ),
+                propertyType: input.propertyType === "RESIDENTIAL" ? "Residential" : "Commercial",
+                serviceArea: QUOTE_SERVICE_AREA_DEFINITIONS.find(
+                  (area) => area.key === input.address.serviceAreaKey,
+                )!.label,
+                from: emailFromAddress(
+                  this.config.value.EMAIL_FROM_NAME,
+                  this.config.value.EMAIL_FROM,
+                ),
                 staffEmail: this.config.value.QUOTE_STAFF_EMAIL,
               }),
             });

@@ -39,7 +39,10 @@ export class QuoteEmailService {
     reference: string;
     customerEmail: string;
     customerName: string;
+    customerPhone?: string;
     services: readonly string[];
+    propertyType: string;
+    serviceArea: string;
     from: string;
     staffEmail: string;
   }) {
@@ -59,7 +62,12 @@ export class QuoteEmailService {
           to: input.staffEmail,
           from: input.from,
           reference: input.reference,
+          customerName: input.customerName,
+          customerEmail: input.customerEmail,
+          ...(input.customerPhone ? { customerPhone: input.customerPhone } : {}),
           services: input.services,
+          propertyType: input.propertyType,
+          serviceArea: input.serviceArea,
         }),
       },
     ];

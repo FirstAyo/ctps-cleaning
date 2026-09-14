@@ -93,8 +93,10 @@ export function EstimatorForm({ initialService = "" }: { initialService?: string
   if (error && !configuration)
     return (
       <div className="rounded-xl border border-border bg-surface-muted p-6">
-        <h2 className="font-bold">Estimator temporarily unavailable</h2>
-        <p className="mt-2 text-muted-foreground">{error}</p>
+        <h2 className="font-bold">Online estimates are temporarily unavailable</h2>
+        <p className="mt-2 text-muted-foreground">
+          {error || "Online estimates are temporarily unavailable. Request a quote instead."}
+        </p>
         <a className="mt-4 inline-block font-semibold text-primary" href="/request-a-quote">
           Request a quote instead
         </a>

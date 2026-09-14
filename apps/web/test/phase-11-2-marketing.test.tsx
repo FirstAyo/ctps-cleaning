@@ -95,6 +95,38 @@ describe("Phase 11.2 public editorial compositions", () => {
     expect(output).not.toMatch(/coming soon|no project selected/i);
   });
 
+  it("shows matching Published project proof and keeps it linked to the public portfolio", () => {
+    const project = {
+      id: "published-project",
+      slug: "published-window-project",
+      title: "Published window project",
+      summary: "Approved project summary.",
+      serviceKey: "window-cleaning",
+      serviceAreaKey: "vancouver",
+      status: "PUBLISHED" as const,
+      primaryBeforeMedia: {
+        id: "before",
+        altText: "Before cleaning",
+        variants: { large: { path: "/before.webp", width: 800, height: 600 } },
+      },
+      primaryAfterMedia: {
+        id: "after",
+        altText: "After cleaning",
+        variants: { large: { path: "/after.webp", width: 800, height: 600 } },
+      },
+      coverMedia: null,
+      supportingMedia: [],
+    };
+    const output = renderToStaticMarkup(
+      <MarketingPageRenderer
+        page={page("SERVICE_WINDOW_CLEANING", [section("FEATURED_PROJECT")])}
+        projects={[project as never]}
+      />,
+    );
+    expect(output).toContain("marketing-project-proof");
+    expect(output).toContain('href="/projects/published-window-project"');
+  });
+
   it("uses CMS media through optimized marketing routes with focal-point positioning", () => {
     const id = crypto.randomUUID();
     const mediaSection = { ...section("MEDIA_TEXT"), mediaIds: [id] };

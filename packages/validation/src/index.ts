@@ -149,6 +149,13 @@ export const apiEnvironmentSchema = z
       .max(100 * 1024 * 1024)
       .default(32 * 1024 * 1024),
     EMAIL_DELIVERY_MODE: z.enum(["smtp", "log-safe", "disabled"]).default("log-safe"),
+    EMAIL_FROM_NAME: z
+      .string()
+      .trim()
+      .min(1)
+      .max(120)
+      .refine((value) => !/[\r\n]/.test(value), "Email sender name cannot contain line breaks")
+      .default("CTPS"),
     EMAIL_FROM: z.string().trim().pipe(z.email().max(254)).default("quotes@example.invalid"),
     QUOTE_STAFF_EMAIL: z.string().trim().pipe(z.email().max(254)).default("quotes@example.invalid"),
     SMTP_HOST: z.preprocess(
@@ -210,6 +217,7 @@ export const apiEnvironmentSchema = z
         ["RELEASE_VERSION", value.RELEASE_VERSION],
         ["DATABASE_URL", value.DATABASE_URL],
         ["EMAIL_FROM", value.EMAIL_FROM],
+        ["EMAIL_FROM_NAME", value.EMAIL_FROM_NAME],
         ["QUOTE_STAFF_EMAIL", value.QUOTE_STAFF_EMAIL],
         ["SMTP_HOST", value.SMTP_HOST ?? ""],
         ["SMTP_USER", value.SMTP_USER ?? ""],
@@ -1612,6 +1620,7 @@ export const navigationUpdateSchema = z
   .strict();
 export const siteSettingsUpdateSchema = z
   .object({
+    businessDisplayName: blogPlainTextSchema(120).min(2).optional(),
     brandTagline: blogPlainTextSchema(160).optional(),
     primaryCtaLabel: blogPlainTextSchema(80).optional(),
     footerDescription: blogPlainTextSchema(500).optional(),
@@ -1624,6 +1633,20 @@ export const siteSettingsUpdateSchema = z
           .trim()
           .regex(/^[+()\- .0-9]{7,32}$/),
       ])
+      .optional(),
+    logoMediaId: identifierSchema.optional().nullable(),
+    defaultSocialImageId: identifierSchema.optional().nullable(),
+    announcementEnabled: z.boolean().optional(),
+    announcementText: blogPlainTextSchema(200).optional(),
+    socialProfiles: z
+      .object({
+        facebook: z.union([z.literal(""), z.url().startsWith("https://").max(2048)]).optional(),
+        instagram: z.union([z.literal(""), z.url().startsWith("https://").max(2048)]).optional(),
+        linkedin: z.union([z.literal(""), z.url().startsWith("https://").max(2048)]).optional(),
+        youtube: z.union([z.literal(""), z.url().startsWith("https://").max(2048)]).optional(),
+        x: z.union([z.literal(""), z.url().startsWith("https://").max(2048)]).optional(),
+      })
+      .strict()
       .optional(),
   })
   .strict();

@@ -3,8 +3,9 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 
-import { REQUIRED_PERMISSIONS_KEY } from "../src/auth/security.decorators";
+import { IS_PUBLIC_KEY, REQUIRED_PERMISSIONS_KEY } from "../src/auth/security.decorators";
 import { GeneralInquiriesController } from "../src/quote-requests/general-inquiries.controller";
+import { GeneralInquiryEmailService } from "../src/quote-requests/general-inquiry-email.service";
 import { GeneralInquiriesService } from "../src/quote-requests/general-inquiries.service";
 
 const submission = {
@@ -82,6 +83,15 @@ describe("general inquiry persistence", () => {
       expect.objectContaining({ data: expect.objectContaining({ email: submission.email }) }),
     );
     expect(transaction.emailOutbox.createMany).toHaveBeenCalled();
+    expect(email.records).toHaveBeenCalledWith(
+      expect.objectContaining({
+        customerEmail: submission.email,
+        customerName: submission.name,
+        customerPhone: submission.phone,
+        message: submission.message,
+        staffEmail: "staff@example.invalid",
+      }),
+    );
     expect(email.dispatchForInquiry).toHaveBeenCalledWith("inquiry-id");
   });
 
@@ -133,6 +143,31 @@ describe("general inquiry persistence", () => {
 });
 
 describe("general inquiry authorization", () => {
+  it("keeps anonymous submission public and routes both configured recipients", () => {
+    expect(Reflect.getMetadata(IS_PUBLIC_KEY, GeneralInquiriesController.prototype.submit)).toBe(
+      true,
+    );
+    const email = new GeneralInquiryEmailService(
+      {} as never,
+      { value: { EMAIL_DELIVERY_MODE: "disabled" } } as never,
+    );
+    const records = email.records({
+      generalInquiryId: "inquiry-id",
+      customerName: "Alex Customer",
+      customerEmail: "alex@example.com",
+      customerPhone: "+1 604 555 0100",
+      serviceLabel: "Window Cleaning",
+      message: "Please tell me more about the service.",
+      from: "CTPS <sender@example.test>",
+      staffEmail: "configured-staff@example.test",
+    });
+    expect(records.map(({ recipient }) => recipient)).toEqual([
+      "alex@example.com",
+      "configured-staff@example.test",
+    ]);
+    expect(JSON.stringify(records[1])).toContain("Please tell me more about the service.");
+  });
+
   it("requires explicit permissions on every Admin handler", () => {
     expect(
       Reflect.getMetadata(REQUIRED_PERMISSIONS_KEY, GeneralInquiriesController.prototype.list),

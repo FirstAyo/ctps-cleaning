@@ -337,7 +337,14 @@ describe("public marketing media library behavior", () => {
       .mockResolvedValueOnce({ id: "asset", _count: { pageReferences: 2, socialImageFor: 1 } });
     const remove = vi.fn();
     const service = new MarketingMediaService(
-      { client: { publicMediaAsset: { findUnique, delete: remove } } } as never,
+      {
+        client: {
+          publicMediaAsset: { findUnique, delete: remove },
+          siteSetting: {
+            findUnique: vi.fn(async () => ({ value: { logoMediaId: "asset" } })),
+          },
+        },
+      } as never,
       { record: vi.fn() } as never,
     );
     await expect(service.usage("asset")).resolves.toEqual({
@@ -346,6 +353,7 @@ describe("public marketing media library behavior", () => {
           pageTitle: "Homepage",
           usage: "PUBLISHED:HERO_SLIDER:0:media:1",
         }),
+        expect.objectContaining({ pageTitle: "Site Settings", usage: "SITE_LOGO" }),
       ],
     });
     await expect(service.remove("asset", identity)).rejects.toBeInstanceOf(ConflictException);

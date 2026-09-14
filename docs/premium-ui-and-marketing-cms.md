@@ -58,6 +58,14 @@ Homepage photography readiness is an explicit production gate. Editorial layouts
 
 Navigation destinations and system keys remain fixed; authorised staff can change labels, order, and visibility with version checks. Site settings contain approved tagline, CTA label, footer copy, and optional configured contact fields. SEO permission separately controls title, description, Open Graph fields, and a public social image. Public pages remain server-renderable with bounded revalidation.
 
+Phase 13.2 extends that same Site Settings record rather than creating a second business-profile
+store. It supports the business display name, optional public email/phone, announcement visibility
+and copy, optional verified HTTPS social profiles, a managed primary logo, and a managed default
+social image. Brand-image selection reuses Public Media and its permissions; asset usage is reported
+and deletion-protected. The Header (including mobile) and Footer share the selected logo. Empty
+optional values render nothing, and Organization structured data emits only configured contact,
+logo, and social fields. Page-specific social images continue to override the default.
+
 Permissions are `pages.read/update/publish/preview/manageSeo`, `navigation.read/update`, `siteSettings.read/update`, and `mediaLibrary.read/upload/update/archive/restore/delete`. Super Admin receives the full catalogue; ADMIN receives no automatic expansion; AUTHOR retains blog permissions and no marketing-page or public-library access by default. Nest guards enforce each endpoint.
 
 Audits record draft save, publish, restore, marketing-media selection changes, media upload/metadata/focal-point/archive/restore/delete, navigation update, and site-settings update with safe identifiers, counts, field names, and versions. They exclude page bodies, JSON blobs, paths, credentials, customer information, EXIF, and bytes.

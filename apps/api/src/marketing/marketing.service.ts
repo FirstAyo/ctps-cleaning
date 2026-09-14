@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   ForbiddenException,
   Inject,
@@ -155,11 +156,18 @@ export class MarketingService {
         key: "PUBLIC_SITE",
         value: {
           brandTagline: "Clean Precision",
+          businessDisplayName: "CTPS",
           primaryCtaLabel: "Request a Quote",
           footerDescription:
             "Residential and commercial property-care inquiries across six British Columbia communities.",
           contactEmail: "",
           contactPhone: "",
+          logoMediaId: null,
+          defaultSocialImageId: null,
+          announcementEnabled: true,
+          announcementText:
+            "Residential and commercial service across Vancouver and surrounding communities",
+          socialProfiles: {},
         },
         updatedByUserId: actorUserId,
       },
@@ -621,10 +629,29 @@ export class MarketingService {
     );
   }
   async updateSettings(input: SiteSettingsUpdateInput, actorUserId: string) {
+    const requestedMediaIds = [input.logoMediaId, input.defaultSocialImageId].filter(
+      (id): id is string => Boolean(id),
+    );
+    if (requestedMediaIds.length) {
+      const availableMedia = await this.database.client.publicMediaAsset.findMany({
+        where: { id: { in: requestedMediaIds }, status: "READY" },
+        select: { id: true },
+      });
+      if (new Set(availableMedia.map(({ id }) => id)).size !== new Set(requestedMediaIds).size)
+        throw new BadRequestException({
+          code: "PUBLIC_MEDIA_NOT_AVAILABLE",
+          message: "Choose active images from the Public Media Library.",
+        });
+    }
+    const existing = await this.settings();
+    const value = {
+      ...(typeof existing === "object" && existing && !Array.isArray(existing) ? existing : {}),
+      ...input,
+    };
     const record = await this.database.client.siteSetting.upsert({
       where: { key: "PUBLIC_SITE" },
-      create: { key: "PUBLIC_SITE", value: json(input), updatedByUserId: actorUserId },
-      update: { value: json(input), version: { increment: 1 }, updatedByUserId: actorUserId },
+      create: { key: "PUBLIC_SITE", value: json(value), updatedByUserId: actorUserId },
+      update: { value: json(value), version: { increment: 1 }, updatedByUserId: actorUserId },
     });
     await this.audit.record({
       actorUserId,

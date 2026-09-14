@@ -13,6 +13,11 @@ const customerContentFiles = [
 ];
 
 const prohibited = [
+  /lorem ipsum/i,
+  /\bedgar\b/i,
+  /\bdemo project\b/i,
+  /\btest project\b/i,
+  /placeholder customer content/i,
   /approved content coming soon/i,
   /before production/i,
   /confirmed communities/i,

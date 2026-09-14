@@ -9,6 +9,7 @@ import type { Prisma } from "@ctps/database";
 import type { ServiceJobNotificationInput } from "@ctps/validation";
 import type { AuthenticatedIdentity } from "../auth/auth.types";
 import { DatabaseService } from "../database/database.service";
+import { emailFromAddress } from "../common/email-address";
 import { JobsConfigService } from "./jobs-config.service";
 import { formatVancouver } from "./jobs-time";
 import { JobsService } from "./jobs.service";
@@ -48,7 +49,7 @@ export class JobNotificationService {
     const job = await this.jobs.get(jobId, identity);
     const message = customerJobNotification({
       to: job.customerEmailSnapshot,
-      from: this.config.value.EMAIL_FROM,
+      from: emailFromAddress(this.config.value.EMAIL_FROM_NAME, this.config.value.EMAIL_FROM),
       name: job.customerNameSnapshot,
       reference: job.referenceNumber,
       type: input.type,
@@ -141,7 +142,7 @@ export class JobNotificationService {
       const deduplicationKey = `job:${job.id}:REMINDER:${job.scheduledStartAt!.toISOString()}`;
       const message = customerJobNotification({
         to: job.customerEmailSnapshot,
-        from: this.config.value.EMAIL_FROM,
+        from: emailFromAddress(this.config.value.EMAIL_FROM_NAME, this.config.value.EMAIL_FROM),
         name: job.customerNameSnapshot,
         reference: job.referenceNumber,
         type: "REMINDER",

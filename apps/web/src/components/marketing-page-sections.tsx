@@ -6,7 +6,11 @@ import Link from "next/link";
 
 import type { PublicProject } from "@/lib/before-after-api";
 import { GeneralInquiryForm } from "./general-inquiry-form";
-import type { MarketingSection, PublishedMarketingPage } from "@/lib/marketing-api";
+import type {
+  MarketingSection,
+  PublishedMarketingPage,
+  PublicSiteSettings,
+} from "@/lib/marketing-api";
 import { ProjectComparison } from "./portfolio";
 
 function mediaFor(page: PublishedMarketingPage, section: MarketingSection, index = 0) {
@@ -334,7 +338,7 @@ export function EditorialContact({
   settings,
 }: {
   readonly section: MarketingSection;
-  readonly settings?: Record<string, string> | null;
+  readonly settings?: PublicSiteSettings | null;
 }) {
   const email = settings?.contactEmail;
   const phone = settings?.contactPhone;

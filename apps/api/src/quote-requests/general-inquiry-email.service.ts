@@ -41,7 +41,9 @@ export class GeneralInquiryEmailService {
     generalInquiryId: string;
     customerEmail: string;
     customerName: string;
+    customerPhone?: string;
     serviceLabel?: string;
+    message: string;
     from: string;
     staffEmail: string;
   }) {
@@ -59,7 +61,11 @@ export class GeneralInquiryEmailService {
         message: staffGeneralInquiryNotification({
           to: input.staffEmail,
           from: input.from,
+          senderName: input.customerName,
+          senderEmail: input.customerEmail,
+          ...(input.customerPhone ? { senderPhone: input.customerPhone } : {}),
           ...(input.serviceLabel ? { serviceLabel: input.serviceLabel } : {}),
+          message: input.message,
         }),
       },
     ];

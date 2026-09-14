@@ -39,6 +39,11 @@ const strings = (value: Prisma.JsonValue): string[] =>
   Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
 const hash = (value: string) => createHash("sha256").update(value).digest("hex");
 const token = () => randomBytes(32).toString("base64url");
+export const ESTIMATOR_UNAVAILABLE_MESSAGE =
+  "Online estimates are temporarily unavailable. Request a quote instead.";
+export function isDevelopmentPricingVersionCode(versionCode: string) {
+  return /(?:^|[-_.])(dev(?:elopment)?|test|sample|draft)(?:[-_.]|$)/i.test(versionCode);
+}
 const stableInput = (input: Omit<EstimatorCalculationInput, "idempotencyKey" | "honeypot">) => ({
   ...input,
   answers: Object.fromEntries(Object.entries(input.answers).sort(([a], [b]) => a.localeCompare(b))),
@@ -62,7 +67,6 @@ export class EstimatorService {
       },
       include: {
         configurations: {
-          where: { enabled: true },
           include: { rules: true },
           orderBy: { displayOrder: "asc" },
         },
@@ -70,12 +74,25 @@ export class EstimatorService {
       orderBy: { effectiveFrom: "desc" },
       take: 2,
     });
-    if (versions.length !== 1)
+    const version = versions[0];
+    const configurationIsComplete =
+      version?.configurations.length === 5 &&
+      version.configurations.some(({ enabled }) => enabled) &&
+      version.configurations.every(
+        (configuration) => validatePricingDefinition(this.definition(configuration)).length === 0,
+      );
+    if (
+      versions.length !== 1 ||
+      !version ||
+      !configurationIsComplete ||
+      (this.config.NODE_ENV === "production" &&
+        isDevelopmentPricingVersionCode(version.versionCode))
+    )
       throw new ServiceUnavailableException({
         code: "ESTIMATOR_UNAVAILABLE",
-        message: "The preliminary estimator is temporarily unavailable. Please request a quote.",
+        message: ESTIMATOR_UNAVAILABLE_MESSAGE,
       });
-    return versions[0]!;
+    return version;
   }
   private definition(
     configuration: Awaited<ReturnType<EstimatorService["activeVersion"]>>["configurations"][number],
@@ -208,7 +225,9 @@ export class EstimatorService {
   }
   async publicConfiguration() {
     const version = await this.activeVersion();
-    const enabled = new Set(version.configurations.map(({ serviceKey }) => serviceKey));
+    const enabled = new Set(
+      version.configurations.filter(({ enabled }) => enabled).map(({ serviceKey }) => serviceKey),
+    );
     return {
       versionCode: version.versionCode,
       currency: "CAD",
@@ -237,7 +256,7 @@ export class EstimatorService {
     const configuration = version.configurations.find(
       ({ serviceKey }) => serviceKey === input.serviceKey,
     );
-    if (!configuration)
+    if (!configuration || !configuration.enabled)
       throw new BadRequestException({
         code: "SERVICE_NOT_ESTIMATABLE",
         message: "This service is not currently available in the estimator.",

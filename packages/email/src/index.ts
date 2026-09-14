@@ -75,17 +75,26 @@ export function staffQuoteNotification(input: {
   to: string;
   from: string;
   reference: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone?: string;
   services: readonly string[];
+  propertyType: string;
+  serviceArea: string;
 }): QuoteEmailMessage {
   const normalizedReference = input.reference.toUpperCase();
   const reference = escapeHtml(normalizedReference);
   const services = input.services.map(escapeHtml).join(", ");
+  const phoneText = input.customerPhone ? `\nPhone: ${input.customerPhone}` : "";
+  const phoneHtml = input.customerPhone
+    ? `<li><strong>Phone:</strong> ${escapeHtml(input.customerPhone)}</li>`
+    : "";
   return {
     to: input.to,
     from: input.from,
     subject: `New quote request ${normalizedReference}`,
-    text: `A new quote request ${normalizedReference} was submitted for: ${input.services.join(", ")}. Sign in to the admin site to review private customer details.`,
-    html: `<p>A new quote request <strong>${reference}</strong> was submitted for ${services}.</p><p>Sign in to the admin site to review private customer details.</p>`,
+    text: `A new quote request ${normalizedReference} was submitted.\n\nCustomer: ${input.customerName}\nEmail: ${input.customerEmail}${phoneText}\nProperty type: ${input.propertyType}\nService area: ${input.serviceArea}\nServices: ${input.services.join(", ")}\n\nSign in to the admin site to review the full request and any private photos.`,
+    html: `<p>A new quote request <strong>${reference}</strong> was submitted.</p><ul><li><strong>Customer:</strong> ${escapeHtml(input.customerName)}</li><li><strong>Email:</strong> ${escapeHtml(input.customerEmail)}</li>${phoneHtml}<li><strong>Property type:</strong> ${escapeHtml(input.propertyType)}</li><li><strong>Service area:</strong> ${escapeHtml(input.serviceArea)}</li><li><strong>Services:</strong> ${services}</li></ul><p>Sign in to the admin site to review the full request and any private photos.</p>`,
   };
 }
 
@@ -106,15 +115,23 @@ export function customerGeneralInquiryReceipt(input: {
 export function staffGeneralInquiryNotification(input: {
   to: string;
   from: string;
+  senderName: string;
+  senderEmail: string;
+  senderPhone?: string;
   serviceLabel?: string;
+  message: string;
 }): QuoteEmailMessage {
   const context = input.serviceLabel ? ` about ${input.serviceLabel}` : "";
+  const phoneText = input.senderPhone ? `\nPhone: ${input.senderPhone}` : "";
+  const phoneHtml = input.senderPhone
+    ? `<li><strong>Phone:</strong> ${escapeHtml(input.senderPhone)}</li>`
+    : "";
   return {
     to: input.to,
     from: input.from,
     subject: "New general inquiry received",
-    text: `A new general inquiry${context} was submitted. Sign in to the admin site to review the private sender details and message.`,
-    html: `<p>A new general inquiry${escapeHtml(context)} was submitted.</p><p>Sign in to the admin site to review the private sender details and message.</p>`,
+    text: `A new general inquiry${context} was submitted.\n\nSender: ${input.senderName}\nEmail: ${input.senderEmail}${phoneText}${input.serviceLabel ? `\nService: ${input.serviceLabel}` : ""}\n\nMessage:\n${input.message}\n\nSign in to the admin site to manage this inquiry.`,
+    html: `<p>A new general inquiry${escapeHtml(context)} was submitted.</p><ul><li><strong>Sender:</strong> ${escapeHtml(input.senderName)}</li><li><strong>Email:</strong> ${escapeHtml(input.senderEmail)}</li>${phoneHtml}${input.serviceLabel ? `<li><strong>Service:</strong> ${escapeHtml(input.serviceLabel)}</li>` : ""}</ul><p><strong>Message:</strong></p><p>${escapeHtml(input.message).replaceAll("\n", "<br>")}</p><p>Sign in to the admin site to manage this inquiry.</p>`,
   };
 }
 

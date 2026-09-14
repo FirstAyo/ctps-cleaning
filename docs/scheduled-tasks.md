@@ -1,13 +1,13 @@
 # Scheduled Tasks
 
-| Command                                      | Purpose / frequency                        | Safety and failure                                                    |
-| -------------------------------------------- | ------------------------------------------ | --------------------------------------------------------------------- |
-| `pnpm blog:publish-due`                      | Publish due posts every minute             | Bounded, conditional, repeat-safe; monitor invalid totals             |
-| `pnpm jobs:send-reminders`                   | Queue/deliver reminders every 5–15 minutes | Deduplication key prevents repeats; bounded batch                     |
-| `pnpm email:process-outbox`                  | Retry quote/job outbox every minute        | Maximum five attempts, bounded batches, summary only; no body logging |
-| `pnpm maintenance:cleanup-dry-run`           | Daily retention report                     | Read-only; `--execute` is rejected until policy approval              |
-| Existing session/quote cleanup               | In-process hourly cleanup                  | Expired/revoked technical records only; monitor service errors        |
-| `pnpm backup:database` / `pnpm backup:media` | Coordinated daily window                   | Non-overwriting, checksum-verified; alert/copy off-host               |
+| Command                                      | Purpose / frequency                         | Safety and failure                                                    |
+| -------------------------------------------- | ------------------------------------------- | --------------------------------------------------------------------- |
+| `pnpm blog:publish-due`                      | Publish due posts every minute              | Bounded, conditional, repeat-safe; monitor invalid totals             |
+| `pnpm jobs:send-reminders`                   | Queue/deliver reminders every 5–15 minutes  | Deduplication key prevents repeats; bounded batch                     |
+| `pnpm email:process-outbox`                  | Retry quote/inquiry/job outbox every minute | Maximum five attempts, bounded batches, summary only; no body logging |
+| `pnpm maintenance:cleanup-dry-run`           | Daily retention report                      | Read-only; `--execute` is rejected until policy approval              |
+| Existing session/quote cleanup               | In-process hourly cleanup                   | Expired/revoked technical records only; monitor service errors        |
+| `pnpm backup:database` / `pnpm backup:media` | Coordinated daily window                    | Non-overwriting, checksum-verified; alert/copy off-host               |
 
 No submitted quote, job, audit log, published content, or business record is automatically deleted by Phase 10.
 

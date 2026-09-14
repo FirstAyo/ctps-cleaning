@@ -4,7 +4,11 @@ import Link from "next/link";
 
 import type { PublicProject } from "@/lib/before-after-api";
 import type { PublicBlogPost } from "@/lib/blog-api";
-import type { MarketingSection, PublishedMarketingPage } from "@/lib/marketing-api";
+import type {
+  MarketingSection,
+  PublishedMarketingPage,
+  PublicSiteSettings,
+} from "@/lib/marketing-api";
 import {
   EditorialServiceAreas,
   EditorialServicesShowcase,
@@ -57,7 +61,7 @@ function StandardSection({
   readonly page: PublishedMarketingPage;
   readonly section: MarketingSection;
   readonly projects: readonly PublicProject[];
-  readonly settings?: Record<string, string> | null;
+  readonly settings?: PublicSiteSettings | null;
 }) {
   if (section.type === "RICH_TEXT") return <EditorialRichText section={section} />;
   if (section.type === "MEDIA_TEXT") return <EditorialMediaText page={page} section={section} />;
@@ -153,7 +157,7 @@ export function MarketingPageRenderer({
   readonly featuredProject?: PublicProject | null;
   readonly projects?: readonly PublicProject[];
   readonly posts?: readonly PublicBlogPost[];
-  readonly settings?: Record<string, string> | null;
+  readonly settings?: PublicSiteSettings | null;
 }) {
   return (
     <div

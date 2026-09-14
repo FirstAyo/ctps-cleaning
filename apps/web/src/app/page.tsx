@@ -6,7 +6,7 @@ import { MarketingPageRenderer } from "@/components/marketing-page-renderer";
 import { PublicLayout } from "@/components/public-shell";
 import { getPublishedProjects } from "@/lib/before-after-api";
 import { getBlogPosts } from "@/lib/blog-api";
-import { getMarketingMetadata, getMarketingPage } from "@/lib/marketing-api";
+import { getMarketingMetadata, getMarketingPage, getSiteSettings } from "@/lib/marketing-api";
 import { JsonLd, metadataFor, organizationSchema, websiteSchema } from "@/lib/seo";
 
 const fallbackMetadata = metadataFor(
@@ -19,23 +19,35 @@ export function generateMetadata() {
   return getMarketingMetadata("HOME", fallbackMetadata);
 }
 
-function WebsiteSchema() {
-  return <JsonLd data={[organizationSchema, websiteSchema]} />;
+function WebsiteSchema({
+  settings,
+}: {
+  readonly settings: Awaited<ReturnType<typeof getSiteSettings>>;
+}) {
+  return (
+    <JsonLd
+      data={[
+        organizationSchema(settings ?? undefined),
+        websiteSchema(settings?.businessDisplayName),
+      ]}
+    />
+  );
 }
 
 export default async function HomePage() {
-  const [featuredProjects, projects, latestBlog, marketingPage] = await Promise.all([
+  const [featuredProjects, projects, latestBlog, marketingPage, settings] = await Promise.all([
     getPublishedProjects({ featured: "true", pageSize: "1" }),
     getPublishedProjects({ pageSize: "3" }),
     getBlogPosts({ pageSize: "3" }),
     getMarketingPage("HOME"),
+    getSiteSettings(),
   ]);
   const featured = featuredProjects.items[0] ?? null;
 
   if (marketingPage)
     return (
       <PublicLayout>
-        <WebsiteSchema />
+        <WebsiteSchema settings={settings} />
         <MarketingPageRenderer
           featuredProject={featured}
           page={marketingPage}
@@ -47,7 +59,7 @@ export default async function HomePage() {
 
   return (
     <PublicLayout>
-      <WebsiteSchema />
+      <WebsiteSchema settings={settings} />
       <section className="premium-hero" aria-labelledby="homepage-fallback-title">
         <div className="premium-hero-media">
           {process.env.NODE_ENV !== "production" ? (

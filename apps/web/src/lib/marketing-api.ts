@@ -44,6 +44,19 @@ export interface PublishedMarketingPage {
   publishedAt: string;
   media: Array<{ id: string; altText: string; focalPointX: number; focalPointY: number }>;
 }
+export interface PublicSiteSettings {
+  businessDisplayName?: string;
+  brandTagline?: string;
+  primaryCtaLabel?: string;
+  footerDescription?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  logoMediaId?: string | null;
+  defaultSocialImageId?: string | null;
+  announcementEnabled?: boolean;
+  announcementText?: string;
+  socialProfiles?: Partial<Record<"facebook" | "instagram" | "linkedin" | "youtube" | "x", string>>;
+}
 
 function apiUrl(path: string) {
   const base = process.env.API_URL;
@@ -73,29 +86,33 @@ export async function getPublicNavigation() {
     return null;
   }
 }
-export async function getSiteSettings() {
+export async function getSiteSettings(): Promise<PublicSiteSettings | null> {
   try {
     const response = await fetch(apiUrl("public/site-settings"), {
       next: { revalidate: 60, tags: ["marketing:settings"] },
     });
-    return response.ok ? ((await response.json()) as Record<string, string>) : null;
+    return response.ok ? ((await response.json()) as PublicSiteSettings) : null;
   } catch {
     return null;
   }
 }
 
 export async function getMarketingMetadata(pageKey: string, fallback: Metadata): Promise<Metadata> {
-  const page = await getMarketingPage(pageKey);
-  if (!page) return fallback;
-  const image = page.socialImageId ? `/media/marketing/${page.socialImageId}/large` : undefined;
-  const metadataTitle = brandedTitle(page.seoTitle ?? page.title);
-  const socialTitle = brandedTitle(page.ogTitle ?? page.seoTitle ?? page.title);
+  const [page, settings] = await Promise.all([getMarketingPage(pageKey), getSiteSettings()]);
+  const imageId = page?.socialImageId ?? settings?.defaultSocialImageId;
+  const image = imageId ? `/media/marketing/${imageId}/large` : undefined;
+  if (!page && !image) return fallback;
+  const fallbackTitle = typeof fallback.title === "string" ? fallback.title : "CTPS";
+  const metadataTitle = page ? brandedTitle(page.seoTitle ?? page.title) : fallbackTitle;
+  const socialTitle = page
+    ? brandedTitle(page.ogTitle ?? page.seoTitle ?? page.title)
+    : fallbackTitle;
   const description =
-    page.ogDescription ?? page.seoDescription ?? fallback.description ?? undefined;
+    page?.ogDescription ?? page?.seoDescription ?? fallback.description ?? undefined;
   return {
     ...fallback,
     title: metadataTitle,
-    description: page.seoDescription ?? fallback.description,
+    description: page?.seoDescription ?? fallback.description,
     openGraph: {
       ...(typeof fallback.openGraph === "object" ? fallback.openGraph : {}),
       title: socialTitle,

@@ -72,6 +72,28 @@ export class MarketingMediaService {
     @Inject(AuditService) private readonly audit: AuditService,
   ) {}
 
+  private async settingsMediaUsage() {
+    // Lightweight unit-test doubles used by older media tests may omit unrelated delegates.
+    if (!("siteSetting" in this.database.client)) return new Map<string, string[]>();
+    const record = await this.database.client.siteSetting.findUnique({
+      where: { key: "PUBLIC_SITE" },
+      select: { value: true },
+    });
+    const value = record?.value;
+    if (!value || typeof value !== "object" || Array.isArray(value))
+      return new Map<string, string[]>();
+    const settings = value as Record<string, unknown>;
+    const usage = new Map<string, string[]>();
+    for (const [field, label] of [
+      ["logoMediaId", "SITE_LOGO"],
+      ["defaultSocialImageId", "DEFAULT_SOCIAL_IMAGE"],
+    ] as const) {
+      const id = settings[field];
+      if (typeof id === "string") usage.set(id, [...(usage.get(id) ?? []), label]);
+    }
+    return usage;
+  }
+
   private path(key: string) {
     if (!/^[0-9a-f-]{36}\/(?:original|hero|large|standard|card|thumbnail)\.webp$/.test(key))
       throw new Error("Invalid managed marketing-media key");
@@ -81,32 +103,35 @@ export class MarketingMediaService {
     return target;
   }
 
-  private response(media: {
-    id: string;
-    originalFilename: string;
-    title: string;
-    altText: string;
-    caption: string | null;
-    mimeType: string;
-    sizeBytes: number;
-    width: number;
-    height: number;
-    focalPointX: number;
-    focalPointY: number;
-    status: string;
-    createdAt: Date;
-    updatedAt: Date;
-    archivedAt: Date | null;
-    variants: readonly {
-      kind: string;
+  private response(
+    media: {
+      id: string;
+      originalFilename: string;
+      title: string;
+      altText: string;
+      caption: string | null;
+      mimeType: string;
+      sizeBytes: number;
       width: number;
       height: number;
-      sizeBytes: number;
-      mimeType: string;
-    }[];
-    uploader?: { displayName: string };
-    _count?: { pageReferences: number; socialImageFor: number };
-  }) {
+      focalPointX: number;
+      focalPointY: number;
+      status: string;
+      createdAt: Date;
+      updatedAt: Date;
+      archivedAt: Date | null;
+      variants: readonly {
+        kind: string;
+        width: number;
+        height: number;
+        sizeBytes: number;
+        mimeType: string;
+      }[];
+      uploader?: { displayName: string };
+      _count?: { pageReferences: number; socialImageFor: number };
+    },
+    settingsUsageCount = 0,
+  ) {
     return {
       id: media.id,
       originalFilename: media.originalFilename,
@@ -124,7 +149,10 @@ export class MarketingMediaService {
       updatedAt: media.updatedAt,
       archivedAt: media.archivedAt,
       uploadedBy: media.uploader?.displayName,
-      usageCount: (media._count?.pageReferences ?? 0) + (media._count?.socialImageFor ?? 0),
+      usageCount:
+        (media._count?.pageReferences ?? 0) +
+        (media._count?.socialImageFor ?? 0) +
+        settingsUsageCount,
       variants: Object.fromEntries(
         media.variants.map((variant) => [
           variant.kind.toLowerCase(),
@@ -141,6 +169,8 @@ export class MarketingMediaService {
   }
 
   async list(query: PublicMediaListQuery) {
+    const settingsUsage = await this.settingsMediaUsage();
+    const settingsMediaIds = [...settingsUsage.keys()];
     const where: Prisma.PublicMediaAssetWhereInput = { status: query.status };
     if (query.search)
       where.OR = ["title", "originalFilename", "altText"].map((field) => ({
@@ -149,9 +179,21 @@ export class MarketingMediaService {
     if (query.filter === "RECENT")
       where.createdAt = { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) };
     if (query.filter === "USED")
-      where.AND = [{ OR: [{ pageReferences: { some: {} } }, { socialImageFor: { some: {} } }] }];
+      where.AND = [
+        {
+          OR: [
+            { pageReferences: { some: {} } },
+            { socialImageFor: { some: {} } },
+            ...(settingsMediaIds.length ? [{ id: { in: settingsMediaIds } }] : []),
+          ],
+        },
+      ];
     if (query.filter === "UNUSED")
-      where.AND = [{ pageReferences: { none: {} } }, { socialImageFor: { none: {} } }];
+      where.AND = [
+        { pageReferences: { none: {} } },
+        { socialImageFor: { none: {} } },
+        ...(settingsMediaIds.length ? [{ id: { notIn: settingsMediaIds } }] : []),
+      ];
     // Prisma cannot portably compare two columns. Orientation filters are applied to a bounded
     // candidate window while all search/status filters remain parameterized in PostgreSQL.
     const orientation = ["LANDSCAPE", "PORTRAIT", "SQUARE"].includes(query.filter);
@@ -187,7 +229,7 @@ export class MarketingMediaService {
       ? filtered.slice((query.page - 1) * query.pageSize, query.page * query.pageSize)
       : filtered;
     return {
-      items: items.map((item) => this.response(item)),
+      items: items.map((item) => this.response(item, settingsUsage.get(item.id)?.length ?? 0)),
       page: query.page,
       pageSize: query.pageSize,
       total,
@@ -196,38 +238,44 @@ export class MarketingMediaService {
   }
 
   async detail(id: string) {
-    const media = await this.database.client.publicMediaAsset.findUnique({
-      where: { id },
-      include: {
-        variants: true,
-        uploader: { select: { displayName: true } },
-        _count: { select: { pageReferences: true, socialImageFor: true } },
-      },
-    });
+    const [media, settingsUsage] = await Promise.all([
+      this.database.client.publicMediaAsset.findUnique({
+        where: { id },
+        include: {
+          variants: true,
+          uploader: { select: { displayName: true } },
+          _count: { select: { pageReferences: true, socialImageFor: true } },
+        },
+      }),
+      this.settingsMediaUsage(),
+    ]);
     if (!media)
       throw new NotFoundException({
         code: "PUBLIC_MEDIA_NOT_FOUND",
         message: "The public image was not found.",
       });
-    return this.response(media);
+    return this.response(media, settingsUsage.get(id)?.length ?? 0);
   }
 
   async usage(id: string) {
-    const media = await this.database.client.publicMediaAsset.findUnique({
-      where: { id },
-      select: {
-        id: true,
-        pageReferences: {
-          orderBy: [{ page: { title: "asc" } }, { usage: "asc" }],
-          select: {
-            usage: true,
-            sortOrder: true,
-            page: { select: { pageKey: true, title: true, slug: true } },
+    const [media, settingsUsage] = await Promise.all([
+      this.database.client.publicMediaAsset.findUnique({
+        where: { id },
+        select: {
+          id: true,
+          pageReferences: {
+            orderBy: [{ page: { title: "asc" } }, { usage: "asc" }],
+            select: {
+              usage: true,
+              sortOrder: true,
+              page: { select: { pageKey: true, title: true, slug: true } },
+            },
           },
+          socialImageFor: { select: { pageKey: true, title: true, slug: true } },
         },
-        socialImageFor: { select: { pageKey: true, title: true, slug: true } },
-      },
-    });
+      }),
+      this.settingsMediaUsage(),
+    ]);
     if (!media)
       throw new NotFoundException({
         code: "PUBLIC_MEDIA_NOT_FOUND",
@@ -247,6 +295,13 @@ export class MarketingMediaService {
           pageTitle: page.title,
           pageSlug: page.slug,
           usage: "SOCIAL_IMAGE",
+          sortOrder: 0,
+        })),
+        ...(settingsUsage.get(id) ?? []).map((usage) => ({
+          pageKey: "SITE_SETTINGS",
+          pageTitle: "Site Settings",
+          pageSlug: "/",
+          usage,
           sortOrder: 0,
         })),
       ],
@@ -485,16 +540,22 @@ export class MarketingMediaService {
   }
 
   async remove(id: string, identity: AuthenticatedIdentity) {
-    const existing = await this.database.client.publicMediaAsset.findUnique({
-      where: { id },
-      include: { _count: { select: { pageReferences: true, socialImageFor: true } } },
-    });
+    const [existing, settingsUsage] = await Promise.all([
+      this.database.client.publicMediaAsset.findUnique({
+        where: { id },
+        include: { _count: { select: { pageReferences: true, socialImageFor: true } } },
+      }),
+      this.settingsMediaUsage(),
+    ]);
     if (!existing)
       throw new NotFoundException({
         code: "PUBLIC_MEDIA_NOT_FOUND",
         message: "The public image was not found.",
       });
-    const usageCount = existing._count.pageReferences + existing._count.socialImageFor;
+    const usageCount =
+      existing._count.pageReferences +
+      existing._count.socialImageFor +
+      (settingsUsage.get(id)?.length ?? 0);
     if (usageCount)
       throw new ConflictException({
         code: "PUBLIC_MEDIA_REFERENCED",

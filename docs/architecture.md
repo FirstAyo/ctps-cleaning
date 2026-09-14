@@ -24,6 +24,20 @@ The planned pnpm/Turborepo monorepo has `apps/web` (public Next.js), `apps/admin
 - **Email:** templates and provider-neutral SMTP delivery invoked asynchronously where reliability requires it.
 - **SEO:** metadata, canonical, sitemap, robots, and structured-data utilities without fabricating content.
 
+## Public customer and staff lead flow
+
+The normal production journey is deliberately anonymous and conversion-focused:
+
+`Public browsing -> Published Projects -> Request Quote or General Inquiry -> database transaction -> durable email outbox -> configured staff notification and customer acknowledgement`
+
+Quote Requests and General Inquiries are persisted before delivery is attempted. SMTP failure leaves the lead recoverable in protected Admin and eligible for `pnpm email:process-outbox`; it does not turn a committed customer submission into a failure response. `QUOTE_STAFF_EMAIL` is the internal notification recipient and is independent of the optional customer-facing Site Settings email. SMTP credentials remain server environment values and never enter public responses or browser bundles.
+
+The corresponding staff flow is:
+
+`Authenticated staff -> Quotes or Messages -> review private lead details -> follow up -> continue authorized operational workflows`
+
+Only deliberately Published Projects are public customer-work content. Quote data, General Inquiries, private uploads, internal notes, outbox payloads, and staff workflows have no public read route.
+
 ## Authentication and authorization
 
 Phase 3 implements staff-only authentication in the NestJS API using Argon2id passwords and opaque PostgreSQL sessions whose raw tokens exist only in an HttpOnly cookie. The admin validates sessions and forwards cookies server-side but never independently grants access. Authorization maps Users -> Roles -> Permissions through typed constants and API guards; the Super Admin effective-permission invariant is protected. Initial Super Admin creation uses a masked trusted-terminal CLI, never public registration. Session-bound synchronizer tokens protect unsafe cookie requests, and database records provide durable login throttling and audit history. See `authentication-authorization-implementation.md`.
