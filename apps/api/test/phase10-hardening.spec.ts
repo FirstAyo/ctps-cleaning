@@ -22,6 +22,14 @@ const productionEnvironment = {
 };
 
 describe("Phase 10 production hardening", () => {
+  it("packages and verifies the generated Prisma client in the API runtime deployment", () => {
+    const dockerfile = readFileSync(resolve(process.cwd(), "Dockerfile"), "utf8");
+
+    expect(dockerfile).toContain("@prisma+client@*/node_modules/.prisma");
+    expect(dockerfile).toContain('cp -a "$ctps_prisma_source" "$ctps_prisma_target/"');
+    expect(dockerfile).toContain("node -e \"require('@ctps/database')\"");
+  });
+
   it("keeps default marketing content in Draft during production initialization", () => {
     const source = readFileSync(
       resolve(process.cwd(), "src/marketing/marketing.service.ts"),

@@ -7,7 +7,14 @@ WORKDIR /workspace
 COPY . .
 RUN pnpm install --frozen-lockfile
 RUN pnpm db:generate && pnpm --filter @ctps/api... build
-RUN pnpm --filter @ctps/api deploy --prod --legacy /opt/ctps-api
+RUN pnpm --filter @ctps/api deploy --prod --legacy /opt/ctps-api \
+    && ctps_prisma_source="$(find /workspace/node_modules/.pnpm -path '*/@prisma+client@*/node_modules/.prisma' -type d -print -quit)" \
+    && ctps_prisma_target="$(find /opt/ctps-api/node_modules/.pnpm -path '*/@prisma+client@*/node_modules' -type d -print -quit)" \
+    && test -n "$ctps_prisma_source" \
+    && test -n "$ctps_prisma_target" \
+    && cp -a "$ctps_prisma_source" "$ctps_prisma_target/" \
+    && cd /opt/ctps-api \
+    && node -e "require('@ctps/database')"
 
 FROM build AS migration
 CMD ["pnpm", "--filter", "@ctps/database", "exec", "prisma", "migrate", "deploy", "--schema", "prisma/schema.prisma"]
