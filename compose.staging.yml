@@ -1,0 +1,7 @@
+name: ctps-cleaning-staging
+
+services:
+  nginx:
+    volumes:
+      - ${CTPS_STAGING_TLS_DIR:?CTPS_STAGING_TLS_DIR is required}:/etc/nginx/certs:ro
+      - ${CTPS_STAGING_ACME_DIR:?CTPS_STAGING_ACME_DIR is required}:/var/www/acme:ro
