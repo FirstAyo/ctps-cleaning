@@ -15,6 +15,19 @@ describe("Phase 10 production operations", () => {
     expect(compose).toContain("ctps_private_media:/app/storage/private");
   });
 
+  it("initializes persistent media ownership before the non-root API starts", () => {
+    const compose = read("compose.production.yml");
+    const dockerfile = read("apps/api/Dockerfile");
+
+    expect(dockerfile).toContain("FROM runtime AS media-init");
+    expect(dockerfile).toContain(
+      'CMD ["chown", "-R", "ctps:ctps", "/app/storage/public", "/app/storage/private"]',
+    );
+    expect(compose).toContain("network_mode: none");
+    expect(compose).toContain("no-new-privileges:true");
+    expect(compose).toContain("condition: service_completed_successfully");
+  });
+
   it("uses guarded verified backup and isolated restore scripts", () => {
     const databaseBackup = read("scripts/deployment/backup-database.sh");
     const mediaBackup = read("scripts/deployment/backup-media.sh");

@@ -38,6 +38,25 @@ services:
       postgres:
         condition: service_healthy
 
+  media-init:
+    restart: "no"
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+      target: media-init
+    user: "0:0"
+    network_mode: none
+    read_only: true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - ctps_public_media:/app/storage/public
+      - ctps_private_media:/app/storage/private
+
   api:
     <<: *app-defaults
     build:
@@ -52,6 +71,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      media-init:
+        condition: service_completed_successfully
     healthcheck:
       test:
         [

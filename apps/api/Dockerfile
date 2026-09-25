@@ -31,3 +31,7 @@ COPY --from=build --chown=ctps:ctps /opt/ctps-api ./
 USER ctps
 EXPOSE 4000
 CMD ["node", "dist/main.js"]
+
+FROM runtime AS media-init
+USER root
+CMD ["chown", "-R", "ctps:ctps", "/app/storage/public", "/app/storage/private"]
