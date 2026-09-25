@@ -28,6 +28,14 @@ describe("Phase 10 production operations", () => {
     expect(compose).toContain("condition: service_completed_successfully");
   });
 
+  it("uses a project-unique API alias for containers that join a shared proxy network", () => {
+    const compose = read("compose.production.yml");
+
+    expect(compose).toContain("- ctps-api");
+    expect(compose.match(/API_URL: http:\/\/ctps-api:4000/g)).toHaveLength(2);
+    expect(compose).not.toContain("API_URL: http://api:4000");
+  });
+
   it("uses guarded verified backup and isolated restore scripts", () => {
     const databaseBackup = read("scripts/deployment/backup-database.sh");
     const mediaBackup = read("scripts/deployment/backup-media.sh");

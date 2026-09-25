@@ -65,6 +65,10 @@ services:
       target: runtime
     environment:
       API_PORT: "4000"
+    networks:
+      ctps_internal:
+        aliases:
+          - ctps-api
     volumes:
       - ctps_public_media:/app/storage/public
       - ctps_private_media:/app/storage/private
@@ -97,7 +101,7 @@ services:
         NEXT_PUBLIC_SITE_URL: https://${PUBLIC_HOST:-ctps.example.com}
         PUBLIC_INDEXING_ENABLED: ${PUBLIC_INDEXING_ENABLED:-false}
     environment:
-      API_URL: http://api:4000
+      API_URL: http://ctps-api:4000
       WEB_URL: https://${PUBLIC_HOST:-ctps.example.com}
       NEXT_PUBLIC_SITE_URL: https://${PUBLIC_HOST:-ctps.example.com}
       PUBLIC_INDEXING_ENABLED: ${PUBLIC_INDEXING_ENABLED:-false}
@@ -125,7 +129,7 @@ services:
       dockerfile: apps/admin/Dockerfile
       target: runtime
     environment:
-      API_URL: http://api:4000
+      API_URL: http://ctps-api:4000
       ADMIN_URL: https://${ADMIN_HOST:-admin.ctps.example.com}
       PORT: "3001"
     depends_on:
