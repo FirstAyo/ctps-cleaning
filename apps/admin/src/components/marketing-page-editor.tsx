@@ -359,8 +359,8 @@ export function MarketingPageEditor({
                     canDelete={canMediaDelete}
                     canUpdate={canMediaUpdate}
                     canUpload={canMediaUpload}
-                    guidance="Select and reorder up to four optimized public images. Only the first slide is prioritized publicly."
-                    label="Hero images"
+                    guidance="This is a background carousel. Select and reorder up to four optimized public images. Auto-advance uses the interval above; visitors also receive manual controls."
+                    label="Hero carousel images"
                     maxSelections={4}
                     media={media}
                     onChange={(mediaIds) => updateSection(index, { mediaIds })}

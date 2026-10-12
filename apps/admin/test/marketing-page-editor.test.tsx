@@ -98,7 +98,7 @@ describe("marketing page editor", () => {
     expect(screen.getByRole("link", { name: /preview/i }).getAttribute("target")).toBe("_blank");
     expect(screen.getByLabelText("Overlay")).not.toBeNull();
     expect(screen.getByLabelText("SEO title")).not.toBeNull();
-    expect(screen.getByRole("button", { name: /choose from media library/i })).not.toBeNull();
+    expect(screen.getByRole("button", { name: /manage up to 4 images/i })).not.toBeNull();
     expect(screen.getByRole("button", { name: /upload new image/i })).not.toBeNull();
   });
   it("saves the current editor state before publishing the returned Draft version", async () => {
@@ -264,6 +264,109 @@ describe("reusable marketing media controls", () => {
     fireEvent.click(screen.getByRole("button", { name: /use this image/i }));
     expect(onChange).toHaveBeenCalledWith([item.id]);
     expect(close).toHaveBeenCalled();
+  });
+
+  it("selects multiple ordered images for the Hero carousel", async () => {
+    const first = media(crypto.randomUUID(), "First Hero");
+    const second = media(crypto.randomUUID(), "Second Hero");
+    Object.defineProperties(HTMLDialogElement.prototype, {
+      showModal: {
+        configurable: true,
+        value: function (this: HTMLDialogElement) {
+          this.setAttribute("open", "");
+        },
+      },
+      close: {
+        configurable: true,
+        value: function (this: HTMLDialogElement) {
+          this.removeAttribute("open");
+        },
+      },
+    });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          items: [first, second],
+          page: 1,
+          pageSize: 24,
+          total: 2,
+          totalPages: 1,
+        }),
+      }),
+    );
+    const onChange = vi.fn();
+    renderWithToast(
+      <MarketingImageField
+        canDelete
+        canUpdate
+        canUpload
+        guidance="Choose Hero carousel images."
+        label="Hero carousel images"
+        maxSelections={4}
+        media={[first, second]}
+        onChange={onChange}
+        selectedIds={[]}
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: /manage up to 4 images/i }));
+    await waitFor(() => expect(screen.getByText("First Hero")).not.toBeNull());
+    fireEvent.click(screen.getByRole("button", { name: /first hero/i }));
+    fireEvent.click(screen.getByRole("button", { name: /second hero/i }));
+    expect(screen.getByText("2 of 4 selected")).not.toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: /use selected images/i }));
+    expect(onChange).toHaveBeenCalledWith([first.id, second.id]);
+  });
+
+  it("allows an image into a Draft while preserving the publish-time alt-text block", async () => {
+    const item = { ...media(), altText: "" };
+    Object.defineProperties(HTMLDialogElement.prototype, {
+      showModal: {
+        configurable: true,
+        value: function (this: HTMLDialogElement) {
+          this.setAttribute("open", "");
+        },
+      },
+      close: {
+        configurable: true,
+        value: function (this: HTMLDialogElement) {
+          this.removeAttribute("open");
+        },
+      },
+    });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ items: [item], page: 1, pageSize: 24, total: 1, totalPages: 1 }),
+      }),
+    );
+    const onChange = vi.fn();
+    renderWithToast(
+      <MarketingImageField
+        canDelete
+        canUpdate
+        canUpload
+        guidance="Choose a service image."
+        label="Service image"
+        maxSelections={1}
+        media={[item]}
+        onChange={onChange}
+        selectedIds={[]}
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: /choose from media library/i }));
+    const mediaCardName = new RegExp(item.title, "i");
+    await waitFor(() => expect(screen.getByRole("button", { name: mediaCardName })).not.toBeNull());
+    fireEvent.click(screen.getByRole("button", { name: mediaCardName }));
+    expect(
+      screen.getByText(/publishing remains blocked until descriptive alt text is saved/i),
+    ).not.toBeNull();
+    const useButton = screen.getByRole("button", { name: /use this image/i });
+    expect((useButton as HTMLButtonElement).disabled).toBe(false);
+    fireEvent.click(useButton);
+    expect(onChange).toHaveBeenCalledWith([item.id]);
   });
 
   it("uploads multiple files with per-file success and retryable failure states", async () => {

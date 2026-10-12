@@ -379,7 +379,7 @@ export function FocalPointEditor({
         </label>
       </div>
       {canUpdate ? (
-        <div className="flex gap-2">
+        <div className="media-picker-detail-actions">
           <Button onClick={save}>
             <Save aria-hidden="true" size={16} /> Save details
           </Button>
@@ -410,6 +410,7 @@ export function MediaPickerDialog({
   canUpdate,
   canDelete,
   triggerLabel = "Choose from Media Library",
+  contextLabel = "marketing photography",
   onUse,
 }: {
   readonly initialItems: readonly PublicMediaItem[];
@@ -419,6 +420,7 @@ export function MediaPickerDialog({
   readonly canUpdate: boolean;
   readonly canDelete: boolean;
   readonly triggerLabel?: string;
+  readonly contextLabel?: string;
   readonly onUse: (ids: string[], items: PublicMediaItem[]) => void;
 }) {
   const { toast } = useToast();
@@ -529,8 +531,12 @@ export function MediaPickerDialog({
         <header>
           <div>
             <p className="eyebrow">Public Media Library</p>
-            <h2>Choose marketing photography</h2>
-            <p>Select existing optimized media or upload new images without leaving the editor.</p>
+            <h2>Choose {contextLabel}</h2>
+            <p>
+              {maxSelections > 1
+                ? `Select up to ${maxSelections} optimized images. Select them in the order they should appear.`
+                : "Select one optimized image or upload a new image without leaving the editor."}
+            </p>
           </div>
           <button aria-label="Close media picker" onClick={close} type="button">
             <X aria-hidden="true" />
@@ -648,17 +654,31 @@ export function MediaPickerDialog({
           </aside>
         </div>
         <footer>
-          <span aria-live="polite">
-            {selection.length} of {maxSelections} selected
-          </span>
+          <div className="media-picker-selection-summary" aria-live="polite">
+            <strong>
+              {selection.length} of {maxSelections} selected
+            </strong>
+            {selectionMissingAltText ? (
+              <span>
+                Missing alt text. You can add this image to the draft, but publishing remains
+                blocked until descriptive alt text is saved.
+              </span>
+            ) : null}
+          </div>
           <div>
             <Button onClick={close} variant="outline">
               Cancel
             </Button>
             <Button
-              disabled={!selection.length || selectionMissingAltText}
+              disabled={!selection.length}
               onClick={() => {
                 onUse(selection, items);
+                if (selectionMissingAltText)
+                  toast({
+                    title: "Image added to draft without alt text",
+                    description: "Add and save descriptive alt text before publishing this page.",
+                    tone: "warning",
+                  });
                 close();
               }}
             >
@@ -666,11 +686,6 @@ export function MediaPickerDialog({
             </Button>
           </div>
         </footer>
-        {selectionMissingAltText ? (
-          <p aria-live="polite" className="media-picker-message">
-            Add and save descriptive alt text for each selected image before using it.
-          </p>
-        ) : null}
       </dialog>
       <ConfirmationDialog
         busy={deleting}
@@ -716,6 +731,7 @@ export function MarketingImageField({
   const { toast } = useToast();
   const [known, setKnown] = useState([...media]);
   const [pendingRemoval, setPendingRemoval] = useState<{ id: string; label: string } | null>(null);
+  const nextSlotLabel = slotLabels?.[selectedIds.length];
   const move = (index: number, direction: -1 | 1) => {
     const next = [...selectedIds];
     const target = index + direction;
@@ -752,6 +768,7 @@ export function MarketingImageField({
                     canUpload={canUpload}
                     initialItems={known}
                     maxSelections={1}
+                    contextLabel={slotLabels?.[index] ?? label}
                     onUse={(ids, items) => {
                       const replacement = ids[0];
                       if (!replacement) return;
@@ -771,7 +788,7 @@ export function MarketingImageField({
                       });
                     }}
                     selectedIds={[id]}
-                    triggerLabel="Replace"
+                    triggerLabel={`Replace ${slotLabels?.[index] ?? "this image"}`}
                   />
                   <Button
                     aria-label={`Move ${slotLabels?.[index] ?? `image ${index + 1}`} earlier`}
@@ -815,12 +832,42 @@ export function MarketingImageField({
           treatment.
         </p>
       )}
+      {nextSlotLabel && selectedIds.length < maxSelections ? (
+        <div className="marketing-image-next-slot">
+          <span>Next card: {nextSlotLabel}</span>
+          <MediaPickerDialog
+            canDelete={canDelete}
+            canUpdate={canUpdate}
+            canUpload={canUpload}
+            contextLabel={nextSlotLabel}
+            initialItems={known}
+            maxSelections={1}
+            onUse={(ids, items) => {
+              const nextId = ids[0];
+              if (!nextId) return;
+              setKnown((current) => [
+                ...items,
+                ...current.filter((item) => !items.some(({ id }) => id === item.id)),
+              ]);
+              onChange([...selectedIds, nextId]);
+              toast({
+                title: `${nextSlotLabel} image added to draft`,
+                description: "Save the draft, then publish when the card is ready.",
+                tone: "success",
+              });
+            }}
+            selectedIds={[]}
+            triggerLabel={`Choose image for ${nextSlotLabel}`}
+          />
+        </div>
+      ) : null}
       <MediaPickerDialog
         canDelete={canDelete}
         canUpdate={canUpdate}
         canUpload={canUpload}
         initialItems={known}
         maxSelections={maxSelections}
+        contextLabel={label.toLowerCase()}
         onUse={(ids, items) => {
           setKnown((current) => [
             ...items,
@@ -829,7 +876,13 @@ export function MarketingImageField({
           onChange(ids);
         }}
         selectedIds={selectedIds}
-        triggerLabel={selectedIds.length ? "Add or change images" : "Choose from Media Library"}
+        triggerLabel={
+          maxSelections > 1
+            ? `Manage up to ${maxSelections} images`
+            : selectedIds.length
+              ? "Change image"
+              : "Choose from Media Library"
+        }
       />
       <ConfirmationDialog
         confirmLabel="Remove from draft"
