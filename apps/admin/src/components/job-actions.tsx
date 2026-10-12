@@ -1,6 +1,8 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useConfirmation } from "@ctps/ui/navigation";
+import { useToast } from "@ctps/ui/toast";
 
 async function mutate(path: string, method: string, body?: unknown) {
   const response = await fetch(`/api/admin/${path}`, {
@@ -44,6 +46,8 @@ export function JobActions({
   staff: readonly { id: string; displayName: string }[];
 }) {
   const router = useRouter();
+  const confirm = useConfirmation();
+  const { toast } = useToast();
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
   async function run(action: () => Promise<unknown>) {
@@ -52,9 +56,12 @@ export function JobActions({
     try {
       await action();
       setMessage("Saved.");
+      toast({ title: "Job updated", tone: "success" });
       router.refresh();
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "The action failed.");
+      const failure = error instanceof Error ? error.message : "The action failed.";
+      setMessage(failure);
+      toast({ title: "Job was not updated", description: failure, tone: "error" });
     } finally {
       setBusy(false);
     }
@@ -379,10 +386,17 @@ export function JobActions({
       !["CANCELLED", "CLOSED", "ARCHIVED"].includes(status) ? (
         <form
           className="grid gap-3"
-          onSubmit={(event) => {
+          onSubmit={async (event) => {
             event.preventDefault();
             const data = new FormData(event.currentTarget);
-            if (confirm("Cancel this job while preserving its history?"))
+            if (
+              await confirm({
+                title: "Cancel this job?",
+                description: "Cancel this job while preserving its operational history?",
+                confirmLabel: "Cancel job",
+                destructive: true,
+              })
+            )
               void run(() =>
                 mutate(`jobs/${jobId}/cancel`, "POST", {
                   version,

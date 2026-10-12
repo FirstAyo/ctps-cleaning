@@ -5,6 +5,8 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { BlogPostEditor } from "../src/components/blog-post-editor";
+import { ConfirmationProvider } from "@ctps/ui/navigation";
+import { ToastProvider } from "@ctps/ui/toast";
 import type { BlogPostAdmin } from "../src/lib/blog-types";
 
 const media = {
@@ -26,7 +28,15 @@ const props = {
   canDelete: false,
   canUpload: true,
   canUpdateMedia: true,
+  canDeleteMedia: true,
 } as const;
+const renderEditor = (overrides: Partial<React.ComponentProps<typeof BlogPostEditor>> = {}) => (
+  <ToastProvider>
+    <ConfirmationProvider>
+      <BlogPostEditor {...props} {...overrides} />
+    </ConfirmationProvider>
+  </ToastProvider>
+);
 
 beforeEach(() => {
   document.elementFromPoint = () => document.body;
@@ -48,7 +58,7 @@ afterEach(() => {
 
 describe("professional Blog post editor", () => {
   it("keeps publishing and formatting commands in separate persistent rows", () => {
-    const { container } = render(<BlogPostEditor {...props} />);
+    const { container } = render(renderEditor());
     const publishing = container.querySelector(".blog-publishing-bar");
     const toolbar = screen.getByRole("toolbar", { name: "Formatting toolbar" });
     const canvas = container.querySelector(".blog-writing-editor");
@@ -60,7 +70,7 @@ describe("professional Blog post editor", () => {
   });
 
   it("exposes every required structured formatting command with active-state semantics", () => {
-    render(<BlogPostEditor {...props} />);
+    render(renderEditor());
     expect(screen.getByLabelText("Block type")).not.toBeNull();
     for (const label of [
       "Bold",
@@ -83,7 +93,7 @@ describe("professional Blog post editor", () => {
 
   it("chooses existing Blog media without exposing operational media domains", async () => {
     const user = userEvent.setup();
-    const { container } = render(<BlogPostEditor {...props} />);
+    const { container } = render(renderEditor());
     await user.click(screen.getAllByRole("button", { name: "Insert image" }).at(-1)!);
     expect(screen.getByRole("heading", { name: "Insert article image" })).not.toBeNull();
     expect(screen.getByText("Choose Existing Blog Media")).not.toBeNull();
@@ -115,7 +125,7 @@ describe("professional Blog post editor", () => {
       ),
     );
     const user = userEvent.setup();
-    render(<BlogPostEditor {...props} />);
+    render(renderEditor());
     await user.type(screen.getByLabelText("Article title"), "A useful article");
     await user.type(screen.getByLabelText("Excerpt"), "A useful excerpt for readers.");
     const editor = screen.getByLabelText("Article content");
@@ -163,7 +173,7 @@ describe("professional Blog post editor", () => {
       revisionCount: 1,
       updatedAt: new Date().toISOString(),
     } satisfies BlogPostAdmin;
-    render(<BlogPostEditor {...props} post={post} />);
+    render(renderEditor({ post }));
     expect(screen.getByText("2,500 words")).not.toBeNull();
     expect(screen.getByRole("toolbar", { name: "Formatting toolbar" })).not.toBeNull();
   });

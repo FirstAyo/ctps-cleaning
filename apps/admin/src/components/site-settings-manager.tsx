@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { Button } from "@ctps/ui/primitives";
 import { Save } from "@ctps/ui/icons";
+import { useToast } from "@ctps/ui/toast";
 
 import type { PublicMediaItem } from "@/lib/marketing-types";
 import { MarketingImageField } from "./marketing-media-picker";
@@ -26,6 +27,7 @@ export function SiteSettingsManager({
   canReadMedia,
   canUploadMedia,
   canUpdateMedia,
+  canDeleteMedia,
 }: {
   readonly initialSettings: SiteSettings;
   readonly initialMedia: readonly PublicMediaItem[];
@@ -33,7 +35,9 @@ export function SiteSettingsManager({
   readonly canReadMedia: boolean;
   readonly canUploadMedia: boolean;
   readonly canUpdateMedia: boolean;
+  readonly canDeleteMedia: boolean;
 }) {
+  const { toast } = useToast();
   const [settings, setSettings] = useState(initialSettings);
   const [message, setMessage] = useState("");
   const field = (key: keyof SiteSettings, value: string | boolean | null) =>
@@ -50,7 +54,15 @@ export function SiteSettingsManager({
       body: JSON.stringify(settings),
     });
     const result = (await response.json()) as { message?: string };
-    setMessage(response.ok ? "Site settings saved." : (result.message ?? "Save failed."));
+    const nextMessage = response.ok ? "Site settings saved." : (result.message ?? "Save failed.");
+    setMessage(nextMessage);
+    toast({
+      title: response.ok ? "Site settings saved" : "Site settings were not saved",
+      description: response.ok
+        ? "Brand, contact, and selected image settings are up to date."
+        : nextMessage,
+      tone: response.ok ? "success" : "error",
+    });
   };
   return (
     <div className="grid max-w-4xl gap-5">
@@ -154,6 +166,7 @@ export function SiteSettingsManager({
         {editable && canReadMedia ? (
           <>
             <MarketingImageField
+              canDelete={canDeleteMedia}
               canUpdate={canUpdateMedia}
               canUpload={canUploadMedia}
               guidance="Use an approved transparent or brand-background logo with a clear accessible business name."
@@ -164,6 +177,7 @@ export function SiteSettingsManager({
               selectedIds={settings.logoMediaId ? [settings.logoMediaId] : []}
             />
             <MarketingImageField
+              canDelete={canDeleteMedia}
               canUpdate={canUpdateMedia}
               canUpload={canUploadMedia}
               guidance="Used only when a page has no deliberate social image. Review its crop and text legibility before launch."

@@ -50,6 +50,7 @@ export default async function Page({ params }: { readonly params: Promise<{ id: 
         canDelete={can(identity, own ? "blogPosts.deleteOwn" : "blogPosts.deleteAll")}
         canUpload={can(identity, "blogMedia.uploadOwn")}
         canUpdateMedia={can(identity, own ? "blogMedia.updateOwn" : "blogMedia.updateAll")}
+        canDeleteMedia={can(identity, own ? "blogMedia.deleteOwn" : "blogMedia.deleteAll")}
         canRestoreRevision={can(identity, own ? "blogRevisions.readOwn" : "blogRevisions.readAll")}
       />
     </div>

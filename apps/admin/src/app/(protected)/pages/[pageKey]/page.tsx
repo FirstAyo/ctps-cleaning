@@ -32,6 +32,7 @@ export default async function PageEditor({
       canSeo={identity.permissions.includes("pages.manageSeo")}
       canMediaUpload={identity.permissions.includes("mediaLibrary.upload")}
       canMediaUpdate={identity.permissions.includes("mediaLibrary.update")}
+      canMediaDelete={identity.permissions.includes("mediaLibrary.delete")}
       media={media.items}
       page={page}
       projects={projects.items}

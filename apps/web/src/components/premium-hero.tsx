@@ -82,6 +82,7 @@ export function PremiumHero({
               loading="eager"
               sizes="100vw"
               src={slide.src}
+              unoptimized
               style={
                 slide.focal
                   ? { objectPosition: `${slide.focal.focalPointX}% ${slide.focal.focalPointY}%` }

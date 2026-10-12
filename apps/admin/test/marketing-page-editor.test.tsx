@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { ToastProvider } from "@ctps/ui/toast";
 import { MarketingPageEditor } from "../src/components/marketing-page-editor";
 import {
   FocalPointEditor,
@@ -8,6 +9,8 @@ import {
   MediaUploadQueue,
 } from "../src/components/marketing-media-picker";
 import type { MarketingPage, PublicMediaItem } from "../src/lib/marketing-types";
+
+const renderWithToast = (ui: React.ReactNode) => render(<ToastProvider>{ui}</ToastProvider>);
 
 const page: MarketingPage = {
   id: crypto.randomUUID(),
@@ -79,8 +82,9 @@ afterEach(() => {
 });
 describe("marketing page editor", () => {
   it("presents controlled Hero, Draft, Preview, Publish, and SEO controls", () => {
-    render(
+    renderWithToast(
       <MarketingPageEditor
+        canMediaDelete
         canMediaUpdate
         canMediaUpload
         canPublish
@@ -109,8 +113,9 @@ describe("marketing page editor", () => {
         json: async () => ({ ...page, version: 3, status: "PUBLISHED" }),
       });
     vi.stubGlobal("fetch", fetchMock);
-    render(
+    renderWithToast(
       <MarketingPageEditor
+        canMediaDelete
         canMediaUpdate
         canMediaUpload
         canPublish
@@ -166,8 +171,9 @@ describe("marketing page editor", () => {
         ],
       },
     };
-    render(
+    renderWithToast(
       <MarketingPageEditor
+        canMediaDelete
         canMediaUpdate
         canMediaUpload
         canPublish
@@ -196,8 +202,9 @@ describe("reusable marketing media controls", () => {
     const first = media(crypto.randomUUID(), "First exterior");
     const second = media(crypto.randomUUID(), "Second exterior");
     const onChange = vi.fn();
-    render(
+    renderWithToast(
       <MarketingImageField
+        canDelete
         canUpdate
         canUpload
         guidance="Choose the approved images."
@@ -211,6 +218,7 @@ describe("reusable marketing media controls", () => {
     fireEvent.click(screen.getByRole("button", { name: /move image 2 earlier/i }));
     expect(onChange).toHaveBeenCalledWith([second.id, first.id]);
     fireEvent.click(screen.getByRole("button", { name: /remove image 1/i }));
+    fireEvent.click(screen.getByRole("button", { name: /remove from draft/i }));
     expect(onChange).toHaveBeenCalledWith([second.id]);
   });
 
@@ -234,8 +242,9 @@ describe("reusable marketing media controls", () => {
       }),
     );
     const onChange = vi.fn();
-    render(
+    renderWithToast(
       <MarketingImageField
+        canDelete
         canUpdate
         canUpload
         guidance="Choose an image."
@@ -275,7 +284,7 @@ describe("reusable marketing media controls", () => {
       }),
     );
     const onUploaded = vi.fn();
-    const { container } = render(<MediaUploadQueue canUpload onUploaded={onUploaded} />);
+    const { container } = renderWithToast(<MediaUploadQueue canUpload onUploaded={onUploaded} />);
     const input = container.querySelector('input[type="file"]') as HTMLInputElement;
     const good = new File(["good"], "good.jpg", { type: "image/jpeg" });
     const bad = new File(["bad"], "bad.jpg", { type: "image/jpeg" });
@@ -293,7 +302,7 @@ describe("reusable marketing media controls", () => {
     const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => updated });
     vi.stubGlobal("fetch", fetchMock);
     const onChange = vi.fn();
-    render(<FocalPointEditor canUpdate item={item} onChange={onChange} />);
+    renderWithToast(<FocalPointEditor canUpdate item={item} onChange={onChange} />);
     fireEvent.change(screen.getByLabelText(/horizontal focal point/i), { target: { value: "35" } });
     fireEvent.change(screen.getByLabelText(/vertical focal point/i), { target: { value: "65" } });
     fireEvent.change(screen.getByLabelText(/default alt text/i), {

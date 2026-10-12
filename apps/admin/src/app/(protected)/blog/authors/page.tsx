@@ -18,6 +18,9 @@ export default async function Page() {
         canUpdateAll={can(identity, "authorProfiles.updateAll")}
         canUpdateOwn={can(identity, "authorProfiles.updateOwn")}
         canUpload={can(identity, "blogMedia.uploadOwn")}
+        canDeleteMedia={
+          can(identity, "blogMedia.deleteOwn") || can(identity, "blogMedia.deleteAll")
+        }
         currentUserId={identity.id}
       />
     </div>

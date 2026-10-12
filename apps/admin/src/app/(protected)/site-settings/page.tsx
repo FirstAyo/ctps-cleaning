@@ -22,6 +22,7 @@ export default async function SiteSettingsPage() {
   return (
     <SiteSettingsManager
       canReadMedia={canReadMedia}
+      canDeleteMedia={identity.permissions.includes("mediaLibrary.delete")}
       canUpdateMedia={identity.permissions.includes("mediaLibrary.update")}
       canUploadMedia={identity.permissions.includes("mediaLibrary.upload")}
       editable={identity.permissions.includes("siteSettings.update")}

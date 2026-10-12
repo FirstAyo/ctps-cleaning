@@ -2,6 +2,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button, Input, Label, Select } from "@ctps/ui/primitives";
+import { useConfirmation } from "@ctps/ui/navigation";
+import { useToast } from "@ctps/ui/toast";
 import type { AdminIdentity } from "@/lib/admin-api";
 
 type Rule = {
@@ -121,6 +123,7 @@ async function mutate(path: string, method: string, body?: unknown) {
 }
 export function PricingVersionCreateForm() {
   const router = useRouter();
+  const { toast } = useToast();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   async function submit(form: HTMLFormElement) {
@@ -137,9 +140,12 @@ export function PricingVersionCreateForm() {
           : undefined,
         cloneFromVersionId: data.get("cloneFromVersionId") || undefined,
       })) as { id?: string };
+      toast({ title: "Pricing draft created", tone: "success" });
       router.push(`/pricing/versions/${created.id}`);
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : "Creation failed.");
+      const failure = reason instanceof Error ? reason.message : "Creation failed.";
+      setError(failure);
+      toast({ title: "Pricing draft was not created", description: failure, tone: "error" });
       setBusy(false);
     }
   }
@@ -191,6 +197,8 @@ export function PricingVersionEditor({
   version: PricingVersionDetail;
 }) {
   const router = useRouter();
+  const confirm = useConfirmation();
+  const { toast } = useToast();
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [preview, setPreview] = useState<unknown>();
@@ -202,9 +210,12 @@ export function PricingVersionEditor({
     try {
       await mutate(path, method, body);
       setNotice("Saved.");
+      toast({ title: "Pricing version updated", tone: "success" });
       router.refresh();
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : "The action failed.");
+      const failure = reason instanceof Error ? reason.message : "The action failed.";
+      setError(failure);
+      toast({ title: "Pricing version was not updated", description: failure, tone: "error" });
     }
   }
   return (
@@ -294,8 +305,16 @@ export function PricingVersionEditor({
           {version.status === "DRAFT" && identity.permissions.includes("pricingVersions.delete") ? (
             <Button
               variant="destructive"
-              onClick={() => {
-                if (confirm("Permanently delete this unreferenced draft?"))
+              onClick={async () => {
+                if (
+                  await confirm({
+                    title: "Delete pricing draft?",
+                    description:
+                      "Permanently delete this unreferenced draft? This cannot be undone.",
+                    confirmLabel: "Delete draft",
+                    destructive: true,
+                  })
+                )
                   void action(`pricing/versions/${version.id}`, "DELETE");
               }}
             >
@@ -554,16 +573,36 @@ function ServiceCard({
 }
 export function EstimatorResultArchive({ id }: { id: string }) {
   const router = useRouter();
+  const confirm = useConfirmation();
+  const { toast } = useToast();
   const [error, setError] = useState("");
   return (
     <div>
       <Button
         variant="outline"
-        onClick={() =>
-          void mutate(`estimator-results/${id}/archive`, "POST")
-            .then(() => router.push("/estimator-results"))
-            .catch((reason: Error) => setError(reason.message))
-        }
+        onClick={() => {
+          void confirm({
+            title: "Archive estimator result?",
+            description: "Archive this result and remove it from the active results list?",
+            confirmLabel: "Archive result",
+            destructive: true,
+          }).then((confirmed) => {
+            if (!confirmed) return;
+            void mutate(`estimator-results/${id}/archive`, "POST")
+              .then(() => {
+                toast({ title: "Estimator result archived", tone: "success" });
+                router.push("/estimator-results");
+              })
+              .catch((reason: Error) => {
+                setError(reason.message);
+                toast({
+                  title: "Estimator result was not archived",
+                  description: reason.message,
+                  tone: "error",
+                });
+              });
+          });
+        }}
       >
         Archive result
       </Button>

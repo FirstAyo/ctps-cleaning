@@ -5,6 +5,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Button, Checkbox, Input, Label, Select, Textarea } from "@ctps/ui/primitives";
 import { ArrowLeft, Check, Clock3, Eye, ImageIcon, Save, Send, X } from "@ctps/ui/icons";
+import { useConfirmation } from "@ctps/ui/navigation";
+import { useToast } from "@ctps/ui/toast";
 import Link from "next/link";
 
 import { BlogRichTextEditor } from "./blog-rich-text-editor";
@@ -44,6 +46,7 @@ export function BlogPostEditor({
   canDelete,
   canUpload,
   canUpdateMedia,
+  canDeleteMedia,
   canRestoreRevision = false,
 }: {
   readonly post?: BlogPostAdmin;
@@ -57,8 +60,11 @@ export function BlogPostEditor({
   readonly canDelete: boolean;
   readonly canUpload: boolean;
   readonly canUpdateMedia: boolean;
+  readonly canDeleteMedia: boolean;
   readonly canRestoreRevision?: boolean;
 }) {
+  const confirm = useConfirmation();
+  const { toast } = useToast();
   const [title, setTitle] = useState(post?.title ?? "");
   const [slug, setSlug] = useState(post?.slug ?? "");
   const [slugTouched, setSlugTouched] = useState(Boolean(post));
@@ -147,13 +153,20 @@ export function BlogPostEditor({
     };
     if (!response.ok || !result.items) {
       setFailed(true);
-      setFeedback(result.message ?? "The selected images could not be uploaded.");
+      const failure = result.message ?? "The selected images could not be uploaded.";
+      setFeedback(failure);
+      toast({ title: "Blog image upload failed", description: failure, tone: "error" });
       return;
     }
     setMedia((items) => [...result.items!, ...items]);
     setSelectedMediaId(result.items[0]?.id ?? "");
     setFailed(false);
     setFeedback(`${result.items.length} Blog image(s) uploaded privately.`);
+    toast({
+      title: `${result.items.length} Blog image${result.items.length === 1 ? "" : "s"} uploaded`,
+      description: "Add alt text before inserting or publishing the image.",
+      tone: "success",
+    });
   }
 
   async function saveMediaDetails(item: BlogMedia) {
@@ -167,11 +180,46 @@ export function BlogPostEditor({
     if (!response.ok) {
       setFailed(true);
       setFeedback(result.message ?? "Image details could not be saved.");
+      toast({
+        title: "Image details were not saved",
+        description: result.message ?? "Image details could not be saved.",
+        tone: "error",
+      });
       return false;
     }
     setFeedback("Image details saved.");
     setFailed(false);
+    toast({ title: "Image details saved", tone: "success" });
     return true;
+  }
+
+  async function deleteMedia(item: BlogMedia) {
+    if (referencedMediaIds.includes(item.id)) return;
+    if (
+      !(await confirm({
+        title: "Delete Blog image?",
+        description: `Permanently delete “${item.originalFilename}” and every generated variant?`,
+        confirmLabel: "Delete image",
+        destructive: true,
+      }))
+    )
+      return;
+    const response = await fetch(`/api/admin/blog/media/${item.id}`, { method: "DELETE" });
+    const result = (await response.json().catch(() => ({}))) as { message?: string };
+    if (!response.ok) {
+      const failure = result.message ?? "The Blog image could not be deleted.";
+      setFailed(true);
+      setFeedback(failure);
+      toast({ title: "Blog image was not deleted", description: failure, tone: "error" });
+      return;
+    }
+    setMedia((items) => items.filter(({ id }) => id !== item.id));
+    setSelectedMediaId("");
+    toast({
+      title: "Blog image deleted",
+      description: "The unused image and its generated variants were removed.",
+      tone: "success",
+    });
   }
 
   async function save() {
@@ -221,7 +269,18 @@ export function BlogPostEditor({
   async function lifecycle(action: string, schedule?: string) {
     if (!post || dirty || saveState === "saving") return;
     if (["publish", "unpublish", "archive", "delete"].includes(action)) {
-      if (!confirm(`Confirm ${action} for this post?`)) return;
+      if (
+        !(await confirm({
+          title: `${action[0]!.toUpperCase() + action.slice(1)} this post?`,
+          description:
+            action === "delete"
+              ? "This permanently deletes the post and cannot be undone."
+              : "This changes the publishing state of the post.",
+          confirmLabel: action === "delete" ? "Delete permanently" : `${action} post`,
+          destructive: action === "delete" || action === "archive" || action === "unpublish",
+        }))
+      )
+        return;
     }
     const response = await fetch(
       `/api/admin/blog/posts/${post.id}${action === "delete" ? "" : `/${action}`}`,
@@ -248,7 +307,15 @@ export function BlogPostEditor({
   }
 
   async function restoreRevision(revisionId: string) {
-    if (!post || dirty || !confirm("Restore this revision into the current Draft?")) return;
+    if (!post || dirty) return;
+    if (
+      !(await confirm({
+        title: "Restore this revision?",
+        description: "The selected revision will replace the current draft content.",
+        confirmLabel: "Restore revision",
+      }))
+    )
+      return;
     const response = await fetch(
       `/api/admin/blog/posts/${post.id}/revisions/${revisionId}/restore`,
       {
@@ -291,8 +358,16 @@ export function BlogPostEditor({
           className="blog-back-link"
           href="/blog/posts"
           onClick={(event) => {
-            if (dirty && !confirm("Leave this post and discard unsaved changes?"))
-              event.preventDefault();
+            if (!dirty) return;
+            event.preventDefault();
+            void confirm({
+              title: "Discard unsaved changes?",
+              description: "Leave this post and discard all unsaved changes?",
+              confirmLabel: "Discard and leave",
+              destructive: true,
+            }).then((confirmed) => {
+              if (confirmed) window.location.assign("/blog/posts");
+            });
           }}
         >
           <ArrowLeft aria-hidden="true" /> Posts
@@ -700,6 +775,21 @@ export function BlogPostEditor({
                 >
                   Save image details
                 </Button>
+                {canDeleteMedia ? (
+                  <Button
+                    disabled={referencedMediaIds.includes(selectedMedia.id)}
+                    onClick={() => void deleteMedia(selectedMedia)}
+                    type="button"
+                    variant="destructive"
+                  >
+                    Delete image
+                  </Button>
+                ) : null}
+                {canDeleteMedia && referencedMediaIds.includes(selectedMedia.id) ? (
+                  <p className="text-xs text-muted-foreground">
+                    Remove or replace this image in the current post and save before deleting it.
+                  </p>
+                ) : null}
               </>
             ) : (
               <p>Select an image to review its accessibility details.</p>

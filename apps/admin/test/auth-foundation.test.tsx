@@ -7,6 +7,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { AdminShell } from "../src/components/admin-shell";
 import { LoginForm } from "../src/components/auth-forms";
 import { Forbidden } from "../src/components/forbidden";
+import { ToastProvider } from "@ctps/ui/toast";
 
 const replace = vi.fn();
 vi.mock("next/navigation", () => ({
@@ -27,7 +28,11 @@ describe("Phase 3 admin security UI", () => {
     });
     vi.stubGlobal("fetch", fetchMock);
     const user = userEvent.setup();
-    render(<LoginForm next="//hostile.example" />);
+    render(
+      <ToastProvider>
+        <LoginForm next="//hostile.example" />
+      </ToastProvider>,
+    );
     await user.type(screen.getByLabelText("Email"), "staff@example.com");
     await user.type(screen.getByLabelText("Password"), "a secure password");
     await user.click(screen.getByRole("button", { name: "Sign in" }));
@@ -48,11 +53,19 @@ describe("Phase 3 admin security UI", () => {
       }),
     );
     const user = userEvent.setup();
-    render(<LoginForm next={null} />);
+    render(
+      <ToastProvider>
+        <LoginForm next={null} />
+      </ToastProvider>,
+    );
     await user.type(screen.getByLabelText("Email"), "unknown@example.com");
     await user.type(screen.getByLabelText("Password"), "wrong");
     await user.click(screen.getByRole("button", { name: "Sign in" }));
-    expect((await screen.findByRole("alert")).textContent).toContain("Unable to sign in");
+    expect(
+      (await screen.findAllByRole("alert")).some(({ textContent }) =>
+        textContent?.includes("Unable to sign in"),
+      ),
+    ).toBe(true);
     expect(screen.queryByText(/sign up|forgot password/i)).toBeNull();
     vi.unstubAllGlobals();
   });

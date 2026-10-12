@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react";
 import { Button, Input, Label } from "@ctps/ui/primitives";
 import { ThemeToggle } from "@ctps/ui/theme";
 import { useRouter } from "next/navigation";
+import { useToast } from "@ctps/ui/toast";
 
 function safeNext(value: string | null): string {
   return value?.startsWith("/") && !value.startsWith("//") ? value : "/dashboard";
@@ -11,6 +12,7 @@ function safeNext(value: string | null): string {
 
 export function LoginForm({ next }: { readonly next: string | null }) {
   const router = useRouter();
+  const { toast } = useToast();
   const [visible, setVisible] = useState(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
@@ -35,10 +37,13 @@ export function LoginForm({ next }: { readonly next: string | null }) {
             ? "Too many attempts. Please wait and try again."
             : (body.message ?? "Unable to sign in."),
         );
+      toast({ title: "Signed in", tone: "success" });
       router.replace(body.user?.mustChangePassword ? "/change-password" : safeNext(next));
       router.refresh();
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Unable to sign in.");
+      const failure = caught instanceof Error ? caught.message : "Unable to sign in.";
+      setError(failure);
+      toast({ title: "Sign-in failed", description: failure, tone: "error" });
     } finally {
       setPending(false);
     }
@@ -80,6 +85,7 @@ export function LoginForm({ next }: { readonly next: string | null }) {
 
 export function ChangePasswordForm() {
   const router = useRouter();
+  const { toast } = useToast();
   const [visible, setVisible] = useState(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
@@ -100,10 +106,13 @@ export function ChangePasswordForm() {
       });
       const body = (await response.json()) as { message?: string };
       if (!response.ok) throw new Error(body.message ?? "Password change failed.");
+      toast({ title: "Password changed", tone: "success" });
       router.replace("/dashboard");
       router.refresh();
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Password change failed.");
+      const failure = caught instanceof Error ? caught.message : "Password change failed.";
+      setError(failure);
+      toast({ title: "Password was not changed", description: failure, tone: "error" });
     } finally {
       setPending(false);
     }
@@ -163,19 +172,31 @@ export function ChangePasswordForm() {
 
 export function LogoutButton() {
   const router = useRouter();
+  const { toast } = useToast();
   const [pending, setPending] = useState(false);
   return (
     <Button
       disabled={pending}
       onClick={async () => {
         setPending(true);
-        await fetch("/api/auth/logout", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: "{}",
-        });
-        router.replace("/login");
-        router.refresh();
+        try {
+          const response = await fetch("/api/auth/logout", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: "{}",
+          });
+          if (!response.ok) throw new Error("Unable to sign out.");
+          toast({ title: "Signed out", tone: "success" });
+          router.replace("/login");
+          router.refresh();
+        } catch (caught) {
+          toast({
+            title: "Sign-out failed",
+            description: caught instanceof Error ? caught.message : "Unable to sign out.",
+            tone: "error",
+          });
+          setPending(false);
+        }
       }}
       variant="outline"
     >

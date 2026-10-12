@@ -3,6 +3,8 @@
 import { useState, type FormEvent } from "react";
 import { Button, Checkbox, Input, Label } from "@ctps/ui/primitives";
 import { useRouter } from "next/navigation";
+import { useConfirmation } from "@ctps/ui/navigation";
+import { useToast } from "@ctps/ui/toast";
 
 interface Choice {
   readonly id: string;
@@ -39,6 +41,7 @@ function Feedback({ message, error }: { readonly message: string; readonly error
 
 export function CreateUserForm({ roles }: { readonly roles: readonly Choice[] }) {
   const router = useRouter();
+  const { toast } = useToast();
   const [feedback, setFeedback] = useState("");
   const [failed, setFailed] = useState(false);
   const [temporary, setTemporary] = useState("");
@@ -56,11 +59,14 @@ export function CreateUserForm({ roles }: { readonly roles: readonly Choice[] })
       setTemporary(String(result.temporaryPassword ?? ""));
       setFeedback("User created. Copy the temporary password now; it will not be shown again.");
       setFailed(false);
+      toast({ title: "Staff user created", tone: "success" });
       event.currentTarget.reset();
       router.refresh();
     } catch (error) {
       setFailed(true);
-      setFeedback(error instanceof Error ? error.message : "User creation failed.");
+      const failure = error instanceof Error ? error.message : "User creation failed.";
+      setFeedback(failure);
+      toast({ title: "Staff user was not created", description: failure, tone: "error" });
     }
   }
   return (
@@ -123,6 +129,8 @@ export function UserControls({
   readonly roles: readonly Choice[];
 }) {
   const router = useRouter();
+  const confirm = useConfirmation();
+  const { toast } = useToast();
   const [feedback, setFeedback] = useState("");
   const [failed, setFailed] = useState(false);
   const [temporary, setTemporary] = useState("");
@@ -132,16 +140,28 @@ export function UserControls({
     body: unknown,
     confirmation?: string,
   ) {
-    if (confirmation && !window.confirm(confirmation)) return;
+    if (
+      confirmation &&
+      !(await confirm({
+        title: "Confirm account change",
+        description: confirmation,
+        confirmLabel: "Confirm change",
+        destructive: true,
+      }))
+    )
+      return;
     try {
       const result = await mutation(path, method, body);
       setTemporary(String(result.temporaryPassword ?? ""));
       setFeedback("Change saved.");
       setFailed(false);
+      toast({ title: "Account change saved", tone: "success" });
       router.refresh();
     } catch (error) {
       setFailed(true);
-      setFeedback(error instanceof Error ? error.message : "Change failed.");
+      const failure = error instanceof Error ? error.message : "Change failed.";
+      setFeedback(failure);
+      toast({ title: "Account change was not saved", description: failure, tone: "error" });
     }
   }
   return (
@@ -246,6 +266,7 @@ export function UserControls({
 
 export function CreateRoleForm() {
   const router = useRouter();
+  const { toast } = useToast();
   const [feedback, setFeedback] = useState("");
   return (
     <form
@@ -260,10 +281,13 @@ export function CreateRoleForm() {
             description: data.get("description"),
           });
           setFeedback("Role created.");
+          toast({ title: "Role created", tone: "success" });
           event.currentTarget.reset();
           router.refresh();
         } catch (error) {
-          setFeedback(error instanceof Error ? error.message : "Role creation failed.");
+          const failure = error instanceof Error ? error.message : "Role creation failed.";
+          setFeedback(failure);
+          toast({ title: "Role was not created", description: failure, tone: "error" });
         }
       }}
     >
@@ -299,14 +323,18 @@ export function RoleControls({
   readonly permissions: readonly (Choice & { group: string; description: string })[];
 }) {
   const router = useRouter();
+  const { toast } = useToast();
   const [feedback, setFeedback] = useState("");
   async function run(path: string, method: "PATCH" | "PUT", body: unknown) {
     try {
       await mutation(path, method, body);
       setFeedback("Role saved.");
+      toast({ title: "Role saved", tone: "success" });
       router.refresh();
     } catch (error) {
-      setFeedback(error instanceof Error ? error.message : "Role update failed.");
+      const failure = error instanceof Error ? error.message : "Role update failed.";
+      setFeedback(failure);
+      toast({ title: "Role was not saved", description: failure, tone: "error" });
     }
   }
   return (

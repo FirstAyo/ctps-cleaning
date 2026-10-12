@@ -1,7 +1,9 @@
 "use client";
 
-import { ArrowLeft, ArrowRight, Save, Upload, X } from "@ctps/ui/icons";
+import { ArrowLeft, ArrowRight, Save, Trash2, Upload, X } from "@ctps/ui/icons";
+import { ConfirmationDialog } from "@ctps/ui/navigation";
 import { Button } from "@ctps/ui/primitives";
+import { useToast } from "@ctps/ui/toast";
 import Image from "next/image";
 import { useEffect, useId, useRef, useState } from "react";
 
@@ -70,6 +72,7 @@ export function MediaUploadQueue({
   readonly canUpload: boolean;
   readonly onUploaded: (items: PublicMediaItem[]) => void;
 }) {
+  const { toast } = useToast();
   const [queue, setQueue] = useState<QueuedFile[]>([]);
   const queueRef = useRef<QueuedFile[]>([]);
   const inputId = useId();
@@ -132,6 +135,18 @@ export function MediaUploadQueue({
         }),
       );
       onUploaded(successes);
+      if (successes.length)
+        toast({
+          title: `${successes.length} image${successes.length === 1 ? "" : "s"} uploaded`,
+          description: "The new media is ready for alt text and use.",
+          tone: "success",
+        });
+      if (result.failures?.length)
+        toast({
+          title: `${result.failures.length} upload${result.failures.length === 1 ? "" : "s"} failed`,
+          description: "Review the failed file in the upload queue and try again.",
+          tone: "error",
+        });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Upload failed.";
       setQueue((current) =>
@@ -139,6 +154,7 @@ export function MediaUploadQueue({
           ready.some(({ id }) => id === item.id) ? { ...item, state: "FAILED", message } : item,
         ),
       );
+      toast({ title: "Image upload failed", description: message, tone: "error" });
     }
   };
   if (!canUpload) return null;
@@ -199,6 +215,7 @@ export function FocalPointEditor({
   readonly canUpdate: boolean;
   readonly onChange: (item: PublicMediaItem) => void;
 }) {
+  const { toast } = useToast();
   const [draft, setDraft] = useState(item);
   const [message, setMessage] = useState("");
   const position = (event: React.PointerEvent<HTMLButtonElement>) => {
@@ -223,9 +240,19 @@ export function FocalPointEditor({
       }),
     });
     const result = (await response.json()) as PublicMediaItem & { message?: string };
-    if (!response.ok) return setMessage(result.message ?? "Image details could not be saved.");
+    if (!response.ok) {
+      const failure = result.message ?? "Image details could not be saved.";
+      setMessage(failure);
+      toast({ title: "Image details were not saved", description: failure, tone: "error" });
+      return;
+    }
     onChange(result);
     setMessage("Image details saved.");
+    toast({
+      title: "Image details saved",
+      description: "Alt text, caption, and focal point are up to date.",
+      tone: "success",
+    });
   };
   return (
     <div className="media-picker-details">
@@ -381,6 +408,8 @@ export function MediaPickerDialog({
   maxSelections,
   canUpload,
   canUpdate,
+  canDelete,
+  triggerLabel = "Choose from Media Library",
   onUse,
 }: {
   readonly initialItems: readonly PublicMediaItem[];
@@ -388,8 +417,11 @@ export function MediaPickerDialog({
   readonly maxSelections: number;
   readonly canUpload: boolean;
   readonly canUpdate: boolean;
+  readonly canDelete: boolean;
+  readonly triggerLabel?: string;
   readonly onUse: (ids: string[], items: PublicMediaItem[]) => void;
 }) {
+  const { toast } = useToast();
   const dialog = useRef<HTMLDialogElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
   const [items, setItems] = useState([...initialItems]);
@@ -400,6 +432,8 @@ export function MediaPickerDialog({
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<(typeof filters)[number]>("ALL");
   const [message, setMessage] = useState("");
+  const [pendingDelete, setPendingDelete] = useState<PublicMediaItem | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const selectionMissingAltText = selection.some((id) => {
     const item = items.find((candidate) => candidate.id === id);
     return item ? !item.altText.trim() : false;
@@ -452,11 +486,38 @@ export function MediaPickerDialog({
     );
     setActive(newItems[0] ?? null);
   };
+  const removeActive = async () => {
+    if (!pendingDelete) return;
+    setDeleting(true);
+    try {
+      const response = await fetch(`/api/admin/media-library/${pendingDelete.id}`, {
+        method: "DELETE",
+      });
+      const result = (await response.json().catch(() => ({}))) as { message?: string };
+      if (!response.ok) throw new Error(result.message ?? "The image could not be deleted.");
+      const deletedId = pendingDelete.id;
+      setItems((current) => current.filter((item) => item.id !== deletedId));
+      setSelection((current) => current.filter((id) => id !== deletedId));
+      setActive(null);
+      setPendingDelete(null);
+      toast({
+        title: "Image deleted",
+        description: "The unused public image and its generated variants were removed.",
+        tone: "success",
+      });
+    } catch (error) {
+      const failure = error instanceof Error ? error.message : "The image could not be deleted.";
+      setPendingDelete(null);
+      toast({ title: "Image was not deleted", description: failure, tone: "error" });
+    } finally {
+      setDeleting(false);
+    }
+  };
   return (
     <>
       <div className="media-picker-triggers">
         <Button onClick={open} ref={trigger} type="button" variant="outline">
-          Choose from Media Library
+          {triggerLabel}
         </Button>
         {canUpload ? (
           <Button onClick={open} type="button" variant="outline">
@@ -550,17 +611,37 @@ export function MediaPickerDialog({
           </div>
           <aside>
             {active ? (
-              <FocalPointEditor
-                canUpdate={canUpdate}
-                item={active}
-                key={active.id}
-                onChange={(updated) => {
-                  setActive(updated);
-                  setItems((current) =>
-                    current.map((item) => (item.id === updated.id ? updated : item)),
-                  );
-                }}
-              />
+              <>
+                <FocalPointEditor
+                  canUpdate={canUpdate}
+                  item={active}
+                  key={active.id}
+                  onChange={(updated) => {
+                    setActive(updated);
+                    setItems((current) =>
+                      current.map((item) => (item.id === updated.id ? updated : item)),
+                    );
+                  }}
+                />
+                {canDelete ? (
+                  <div className="mt-4 border-t border-border pt-4">
+                    <Button
+                      disabled={active.usageCount > 0}
+                      onClick={() => setPendingDelete(active)}
+                      type="button"
+                      variant="destructive"
+                    >
+                      <Trash2 aria-hidden="true" size={16} /> Delete image
+                    </Button>
+                    {active.usageCount > 0 ? (
+                      <p className="mt-2 text-xs text-muted-foreground">
+                        Replace or remove this image from its {active.usageCount} saved reference
+                        {active.usageCount === 1 ? "" : "s"} before deleting it.
+                      </p>
+                    ) : null}
+                  </div>
+                ) : null}
+              </>
             ) : (
               <p>Select an image to review its metadata and focal point.</p>
             )}
@@ -591,6 +672,20 @@ export function MediaPickerDialog({
           </p>
         ) : null}
       </dialog>
+      <ConfirmationDialog
+        busy={deleting}
+        confirmLabel="Delete permanently"
+        description={
+          pendingDelete
+            ? `Delete “${pendingDelete.title}” and every generated image variant? This cannot be undone.`
+            : "Delete this image?"
+        }
+        destructive
+        onCancel={() => setPendingDelete(null)}
+        onConfirm={() => void removeActive()}
+        open={Boolean(pendingDelete)}
+        title="Delete public image?"
+      />
     </>
   );
 }
@@ -604,6 +699,7 @@ export function MarketingImageField({
   maxSelections,
   canUpload,
   canUpdate,
+  canDelete,
   onChange,
 }: {
   readonly label: string;
@@ -614,9 +710,12 @@ export function MarketingImageField({
   readonly maxSelections: number;
   readonly canUpload: boolean;
   readonly canUpdate: boolean;
+  readonly canDelete: boolean;
   readonly onChange: (ids: string[]) => void;
 }) {
+  const { toast } = useToast();
   const [known, setKnown] = useState([...media]);
+  const [pendingRemoval, setPendingRemoval] = useState<{ id: string; label: string } | null>(null);
   const move = (index: number, direction: -1 | 1) => {
     const next = [...selectedIds];
     const target = index + direction;
@@ -647,6 +746,33 @@ export function MarketingImageField({
                 )}
                 <strong>{item?.title ?? id}</strong>
                 <div>
+                  <MediaPickerDialog
+                    canDelete={canDelete}
+                    canUpdate={canUpdate}
+                    canUpload={canUpload}
+                    initialItems={known}
+                    maxSelections={1}
+                    onUse={(ids, items) => {
+                      const replacement = ids[0];
+                      if (!replacement) return;
+                      const next = [...selectedIds];
+                      next[index] = replacement;
+                      setKnown((current) => [
+                        ...items,
+                        ...current.filter(
+                          (currentItem) => !items.some(({ id }) => id === currentItem.id),
+                        ),
+                      ]);
+                      onChange(next);
+                      toast({
+                        title: "Image replaced in draft",
+                        description: "Save the draft, then publish when the replacement is ready.",
+                        tone: "success",
+                      });
+                    }}
+                    selectedIds={[id]}
+                    triggerLabel="Replace"
+                  />
                   <Button
                     aria-label={`Move ${slotLabels?.[index] ?? `image ${index + 1}`} earlier`}
                     disabled={index === 0}
@@ -667,7 +793,12 @@ export function MarketingImageField({
                   </Button>
                   <Button
                     aria-label={`Remove ${slotLabels?.[index] ?? `image ${index + 1}`}`}
-                    onClick={() => onChange(selectedIds.filter((candidate) => candidate !== id))}
+                    onClick={() =>
+                      setPendingRemoval({
+                        id,
+                        label: slotLabels?.[index] ?? `Image ${index + 1}`,
+                      })
+                    }
                     size="icon"
                     variant="outline"
                   >
@@ -685,6 +816,7 @@ export function MarketingImageField({
         </p>
       )}
       <MediaPickerDialog
+        canDelete={canDelete}
         canUpdate={canUpdate}
         canUpload={canUpload}
         initialItems={known}
@@ -697,6 +829,28 @@ export function MarketingImageField({
           onChange(ids);
         }}
         selectedIds={selectedIds}
+        triggerLabel={selectedIds.length ? "Add or change images" : "Choose from Media Library"}
+      />
+      <ConfirmationDialog
+        confirmLabel="Remove from draft"
+        description={
+          pendingRemoval
+            ? `Remove ${pendingRemoval.label} from this section? The library image itself will not be deleted.`
+            : "Remove this image from the section?"
+        }
+        onCancel={() => setPendingRemoval(null)}
+        onConfirm={() => {
+          if (!pendingRemoval) return;
+          onChange(selectedIds.filter((candidate) => candidate !== pendingRemoval.id));
+          setPendingRemoval(null);
+          toast({
+            title: "Image removed from draft",
+            description: "Save the draft, then publish to remove it from the live page.",
+            tone: "success",
+          });
+        }}
+        open={Boolean(pendingRemoval)}
+        title="Remove section image?"
       />
     </fieldset>
   );

@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useToast } from "@ctps/ui/toast";
 
 const services = [
   "window-cleaning",
@@ -35,6 +36,7 @@ export function JobCreateForm({
   defaultQuoteId?: string;
 }) {
   const router = useRouter();
+  const { toast } = useToast();
   const [mode, setMode] = useState(eligibleQuotes.length ? "quote" : "internal");
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
@@ -81,9 +83,14 @@ export function JobCreateForm({
               customerSchedulingNotes: data.get("customerSchedulingNotes") || null,
               internalOperationalNotes: data.get("internalOperationalNotes") || null,
             });
-      if (result.id) router.push(`/jobs/${result.id}`);
+      if (result.id) {
+        toast({ title: "Job created", tone: "success" });
+        router.push(`/jobs/${result.id}`);
+      }
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "The job could not be created.");
+      const failure = error instanceof Error ? error.message : "The job could not be created.";
+      setMessage(failure);
+      toast({ title: "Job was not created", description: failure, tone: "error" });
     } finally {
       setBusy(false);
     }

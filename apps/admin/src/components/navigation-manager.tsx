@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { Button } from "@ctps/ui/primitives";
 import { Save } from "@ctps/ui/icons";
+import { useToast } from "@ctps/ui/toast";
 
 interface Item {
   systemKey: string;
@@ -18,6 +19,7 @@ export function NavigationManager({
   readonly initialItems: readonly Item[];
   readonly editable: boolean;
 }) {
+  const { toast } = useToast();
   const [items, setItems] = useState([...initialItems]);
   const [message, setMessage] = useState("");
   const update = (index: number, change: Partial<Item>) =>
@@ -32,7 +34,13 @@ export function NavigationManager({
     });
     const result = (await response.json()) as { items?: Item[]; message?: string };
     if (response.ok && result.items) setItems(result.items);
-    setMessage(response.ok ? "Navigation saved." : (result.message ?? "Save failed."));
+    const feedback = response.ok ? "Navigation saved." : (result.message ?? "Save failed.");
+    setMessage(feedback);
+    toast({
+      title: response.ok ? "Navigation saved" : "Navigation was not saved",
+      ...(!response.ok ? { description: feedback } : {}),
+      tone: response.ok ? "success" : "error",
+    });
   };
   return (
     <div className="grid gap-5">

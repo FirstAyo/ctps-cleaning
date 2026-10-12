@@ -1,7 +1,9 @@
 "use client";
 
 import { Archive, RotateCcw, Trash2 } from "@ctps/ui/icons";
+import { ConfirmationDialog } from "@ctps/ui/navigation";
 import { Button } from "@ctps/ui/primitives";
+import { useToast } from "@ctps/ui/toast";
 import { useState } from "react";
 
 import type { PublicMediaItem, PublicMediaPage, PublicMediaUsage } from "@/lib/marketing-types";
@@ -24,6 +26,7 @@ export function MediaLibraryManager({
   readonly canRestore: boolean;
   readonly canDelete: boolean;
 }) {
+  const { toast } = useToast();
   const [result, setResult] = useState(initialPage);
   const [selected, setSelected] = useState<PublicMediaItem | null>(null);
   const [usage, setUsage] = useState<PublicMediaUsage["items"]>([]);
@@ -31,6 +34,11 @@ export function MediaLibraryManager({
   const [filter, setFilter] = useState<(typeof filters)[number]>("ALL");
   const [status, setStatus] = useState<"READY" | "ARCHIVED">("READY");
   const [message, setMessage] = useState("");
+  const [pendingAction, setPendingAction] = useState<{
+    item: PublicMediaItem;
+    action: "archive" | "restore" | "delete";
+  } | null>(null);
+  const [mutating, setMutating] = useState(false);
   const load = async (page = 1, nextFilter = filter, nextStatus = status) => {
     setMessage("Loading marketing images…");
     const parameters = new URLSearchParams({
@@ -57,25 +65,43 @@ export function MediaLibraryManager({
     setUsage(usageResponse.ok ? body.items : []);
   };
   const mutation = async (item: PublicMediaItem, action: "archive" | "restore" | "delete") => {
-    if (
-      action === "delete" &&
-      !window.confirm(`Permanently delete “${item.title}”? This cannot be undone.`)
-    )
-      return;
-    const response = await fetch(
-      `/api/admin/media-library/${item.id}${action === "delete" ? "" : `/${action}`}`,
-      {
-        method: action === "delete" ? "DELETE" : "POST",
-        headers: { "content-type": "application/json" },
-        ...(action === "delete" ? {} : { body: "{}" }),
-      },
-    );
-    const body = (await response.json()) as { message?: string };
-    if (!response.ok) return setMessage(body.message ?? `The image could not be ${action}d.`);
-    setSelected(null);
-    setUsage([]);
-    setMessage(`Image ${action === "delete" ? "deleted" : `${action}d`}.`);
-    await load(result.page);
+    setMutating(true);
+    try {
+      const response = await fetch(
+        `/api/admin/media-library/${item.id}${action === "delete" ? "" : `/${action}`}`,
+        {
+          method: action === "delete" ? "DELETE" : "POST",
+          headers: { "content-type": "application/json" },
+          ...(action === "delete" ? {} : { body: "{}" }),
+        },
+      );
+      const body = (await response.json().catch(() => ({}))) as { message?: string };
+      if (!response.ok) throw new Error(body.message ?? `The image could not be ${action}d.`);
+      setSelected(null);
+      setUsage([]);
+      setPendingAction(null);
+      toast({
+        title:
+          action === "delete"
+            ? "Image deleted"
+            : action === "archive"
+              ? "Image archived"
+              : "Image restored",
+        description:
+          action === "delete"
+            ? "The unused public image and all generated variants were removed."
+            : `The image is now ${action === "archive" ? "hidden from active selection" : "available for selection"}.`,
+        tone: "success",
+      });
+      await load(result.page);
+    } catch (error) {
+      const failure = error instanceof Error ? error.message : `The image could not be ${action}d.`;
+      setMessage(failure);
+      setPendingAction(null);
+      toast({ title: "Image action failed", description: failure, tone: "error" });
+    } finally {
+      setMutating(false);
+    }
   };
   const replaceItem = (updated: PublicMediaItem) => {
     setSelected(updated);
@@ -221,19 +247,25 @@ export function MediaLibraryManager({
               </section>
               <div className="media-library-actions">
                 {selected.status === "READY" && canArchive ? (
-                  <Button onClick={() => mutation(selected, "archive")} variant="outline">
+                  <Button
+                    onClick={() => setPendingAction({ item: selected, action: "archive" })}
+                    variant="outline"
+                  >
                     <Archive aria-hidden="true" size={16} /> Archive
                   </Button>
                 ) : null}
                 {selected.status === "ARCHIVED" && canRestore ? (
-                  <Button onClick={() => mutation(selected, "restore")} variant="outline">
+                  <Button
+                    onClick={() => setPendingAction({ item: selected, action: "restore" })}
+                    variant="outline"
+                  >
                     <RotateCcw aria-hidden="true" size={16} /> Restore
                   </Button>
                 ) : null}
                 {canDelete ? (
                   <Button
                     disabled={selected.usageCount > 0}
-                    onClick={() => mutation(selected, "delete")}
+                    onClick={() => setPendingAction({ item: selected, action: "delete" })}
                     variant="destructive"
                   >
                     <Trash2 aria-hidden="true" size={16} /> Delete permanently
@@ -255,6 +287,38 @@ export function MediaLibraryManager({
           )}
         </aside>
       </div>
+      <ConfirmationDialog
+        busy={mutating}
+        confirmLabel={
+          pendingAction?.action === "delete"
+            ? "Delete permanently"
+            : pendingAction?.action === "archive"
+              ? "Archive image"
+              : "Restore image"
+        }
+        description={
+          pendingAction?.action === "delete"
+            ? `Delete “${pendingAction.item.title}” and every generated variant? This cannot be undone.`
+            : pendingAction?.action === "archive"
+              ? `Archive “${pendingAction.item.title}”? It will no longer be available for new page selections.`
+              : pendingAction
+                ? `Restore “${pendingAction.item.title}” to the active media library?`
+                : "Confirm this image action."
+        }
+        destructive={pendingAction?.action === "delete"}
+        onCancel={() => setPendingAction(null)}
+        onConfirm={() => {
+          if (pendingAction) void mutation(pendingAction.item, pendingAction.action);
+        }}
+        open={Boolean(pendingAction)}
+        title={
+          pendingAction?.action === "delete"
+            ? "Delete public image?"
+            : pendingAction?.action === "archive"
+              ? "Archive public image?"
+              : "Restore public image?"
+        }
+      />
     </div>
   );
 }

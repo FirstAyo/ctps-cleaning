@@ -23,6 +23,7 @@ export default async function Page() {
       canDelete={false}
       canUpload={can(identity, "blogMedia.uploadOwn")}
       canUpdateMedia={can(identity, "blogMedia.updateOwn") || can(identity, "blogMedia.updateAll")}
+      canDeleteMedia={can(identity, "blogMedia.deleteOwn") || can(identity, "blogMedia.deleteAll")}
     />
   );
 }

@@ -2,6 +2,8 @@
 "use client";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useConfirmation, useTextEntry } from "@ctps/ui/navigation";
+import { useToast } from "@ctps/ui/toast";
 
 async function mutate(path: string, method: string, body?: unknown) {
   const response = await fetch(`/api/admin/${path}`, {
@@ -125,6 +127,7 @@ export function JobIncidentControls({
   canManage: boolean;
 }) {
   const router = useRouter();
+  const requestText = useTextEntry();
   if (!canManage) return null;
   return (
     <div className="grid gap-2">
@@ -135,7 +138,14 @@ export function JobIncidentControls({
             className="justify-self-start text-sm underline"
             key={item.id}
             onClick={async () => {
-              const resolutionNotes = prompt(`Resolution notes for ${item.title}`);
+              const resolutionNotes = await requestText({
+                title: `Resolve ${item.title}`,
+                description: "Record how this incident was resolved before closing it.",
+                label: "Resolution notes",
+                confirmLabel: "Resolve incident",
+                multiline: true,
+                required: true,
+              });
               if (!resolutionNotes) return;
               await mutate(`jobs/${jobId}/incidents/${item.id}`, "PATCH", {
                 resolved: true,
@@ -153,6 +163,7 @@ export function JobIncidentControls({
 }
 export function JobMediaUploader({ jobId, canUpload }: { jobId: string; canUpload: boolean }) {
   const router = useRouter();
+  const { toast } = useToast();
   const [files, setFiles] = useState<File[]>([]);
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
@@ -180,9 +191,12 @@ export function JobMediaUploader({ jobId, canUpload }: { jobId: string; canUploa
       previews.forEach(({ url }) => URL.revokeObjectURL(url));
       setFiles([]);
       setMessage("Private photos uploaded.");
+      toast({ title: "Private photos uploaded", tone: "success" });
       router.refresh();
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Upload failed. You can retry.");
+      const failure = error instanceof Error ? error.message : "Upload failed. You can retry.";
+      setMessage(failure);
+      toast({ title: "Photo upload failed", description: failure, tone: "error" });
     } finally {
       setBusy(false);
     }
@@ -283,13 +297,22 @@ export function JobMediaControls({
   canDelete: boolean;
 }) {
   const router = useRouter();
+  const confirm = useConfirmation();
+  const requestText = useTextEntry();
+  const { toast } = useToast();
   const [message, setMessage] = useState("");
   async function run(path: string, method: string, body?: unknown) {
     try {
       await mutate(path, method, body);
+      toast({
+        title: method === "DELETE" ? "Private photo deleted" : "Photo updated",
+        tone: "success",
+      });
       router.refresh();
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "The action failed.");
+      const failure = error instanceof Error ? error.message : "The action failed.";
+      setMessage(failure);
+      toast({ title: "Photo action failed", description: failure, tone: "error" });
     }
   }
   return (
@@ -321,8 +344,15 @@ export function JobMediaControls({
               </button>
               <button
                 className="text-xs underline"
-                onClick={() => {
-                  const altText = prompt("Alt text", item.altText);
+                onClick={async () => {
+                  const altText = await requestText({
+                    title: "Edit image alt text",
+                    description:
+                      "Describe the useful visual information for staff using assistive technology.",
+                    label: "Alt text",
+                    initialValue: item.altText,
+                    confirmLabel: "Save alt text",
+                  });
                   if (altText !== null)
                     void run(`jobs/${jobId}/media/${item.id}`, "PATCH", { altText });
                 }}
@@ -332,8 +362,13 @@ export function JobMediaControls({
               </button>
               <button
                 className="text-xs underline"
-                onClick={() => {
-                  const caption = prompt("Caption", item.caption ?? "");
+                onClick={async () => {
+                  const caption = await requestText({
+                    title: "Edit image caption",
+                    label: "Caption",
+                    initialValue: item.caption ?? "",
+                    confirmLabel: "Save caption",
+                  });
                   if (caption !== null)
                     void run(`jobs/${jobId}/media/${item.id}`, "PATCH", {
                       caption: caption || null,
@@ -348,8 +383,16 @@ export function JobMediaControls({
           {canDelete ? (
             <button
               className="text-xs text-destructive underline"
-              onClick={() => {
-                if (confirm("Permanently remove this private job photo?"))
+              onClick={async () => {
+                if (
+                  await confirm({
+                    title: "Delete private job photo?",
+                    description:
+                      "Permanently remove this private job photo? This cannot be undone.",
+                    confirmLabel: "Delete photo",
+                    destructive: true,
+                  })
+                )
                   void run(`jobs/${jobId}/media/${item.id}`, "DELETE");
               }}
               type="button"
@@ -377,6 +420,8 @@ export function JobNoteControls({
   canManageInternal: boolean;
 }) {
   const router = useRouter();
+  const confirm = useConfirmation();
+  const requestText = useTextEntry();
   return (
     <div className="mt-3 grid gap-2">
       {notes.map((note) => {
@@ -389,7 +434,14 @@ export function JobNoteControls({
             <button
               className="text-xs underline"
               onClick={async () => {
-                const body = prompt("Update note", note.body);
+                const body = await requestText({
+                  title: "Update note",
+                  label: "Note",
+                  initialValue: note.body,
+                  confirmLabel: "Save note",
+                  multiline: true,
+                  required: true,
+                });
                 if (body) {
                   await mutate(`jobs/${jobId}/notes/${note.id}`, "PATCH", { body });
                   router.refresh();
@@ -402,7 +454,15 @@ export function JobNoteControls({
             <button
               className="text-xs text-destructive underline"
               onClick={async () => {
-                if (confirm("Remove this note from the operational record?")) {
+                if (
+                  await confirm({
+                    title: "Delete operational note?",
+                    description:
+                      "Remove this note from the operational record? This cannot be undone.",
+                    confirmLabel: "Delete note",
+                    destructive: true,
+                  })
+                ) {
                   await mutate(`jobs/${jobId}/notes/${note.id}`, "DELETE");
                   router.refresh();
                 }

@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   Dialog,
+  ConfirmationDialog,
   ImageComparison,
   ThemeToggle,
   getNextComparisonValue,
@@ -89,5 +90,32 @@ describe("dialog foundation", () => {
     await user.click(screen.getByRole("button", { name: "Open dialog" }));
     expect(showModal).toHaveBeenCalledOnce();
     expect(document.querySelector("dialog")?.getAttribute("aria-labelledby")).toBeTruthy();
+  });
+
+  it("uses an accessible in-app confirmation instead of a browser alert", async () => {
+    const showModal = vi.fn(function (this: HTMLDialogElement) {
+      this.setAttribute("open", "");
+    });
+    Object.defineProperty(HTMLDialogElement.prototype, "showModal", {
+      configurable: true,
+      value: showModal,
+    });
+    const onConfirm = vi.fn();
+    const user = userEvent.setup();
+    render(
+      <ConfirmationDialog
+        confirmLabel="Delete image"
+        description="This cannot be undone."
+        destructive
+        onCancel={vi.fn()}
+        onConfirm={onConfirm}
+        open
+        title="Delete public image?"
+      />,
+    );
+    expect(showModal).toHaveBeenCalledOnce();
+    expect(screen.getByRole("dialog", { name: "Delete public image?" })).not.toBeNull();
+    await user.click(screen.getByRole("button", { name: "Delete image" }));
+    expect(onConfirm).toHaveBeenCalledOnce();
   });
 });

@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { Button, Input, Label, Textarea } from "@ctps/ui/primitives";
+import { useConfirmation } from "@ctps/ui/navigation";
+import { useToast } from "@ctps/ui/toast";
 
 import type { BlogTaxonomy } from "@/lib/blog-types";
 
@@ -12,6 +14,8 @@ export function BlogTaxonomyManager({
   readonly kind: "categories" | "tags";
   readonly initialItems: readonly BlogTaxonomy[];
 }) {
+  const confirm = useConfirmation();
+  const { toast } = useToast();
   const [items, setItems] = useState([...initialItems]);
   const [message, setMessage] = useState("");
   async function save(event: React.FormEvent<HTMLFormElement>, id?: string) {
@@ -28,7 +32,12 @@ export function BlogTaxonomyManager({
       body: JSON.stringify(payload),
     });
     const result = (await response.json().catch(() => ({}))) as BlogTaxonomy & { message?: string };
-    if (!response.ok) return setMessage(result.message ?? "The taxonomy item could not be saved.");
+    if (!response.ok) {
+      const failure = result.message ?? "The taxonomy item could not be saved.";
+      setMessage(failure);
+      toast({ title: "Item was not saved", description: failure, tone: "error" });
+      return;
+    }
     setItems((current) =>
       id
         ? current.map((item) => (item.id === id ? { ...item, ...result } : item))
@@ -36,14 +45,30 @@ export function BlogTaxonomyManager({
     );
     if (!id) event.currentTarget.reset();
     setMessage(`${kind === "categories" ? "Category" : "Tag"} saved.`);
+    toast({ title: `${kind === "categories" ? "Category" : "Tag"} saved`, tone: "success" });
   }
   async function remove(id: string) {
-    if (!confirm("Delete this item? Referenced items cannot be deleted.")) return;
+    if (
+      !(await confirm({
+        title: "Delete this item?",
+        description:
+          "Referenced items cannot be deleted. An unused item will be removed permanently.",
+        confirmLabel: "Delete item",
+        destructive: true,
+      }))
+    )
+      return;
     const response = await fetch(`/api/admin/blog/${kind}/${id}`, { method: "DELETE" });
     const result = (await response.json().catch(() => ({}))) as { message?: string };
-    if (!response.ok) return setMessage(result.message ?? "The item could not be deleted.");
+    if (!response.ok) {
+      const failure = result.message ?? "The item could not be deleted.";
+      setMessage(failure);
+      toast({ title: "Item was not deleted", description: failure, tone: "error" });
+      return;
+    }
     setItems((current) => current.filter((item) => item.id !== id));
     setMessage("Item deleted.");
+    toast({ title: "Item deleted", tone: "success" });
   }
   return (
     <div className="grid gap-6">

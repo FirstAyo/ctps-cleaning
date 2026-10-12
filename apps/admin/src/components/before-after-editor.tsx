@@ -6,6 +6,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import type { StructuredTextDocument } from "@ctps/types";
 import { ImageComparison } from "@ctps/ui/image-comparison";
 import { useToast } from "@ctps/ui/toast";
+import { useConfirmation } from "@ctps/ui/navigation";
 import {
   Button,
   Checkbox,
@@ -82,6 +83,7 @@ export function BeforeAfterEditor({
 }) {
   const router = useRouter();
   const { toast } = useToast();
+  const confirm = useConfirmation();
   const initial: ExistingItem[] = [
     ...(project?.primaryBeforeMedia
       ? [
@@ -491,11 +493,15 @@ export function BeforeAfterEditor({
       return;
     }
     if (
-      !window.confirm(
-        action === "delete"
-          ? "Permanently delete this draft project record? Uploaded images remain managed until removed."
-          : `${action[0]!.toUpperCase() + action.slice(1)} this project?`,
-      )
+      !(await confirm({
+        title: `${action[0]!.toUpperCase() + action.slice(1)} this project?`,
+        description:
+          action === "delete"
+            ? "Permanently delete this draft project record? Uploaded images remain managed until removed."
+            : "This changes the public lifecycle state of the project.",
+        confirmLabel: action === "delete" ? "Delete permanently" : `${action} project`,
+        destructive: action === "delete" || action === "archive" || action === "unpublish",
+      }))
     )
       return;
     try {

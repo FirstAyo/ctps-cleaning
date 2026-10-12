@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { BeforeAfterEditor } from "../src/components/before-after-editor";
 import { ToastProvider } from "@ctps/ui/toast";
+import { ConfirmationProvider } from "@ctps/ui/navigation";
 
 const { replace, refresh } = vi.hoisted(() => ({ replace: vi.fn(), refresh: vi.fn() }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ replace, refresh }) }));
@@ -34,15 +35,17 @@ afterEach(() => {
 function editor(overrides: Partial<React.ComponentProps<typeof BeforeAfterEditor>> = {}) {
   return (
     <ToastProvider>
-      <BeforeAfterEditor
-        canArchive={false}
-        canDelete={false}
-        canDeleteMedia
-        canPublish={false}
-        canUpdateMedia
-        canUpload
-        {...overrides}
-      />
+      <ConfirmationProvider>
+        <BeforeAfterEditor
+          canArchive={false}
+          canDelete={false}
+          canDeleteMedia
+          canPublish={false}
+          canUpdateMedia
+          canUpload
+          {...overrides}
+        />
+      </ConfirmationProvider>
     </ToastProvider>
   );
 }

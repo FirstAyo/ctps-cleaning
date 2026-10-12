@@ -4,20 +4,24 @@ import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { SiteSettingsManager } from "../src/components/site-settings-manager";
+import { ToastProvider } from "@ctps/ui/toast";
 
 afterEach(cleanup);
 
 describe("production Site Settings workspace", () => {
   it("offers centralized optional business, announcement, and social fields", () => {
     render(
-      <SiteSettingsManager
-        canReadMedia
-        canUpdateMedia
-        canUploadMedia
-        editable
-        initialMedia={[]}
-        initialSettings={{ businessDisplayName: "CTPS", socialProfiles: {} }}
-      />,
+      <ToastProvider>
+        <SiteSettingsManager
+          canDeleteMedia
+          canReadMedia
+          canUpdateMedia
+          canUploadMedia
+          editable
+          initialMedia={[]}
+          initialSettings={{ businessDisplayName: "CTPS", socialProfiles: {} }}
+        />
+      </ToastProvider>,
     );
     expect(screen.getByLabelText("Business display name")).not.toBeNull();
     expect(screen.getByLabelText("Public contact email")).not.toBeNull();
@@ -30,14 +34,17 @@ describe("production Site Settings workspace", () => {
 
   it("does not expose media selection without Public Media access", () => {
     render(
-      <SiteSettingsManager
-        canReadMedia={false}
-        canUpdateMedia={false}
-        canUploadMedia={false}
-        editable
-        initialMedia={[]}
-        initialSettings={{}}
-      />,
+      <ToastProvider>
+        <SiteSettingsManager
+          canDeleteMedia={false}
+          canReadMedia={false}
+          canUpdateMedia={false}
+          canUploadMedia={false}
+          editable
+          initialMedia={[]}
+          initialSettings={{}}
+        />
+      </ToastProvider>,
     );
     expect(screen.queryByRole("button", { name: "Choose from Media Library" })).toBeNull();
     expect(screen.getByText(/Public Media access is required/)).not.toBeNull();

@@ -3,6 +3,7 @@ import Script from "next/script";
 import type { ReactNode } from "react";
 import { ThemeProvider } from "@ctps/ui/theme";
 import { ToastProvider } from "@ctps/ui/toast";
+import { ConfirmationProvider, TextEntryProvider } from "@ctps/ui/navigation";
 import { themeInitScript } from "@ctps/ui/theme-core";
 
 import "./globals.css";
@@ -23,7 +24,11 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
       </head>
       <body>
         <ThemeProvider>
-          <ToastProvider>{children}</ToastProvider>
+          <ToastProvider>
+            <ConfirmationProvider>
+              <TextEntryProvider>{children}</TextEntryProvider>
+            </ConfirmationProvider>
+          </ToastProvider>
         </ThemeProvider>
       </body>
     </html>

@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { Button } from "@ctps/ui/primitives";
 import { ChevronLeft, ChevronRight, Save, Upload } from "@ctps/ui/icons";
+import { ConfirmationDialog } from "@ctps/ui/navigation";
+import { useToast } from "@ctps/ui/toast";
 import Link from "next/link";
 
 import type {
@@ -32,6 +34,7 @@ export function MarketingPageEditor({
   canSeo,
   canMediaUpload,
   canMediaUpdate,
+  canMediaDelete,
 }: {
   readonly page: MarketingPage;
   readonly media: readonly PublicMediaItem[];
@@ -40,10 +43,13 @@ export function MarketingPageEditor({
   readonly canSeo: boolean;
   readonly canMediaUpload: boolean;
   readonly canMediaUpdate: boolean;
+  readonly canMediaDelete: boolean;
 }) {
+  const { toast } = useToast();
   const [page, setPage] = useState(initialPage);
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
+  const [pendingRevision, setPendingRevision] = useState<string | null>(null);
   const updateSection = (index: number, update: Partial<MarketingSection>) =>
     setPage((current) => ({
       ...current,
@@ -95,8 +101,11 @@ export function MarketingPageEditor({
       )) as MarketingPage;
       setPage((current) => ({ ...current, ...result }));
       setMessage("Draft saved.");
+      toast({ title: "Draft saved", description: "Your page changes are saved.", tone: "success" });
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Save failed.");
+      const failure = error instanceof Error ? error.message : "Save failed.";
+      setMessage(failure);
+      toast({ title: "Draft was not saved", description: failure, tone: "error" });
     } finally {
       setBusy(false);
     }
@@ -115,19 +124,20 @@ export function MarketingPageEditor({
       })) as MarketingPage;
       setPage((current) => ({ ...current, ...result }));
       setMessage("Published successfully.");
+      toast({
+        title: "Page published",
+        description: "The saved content, including selected images, is now live.",
+        tone: "success",
+      });
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Publish failed.");
+      const failure = error instanceof Error ? error.message : "Publish failed.";
+      setMessage(failure);
+      toast({ title: "Page was not published", description: failure, tone: "error" });
     } finally {
       setBusy(false);
     }
   };
   const restore = async (revisionId: string) => {
-    if (
-      !window.confirm(
-        "Restore this revision into the current Draft? Published content will not change.",
-      )
-    )
-      return;
     setBusy(true);
     setMessage("");
     try {
@@ -138,8 +148,17 @@ export function MarketingPageEditor({
       )) as MarketingPage;
       setPage((current) => ({ ...current, ...result }));
       setMessage("Revision restored into Draft.");
+      setPendingRevision(null);
+      toast({
+        title: "Revision restored",
+        description: "The revision is now the current draft. Published content has not changed.",
+        tone: "success",
+      });
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Restore failed.");
+      const failure = error instanceof Error ? error.message : "Restore failed.";
+      setMessage(failure);
+      setPendingRevision(null);
+      toast({ title: "Revision was not restored", description: failure, tone: "error" });
     } finally {
       setBusy(false);
     }
@@ -337,6 +356,7 @@ export function MarketingPageEditor({
                     Auto-advance slides
                   </label>
                   <MarketingImageField
+                    canDelete={canMediaDelete}
                     canUpdate={canMediaUpdate}
                     canUpload={canMediaUpload}
                     guidance="Select and reorder up to four optimized public images. Only the first slide is prioritized publicly."
@@ -350,6 +370,7 @@ export function MarketingPageEditor({
               ) : null}
               {page.pageKey === "HOME" && section.type === "SERVICE_SHOWCASE" ? (
                 <MarketingImageField
+                  canDelete={canMediaDelete}
                   canUpdate={canMediaUpdate}
                   canUpload={canMediaUpload}
                   guidance="Images follow the service order shown below. Reuse one library image where appropriate without uploading another copy."
@@ -365,6 +386,7 @@ export function MarketingPageEditor({
               ) : null}
               {page.pageKey === "HOME" && section.type === "RESIDENTIAL_COMMERCIAL" ? (
                 <MarketingImageField
+                  canDelete={canMediaDelete}
                   canUpdate={canMediaUpdate}
                   canUpload={canMediaUpload}
                   guidance="The first image is Residential and the second is Commercial."
@@ -378,6 +400,7 @@ export function MarketingPageEditor({
               ) : null}
               {page.pageKey === "HOME" && section.type === "FINAL_CTA" ? (
                 <MarketingImageField
+                  canDelete={canMediaDelete}
                   canUpdate={canMediaUpdate}
                   canUpload={canMediaUpload}
                   guidance="Choose the single background image used beneath the controlled CTA overlay."
@@ -397,6 +420,7 @@ export function MarketingPageEditor({
                 "FINAL_CTA",
               ].includes(section.type) ? (
                 <MarketingImageField
+                  canDelete={canMediaDelete}
                   canUpdate={canMediaUpdate}
                   canUpload={canMediaUpload}
                   guidance={
@@ -568,7 +592,7 @@ export function MarketingPageEditor({
                   {canPublish ? (
                     <Button
                       disabled={busy}
-                      onClick={() => restore(revision.id)}
+                      onClick={() => setPendingRevision(revision.id)}
                       size="sm"
                       variant="outline"
                     >
@@ -581,6 +605,17 @@ export function MarketingPageEditor({
           </div>
         ) : null}
       </aside>
+      <ConfirmationDialog
+        busy={busy}
+        confirmLabel="Restore revision"
+        description="Restore this revision into the current draft? Published content will not change until you publish again."
+        onCancel={() => setPendingRevision(null)}
+        onConfirm={() => {
+          if (pendingRevision) void restore(pendingRevision);
+        }}
+        open={Boolean(pendingRevision)}
+        title="Restore this revision?"
+      />
     </div>
   );
 }

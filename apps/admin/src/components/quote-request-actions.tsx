@@ -1,6 +1,8 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useConfirmation } from "@ctps/ui/navigation";
+import { useToast } from "@ctps/ui/toast";
 
 const nextStatuses: Record<string, readonly string[]> = {
   NEW: ["UNDER_REVIEW", "CANCELLED"],
@@ -47,6 +49,8 @@ export function QuoteRequestActions({
   assignedToUserId: string | null;
 }) {
   const router = useRouter();
+  const confirm = useConfirmation();
+  const { toast } = useToast();
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
   async function run(action: () => Promise<unknown>) {
@@ -56,8 +60,11 @@ export function QuoteRequestActions({
       await action();
       router.refresh();
       setMessage("Saved.");
+      toast({ title: "Quote request updated", tone: "success" });
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "The action failed.");
+      const failure = error instanceof Error ? error.message : "The action failed.";
+      setMessage(failure);
+      toast({ title: "Quote request was not updated", description: failure, tone: "error" });
     } finally {
       setBusy(false);
     }
@@ -185,11 +192,15 @@ export function QuoteRequestActions({
           <button
             className="min-h-10 rounded-md border border-destructive px-4 font-semibold text-destructive"
             disabled={busy}
-            onClick={() => {
+            onClick={async () => {
               if (
-                window.confirm(
-                  "Permanently delete this archived terminal request? This cannot be undone.",
-                )
+                await confirm({
+                  title: "Delete archived quote request?",
+                  description:
+                    "Permanently delete this archived terminal request? This cannot be undone.",
+                  confirmLabel: "Delete permanently",
+                  destructive: true,
+                })
               )
                 void run(() => mutate(`quote-requests/${id}`, "DELETE")).then(() =>
                   router.push("/quote-requests"),

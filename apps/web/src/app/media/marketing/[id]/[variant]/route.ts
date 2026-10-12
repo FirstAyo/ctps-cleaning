@@ -16,6 +16,7 @@ export async function GET(
         `media/marketing/${id}/${variant}`,
         process.env.API_URL.endsWith("/") ? process.env.API_URL : `${process.env.API_URL}/`,
       ),
+      { cache: "no-store" },
     );
     if (!response.ok)
       return NextResponse.json({ message: "Not found." }, { status: response.status });

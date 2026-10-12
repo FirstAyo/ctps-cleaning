@@ -4,6 +4,8 @@
 
 import { useState } from "react";
 import { Button, Input, Label, Textarea } from "@ctps/ui/primitives";
+import { useConfirmation } from "@ctps/ui/navigation";
+import { useToast } from "@ctps/ui/toast";
 
 export interface BlogAuthor {
   id: string;
@@ -23,15 +25,24 @@ export function BlogAuthorManager({
   canUpdateAll,
   canUpdateOwn,
   canUpload,
+  canDeleteMedia,
 }: {
   readonly authors: readonly BlogAuthor[];
   readonly currentUserId: string;
   readonly canUpdateAll: boolean;
   readonly canUpdateOwn: boolean;
   readonly canUpload: boolean;
+  readonly canDeleteMedia: boolean;
 }) {
+  const confirm = useConfirmation();
+  const { toast } = useToast();
   const [message, setMessage] = useState("");
   const [profileMediaIds, setProfileMediaIds] = useState<Record<string, string | null>>(
+    Object.fromEntries(
+      authors.map((author) => [author.id, author.authorProfile?.profileMediaId ?? null]),
+    ),
+  );
+  const [savedProfileMediaIds, setSavedProfileMediaIds] = useState<Record<string, string | null>>(
     Object.fromEntries(
       authors.map((author) => [author.id, author.authorProfile?.profileMediaId ?? null]),
     ),
@@ -47,7 +58,9 @@ export function BlogAuthorManager({
     };
     const mediaId = result.items?.[0]?.id;
     if (!response.ok || !mediaId) {
-      setMessage(result.message ?? "The profile image could not be uploaded.");
+      const failure = result.message ?? "The profile image could not be uploaded.";
+      setMessage(failure);
+      toast({ title: "Profile image upload failed", description: failure, tone: "error" });
       return;
     }
     await fetch(`/api/admin/blog/media/${mediaId}`, {
@@ -57,6 +70,11 @@ export function BlogAuthorManager({
     });
     setProfileMediaIds((current) => ({ ...current, [userId]: mediaId }));
     setMessage("Profile image uploaded privately. Save the profile to apply it.");
+    toast({
+      title: "Replacement image uploaded",
+      description: "Save the author profile to apply the new image.",
+      tone: "success",
+    });
   }
   async function save(event: React.FormEvent<HTMLFormElement>, userId: string) {
     event.preventDefault();
@@ -72,9 +90,28 @@ export function BlogAuthorManager({
       }),
     });
     const result = (await response.json().catch(() => ({}))) as { message?: string };
-    setMessage(
-      response.ok ? "Author profile saved." : (result.message ?? "The profile could not be saved."),
-    );
+    const feedback = response.ok
+      ? "Author profile saved."
+      : (result.message ?? "The profile could not be saved.");
+    setMessage(feedback);
+    toast({
+      title: response.ok ? "Author profile saved" : "Author profile was not saved",
+      tone: response.ok ? "success" : "error",
+      ...(!response.ok ? { description: feedback } : {}),
+    });
+    const previousMediaId = savedProfileMediaIds[userId] ?? null;
+    const nextMediaId = profileMediaIds[userId] ?? null;
+    if (response.ok) setSavedProfileMediaIds((current) => ({ ...current, [userId]: nextMediaId }));
+    if (response.ok && canDeleteMedia && previousMediaId && previousMediaId !== nextMediaId) {
+      const cleanup = await fetch(`/api/admin/blog/media/${previousMediaId}`, { method: "DELETE" });
+      if (!cleanup.ok)
+        toast({
+          title: "Previous image retained",
+          description:
+            "The profile was saved, but the previous image is still referenced elsewhere.",
+          tone: "info",
+        });
+    }
   }
   return (
     <div className="grid gap-5">
@@ -119,15 +156,45 @@ export function BlogAuthorManager({
               />
             </div>
             {profileMediaIds[author.id] ? (
-              <img
-                alt="Current managed author profile"
-                className="h-24 w-24 rounded-full object-cover"
-                src={`/api/blog-media/${profileMediaIds[author.id]}/thumbnail`}
-              />
+              <div className="flex flex-wrap items-end gap-3">
+                <img
+                  alt="Current managed author profile"
+                  className="h-24 w-24 rounded-full object-cover"
+                  src={`/api/blog-media/${profileMediaIds[author.id]}/thumbnail`}
+                />
+                {editable ? (
+                  <Button
+                    onClick={async () => {
+                      if (
+                        await confirm({
+                          title: "Remove profile image?",
+                          description:
+                            "Remove this image from the author profile? Save the profile to apply the change.",
+                          confirmLabel: "Remove image",
+                          destructive: true,
+                        })
+                      ) {
+                        setProfileMediaIds((current) => ({ ...current, [author.id]: null }));
+                        toast({
+                          title: "Profile image removed from draft",
+                          description: "Save the profile to apply this change.",
+                          tone: "success",
+                        });
+                      }
+                    }}
+                    type="button"
+                    variant="outline"
+                  >
+                    Remove image
+                  </Button>
+                ) : null}
+              </div>
             ) : null}
             {editable && canUpload ? (
               <div>
-                <Label htmlFor={`profile-${author.id}`}>Managed profile image</Label>
+                <Label htmlFor={`profile-${author.id}`}>
+                  {profileMediaIds[author.id] ? "Replace profile image" : "Managed profile image"}
+                </Label>
                 <Input
                   accept="image/jpeg,image/png,image/webp"
                   id={`profile-${author.id}`}
