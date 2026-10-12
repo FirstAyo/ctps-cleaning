@@ -44,6 +44,7 @@ const page: MarketingPage = {
   updatedAt: new Date().toISOString(),
   publishedAt: null,
   revisions: [],
+  media: [],
 };
 const media = (id = crypto.randomUUID(), title = "Property exterior"): PublicMediaItem => ({
   id,
@@ -95,6 +96,37 @@ describe("marketing page editor", () => {
     expect(screen.getByLabelText("SEO title")).not.toBeNull();
     expect(screen.getByRole("button", { name: /choose from media library/i })).not.toBeNull();
     expect(screen.getByRole("button", { name: /upload new image/i })).not.toBeNull();
+  });
+  it("saves the current editor state before publishing the returned Draft version", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ ...page, version: 2 }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ ...page, version: 3, status: "PUBLISHED" }),
+      });
+    vi.stubGlobal("fetch", fetchMock);
+    render(
+      <MarketingPageEditor
+        canMediaUpdate
+        canMediaUpload
+        canPublish
+        canSeo
+        media={[]}
+        page={page}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /publish/i }));
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+    expect(fetchMock.mock.calls[0]?.[0]).toBe("/api/admin/pages/HOME");
+    expect(fetchMock.mock.calls[0]?.[1]).toEqual(expect.objectContaining({ method: "PATCH" }));
+    expect(fetchMock.mock.calls[1]?.[0]).toBe("/api/admin/pages/HOME/publish");
+    expect(fetchMock.mock.calls[1]?.[1]?.body).toContain('"version":2');
   });
   it("exposes human-readable section entries, contextual alt text, media reuse, and Published project selection", () => {
     const servicePage: MarketingPage = {

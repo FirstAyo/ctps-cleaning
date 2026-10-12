@@ -92,6 +92,10 @@
   overflow: hidden;
   border-radius: 0.3rem;
 }
+.marketing-editorial-image,
+.service-catalogue-image {
+  margin: 0;
+}
 .marketing-editorial-image img,
 .service-catalogue-image img,
 .marketing-related-image img {
@@ -1201,6 +1205,22 @@
   position: absolute;
   inset: 0;
 }
+.premium-hero-media {
+  margin: 0;
+}
+.premium-hero-media figcaption {
+  position: absolute;
+  z-index: 2;
+  right: max(1rem, calc((100vw - var(--container-wide)) / 2));
+  bottom: 5.75rem;
+  max-width: min(28rem, calc(100% - 2rem));
+  border-radius: var(--radius-sm);
+  background: rgb(3 15 19 / 0.72);
+  padding: 0.45rem 0.65rem;
+  color: rgb(255 255 255 / 0.88);
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
 .premium-hero-media img {
   object-fit: cover;
   opacity: 0;
@@ -1289,6 +1309,21 @@
 }
 .premium-hero-dots button[aria-current="true"] {
   background: white;
+}
+.marketing-editorial-image figcaption,
+.service-catalogue-image figcaption {
+  position: absolute;
+  right: 0.75rem;
+  bottom: 0.75rem;
+  left: 0.75rem;
+  z-index: 1;
+  width: fit-content;
+  max-width: calc(100% - 1.5rem);
+  background: rgb(3 15 19 / 0.76);
+  padding: 0.4rem 0.6rem;
+  color: white;
+  font-size: 0.75rem;
+  line-height: 1.4;
 }
 .premium-card-grid {
   display: grid;

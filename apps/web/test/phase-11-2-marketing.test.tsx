@@ -135,7 +135,13 @@ describe("Phase 11.2 public editorial compositions", () => {
         page={{
           ...page("COMMERCIAL", [mediaSection]),
           media: [
-            { id, altText: "Approved commercial property", focalPointX: 35, focalPointY: 65 },
+            {
+              id,
+              altText: "Approved commercial property",
+              caption: "Managed commercial property image.",
+              focalPointX: 35,
+              focalPointY: 65,
+            },
           ],
         }}
       />,
@@ -143,5 +149,7 @@ describe("Phase 11.2 public editorial compositions", () => {
     expect(output).toContain(`%2Fmedia%2Fmarketing%2F${id}%2Flarge`);
     expect(output).toContain("35% 65%");
     expect(output).toContain("Approved commercial property");
+    expect(output).toContain("Managed commercial property image.");
+    expect(output).toContain("<figcaption>");
   });
 });

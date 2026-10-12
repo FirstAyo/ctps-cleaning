@@ -21,6 +21,7 @@ export function PremiumHero({
   readonly media?: readonly {
     id: string;
     altText: string;
+    caption: string | null;
     focalPointX: number;
     focalPointY: number;
   }[];
@@ -68,12 +69,12 @@ export function PremiumHero({
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      <div className="premium-hero-media">
+      <figure className="premium-hero-media">
         {slides.map((slide, index) =>
           slide.src ? (
             <Image
-              alt=""
-              aria-hidden={index !== active}
+              alt={slide.focal?.altText ?? ""}
+              aria-hidden={index !== active || !slide.focal?.altText}
               className={index === active ? "is-active" : ""}
               fill
               key={slide.src}
@@ -89,7 +90,10 @@ export function PremiumHero({
             />
           ) : null,
         )}
-      </div>
+        {slides[active]?.focal?.caption ? (
+          <figcaption>{slides[active].focal.caption}</figcaption>
+        ) : null}
+      </figure>
       <div className="premium-hero-shade" />
       <div className="premium-hero-content">
         <p className="eyebrow">{section.eyebrow}</p>

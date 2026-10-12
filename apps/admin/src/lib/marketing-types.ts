@@ -51,6 +51,7 @@ export interface MarketingPage {
     createdAt: string;
     createdBy: { displayName: string };
   }>;
+  media: PublicMediaItem[];
 }
 export interface MarketingPageListItem extends Pick<
   MarketingPage,

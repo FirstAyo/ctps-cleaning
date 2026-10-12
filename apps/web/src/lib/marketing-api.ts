@@ -42,7 +42,13 @@ export interface PublishedMarketingPage {
   ogDescription: string | null;
   socialImageId: string | null;
   publishedAt: string;
-  media: Array<{ id: string; altText: string; focalPointX: number; focalPointY: number }>;
+  media: Array<{
+    id: string;
+    altText: string;
+    caption: string | null;
+    focalPointX: number;
+    focalPointY: number;
+  }>;
 }
 export interface PublicSiteSettings {
   businessDisplayName?: string;

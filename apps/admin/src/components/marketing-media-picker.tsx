@@ -300,11 +300,17 @@ export function FocalPointEditor({
       <label className="cms-field">
         <span>Default alt text</span>
         <textarea
+          aria-describedby={`${item.id}-alt-help`}
           disabled={!canUpdate}
+          required
           rows={2}
           value={draft.altText}
           onChange={(event) => setDraft((current) => ({ ...current, altText: event.target.value }))}
         />
+        <small id={`${item.id}-alt-help`}>
+          Required before publishing. Describe the useful visual information without repeating the
+          nearby heading.
+        </small>
       </label>
       <label className="cms-field">
         <span>Optional caption</span>
@@ -394,6 +400,10 @@ export function MediaPickerDialog({
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<(typeof filters)[number]>("ALL");
   const [message, setMessage] = useState("");
+  const selectionMissingAltText = selection.some((id) => {
+    const item = items.find((candidate) => candidate.id === id);
+    return item ? !item.altText.trim() : false;
+  });
   const load = async (nextPage = 1, nextSearch = search, nextFilter = filter) => {
     setMessage("Loading images…");
     try {
@@ -565,7 +575,7 @@ export function MediaPickerDialog({
               Cancel
             </Button>
             <Button
-              disabled={!selection.length}
+              disabled={!selection.length || selectionMissingAltText}
               onClick={() => {
                 onUse(selection, items);
                 close();
@@ -575,6 +585,11 @@ export function MediaPickerDialog({
             </Button>
           </div>
         </footer>
+        {selectionMissingAltText ? (
+          <p aria-live="polite" className="media-picker-message">
+            Add and save descriptive alt text for each selected image before using it.
+          </p>
+        ) : null}
       </dialog>
     </>
   );

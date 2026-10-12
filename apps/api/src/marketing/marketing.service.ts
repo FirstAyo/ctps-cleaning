@@ -208,7 +208,7 @@ export class MarketingService {
           },
         },
         mediaReferences: {
-          where: { usage: { startsWith: "PUBLISHED:" } },
+          where: { usage: { startsWith: "DRAFT:" } },
           orderBy: { sortOrder: "asc" },
           include: { media: { include: { variants: true } } },
         },
@@ -219,7 +219,11 @@ export class MarketingService {
         code: "PAGE_NOT_FOUND",
         message: "The marketing page was not found.",
       });
-    return page;
+    return {
+      ...page,
+      media: page.mediaReferences.map(({ media }) => media),
+      mediaReferences: undefined,
+    };
   }
 
   async published(pageKey: string) {
@@ -237,9 +241,18 @@ export class MarketingService {
         socialImageId: true,
         publishedAt: true,
         mediaReferences: {
+          where: { usage: { startsWith: "PUBLISHED:" } },
           orderBy: { sortOrder: "asc" },
           select: {
-            media: { select: { id: true, altText: true, focalPointX: true, focalPointY: true } },
+            media: {
+              select: {
+                id: true,
+                altText: true,
+                caption: true,
+                focalPointX: true,
+                focalPointY: true,
+              },
+            },
           },
         },
       },
@@ -472,6 +485,22 @@ export class MarketingService {
       });
       const content = existing.draftContent as MarketingPageUpdateInput["draftContent"];
       const publishedUses = mediaUses(content, "PUBLISHED");
+      const publishedMediaIds = [...new Set(publishedUses.map(({ mediaId }) => mediaId))];
+      if (publishedMediaIds.length) {
+        const accessibleMediaCount = await transaction.publicMediaAsset.count({
+          where: {
+            id: { in: publishedMediaIds },
+            status: "READY",
+            altText: { not: "" },
+          },
+        });
+        if (accessibleMediaCount !== publishedMediaIds.length)
+          throw new ConflictException({
+            code: "MEDIA_ALT_TEXT_REQUIRED",
+            message:
+              "Every selected public image needs descriptive alt text before this page can be published.",
+          });
+      }
       await transaction.marketingPageMedia.deleteMany({
         where: { pageId: existing.id, usage: { startsWith: "PUBLISHED:" } },
       });

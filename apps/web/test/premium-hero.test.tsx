@@ -69,4 +69,33 @@ describe("premium Hero", () => {
     vi.advanceTimersByTime(18_000);
     expect(first?.className).toContain("is-active");
   });
+  it("uses managed alt text and renders an optional semantic caption", () => {
+    vi.stubGlobal(
+      "matchMedia",
+      vi.fn().mockReturnValue({
+        matches: false,
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+      }),
+    );
+    const id = crypto.randomUUID();
+    const { container, getByAltText, getByText } = render(
+      <PremiumHero
+        media={[
+          {
+            id,
+            altText: "Freshly cleaned modern property exterior",
+            caption: "Exterior care completed by CTPS.",
+            focalPointX: 45,
+            focalPointY: 55,
+          },
+        ]}
+        section={{ ...section, mediaIds: [id] }}
+      />,
+    );
+
+    expect(getByAltText("Freshly cleaned modern property exterior")).not.toBeNull();
+    expect(getByText("Exterior care completed by CTPS.").tagName).toBe("FIGCAPTION");
+    expect(container.querySelector("figure.premium-hero-media")).not.toBeNull();
+  });
 });

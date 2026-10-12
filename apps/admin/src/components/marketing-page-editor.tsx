@@ -69,25 +69,30 @@ export function MarketingPageEditor({
       ),
     });
   };
+  const draftPayload = () => ({
+    version: page.version,
+    title: page.title,
+    navigationLabel: page.navigationLabel ?? undefined,
+    draftContent: page.draftContent,
+    ...(canSeo
+      ? {
+          seoTitle: page.seoTitle ?? undefined,
+          seoDescription: page.seoDescription ?? undefined,
+          ogTitle: page.ogTitle ?? undefined,
+          ogDescription: page.ogDescription ?? undefined,
+          socialImageId: page.socialImageId ?? undefined,
+        }
+      : {}),
+  });
   const save = async () => {
     setBusy(true);
     setMessage("");
     try {
-      const result = (await mutation(`pages/${page.pageKey}`, "PATCH", {
-        version: page.version,
-        title: page.title,
-        navigationLabel: page.navigationLabel ?? undefined,
-        draftContent: page.draftContent,
-        ...(canSeo
-          ? {
-              seoTitle: page.seoTitle ?? undefined,
-              seoDescription: page.seoDescription ?? undefined,
-              ogTitle: page.ogTitle ?? undefined,
-              ogDescription: page.ogDescription ?? undefined,
-              socialImageId: page.socialImageId ?? undefined,
-            }
-          : {}),
-      })) as MarketingPage;
+      const result = (await mutation(
+        `pages/${page.pageKey}`,
+        "PATCH",
+        draftPayload(),
+      )) as MarketingPage;
       setPage((current) => ({ ...current, ...result }));
       setMessage("Draft saved.");
     } catch (error) {
@@ -100,8 +105,13 @@ export function MarketingPageEditor({
     setBusy(true);
     setMessage("");
     try {
+      const saved = (await mutation(
+        `pages/${page.pageKey}`,
+        "PATCH",
+        draftPayload(),
+      )) as MarketingPage;
       const result = (await mutation(`pages/${page.pageKey}/publish`, "POST", {
-        version: page.version,
+        version: saved.version,
       })) as MarketingPage;
       setPage((current) => ({ ...current, ...result }));
       setMessage("Published successfully.");

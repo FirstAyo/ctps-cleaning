@@ -20,6 +20,7 @@ function mediaFor(page: PublishedMarketingPage, section: MarketingSection, index
     ? {
         src: `/media/marketing/${media.id}/large`,
         alt: section.items?.[index]?.altText || media.altText,
+        caption: media.caption,
         position: `${media.focalPointX}% ${media.focalPointY}%`,
       }
     : null;
@@ -58,7 +59,7 @@ export function EditorialMediaText({
           ) : null}
         </div>
         {image ? (
-          <div className="marketing-editorial-image">
+          <figure className="marketing-editorial-image">
             <Image
               alt={image.alt}
               fill
@@ -66,7 +67,8 @@ export function EditorialMediaText({
               src={image.src}
               style={{ objectPosition: image.position }}
             />
-          </div>
+            {image.caption ? <figcaption>{image.caption}</figcaption> : null}
+          </figure>
         ) : (
           <div aria-hidden="true" className="marketing-neutral-panel">
             <span>{section.title}</span>
@@ -106,7 +108,7 @@ export function EditorialServiceCatalogue({
               <article className="service-catalogue-row" key={item.key}>
                 <div className="service-catalogue-number">{String(index + 1).padStart(2, "0")}</div>
                 {image ? (
-                  <div className="service-catalogue-image">
+                  <figure className="service-catalogue-image">
                     <Image
                       alt={image.alt}
                       fill
@@ -115,7 +117,8 @@ export function EditorialServiceCatalogue({
                       src={image.src}
                       style={{ objectPosition: image.position }}
                     />
-                  </div>
+                    {image.caption ? <figcaption>{image.caption}</figcaption> : null}
+                  </figure>
                 ) : null}
                 <div className="service-catalogue-copy">
                   <h3>{item.title}</h3>

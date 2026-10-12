@@ -72,6 +72,7 @@ describe("marketing page media reference lifecycle", () => {
       },
       marketingPageMedia: { deleteMany, createMany },
       marketingPageRevision: { create: vi.fn(async () => ({ id: "revision" })) },
+      publicMediaAsset: { count: vi.fn(async () => 1) },
     };
     const audit = { record: vi.fn(async () => undefined) };
     const service = new MarketingService(
@@ -128,6 +129,7 @@ describe("marketing page media reference lifecycle", () => {
       },
       marketingPageMedia: { deleteMany, createMany },
       marketingPageRevision: { create: vi.fn(async () => ({ id: "revision" })) },
+      publicMediaAsset: { count: vi.fn(async () => 1) },
     };
     const service = new MarketingService(
       {
@@ -153,6 +155,88 @@ describe("marketing page media reference lifecycle", () => {
         }),
       ],
     });
+  });
+
+  it("requires accessible metadata before publishing selected public media", async () => {
+    const deleteMany = vi.fn(async () => ({ count: 0 }));
+    const transaction = {
+      marketingPage: {
+        findUnique: vi.fn(async () => ({
+          id: "page",
+          version: 2,
+          draftContent: content,
+          seoTitle: null,
+          seoDescription: null,
+          ogTitle: null,
+          ogDescription: null,
+          socialImageId: null,
+        })),
+      },
+      publicMediaAsset: { count: vi.fn(async () => 0) },
+      marketingPageMedia: { deleteMany, createMany: vi.fn() },
+      marketingPageRevision: { create: vi.fn(async () => ({ id: "revision" })) },
+    };
+    const service = new MarketingService(
+      {
+        client: {
+          $transaction: vi.fn(async (callback: (value: typeof transaction) => unknown) =>
+            callback(transaction),
+          ),
+        },
+      } as never,
+      { record: vi.fn(async () => undefined) } as never,
+    );
+
+    await expect(service.publish("HOME", 2, actorUserId)).rejects.toMatchObject({
+      response: { code: "MEDIA_ALT_TEXT_REQUIRED" },
+    });
+    expect(deleteMany).not.toHaveBeenCalled();
+  });
+
+  it("returns only Published media references with alt text and captions publicly", async () => {
+    const caption = "CTPS exterior-cleaning project image.";
+    const findFirst = vi.fn(async () => ({
+      pageKey: "HOME",
+      slug: "/",
+      title: "Homepage",
+      publishedContent: content,
+      seoTitle: null,
+      seoDescription: null,
+      ogTitle: null,
+      ogDescription: null,
+      socialImageId: null,
+      publishedAt: new Date(),
+      mediaReferences: [
+        {
+          media: {
+            id: mediaId,
+            altText: "Clean residential exterior",
+            caption,
+            focalPointX: 50,
+            focalPointY: 50,
+          },
+        },
+      ],
+    }));
+    const service = new MarketingService(
+      { client: { marketingPage: { findFirst } } } as never,
+      { record: vi.fn(async () => undefined) } as never,
+    );
+
+    const result = await service.published("HOME");
+
+    expect(findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        select: expect.objectContaining({
+          mediaReferences: expect.objectContaining({
+            where: { usage: { startsWith: "PUBLISHED:" } },
+          }),
+        }),
+      }),
+    );
+    expect(result.media).toEqual([
+      expect.objectContaining({ altText: "Clean residential exterior", caption }),
+    ]);
   });
 
   it("restores revision content and rebuilds its Draft references", async () => {

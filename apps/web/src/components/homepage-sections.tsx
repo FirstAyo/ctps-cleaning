@@ -39,7 +39,7 @@ function marketingImage(
   return media
     ? {
         src: `/media/marketing/${media.id}/large`,
-        alt: media.altText,
+        alt: section.items?.[index]?.altText || media.altText,
         position: `${media.focalPointX}% ${media.focalPointY}%`,
       }
     : {
