@@ -16,7 +16,7 @@ Before & After reuses the repository's Tiptap/ProseMirror runtime, formatting-co
 
 ## Phase 13 publication safety
 
-Production `marketing:initialize` creates missing fixed pages as Drafts and never silently publishes default marketing content. Development keeps convenient safe defaults. Existing pages and Admin edits are not overwritten. Contact renders verified Site Settings values when present and otherwise routes property-specific inquiries to Request a Quote without a disabled imitation form. See `phase-13-launch-readiness.md`.
+Production `marketing:initialize` creates missing fixed pages as Drafts and never silently publishes default marketing content. Development keeps convenient safe defaults. Existing pages and Admin edits are not overwritten. Contact renders verified Site Settings values when present and otherwise routes property-specific inquiries to Request a Quote without a disabled imitation form. The fixed `REQUEST_QUOTE` page manages the quote-page hero while the security-sensitive inquiry and quote forms remain application-controlled. See `phase-13-launch-readiness.md`.
 
 ## Phase 12 SEO integration
 

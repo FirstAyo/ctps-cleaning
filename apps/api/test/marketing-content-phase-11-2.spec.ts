@@ -7,7 +7,7 @@ const byKey = (key: string) => systemMarketingPages.find((page) => page.pageKey 
 
 describe("Phase 11.2 fixed marketing catalogue", () => {
   it("keeps every fixed page inside the strict structured schema", () => {
-    expect(systemMarketingPages).toHaveLength(20);
+    expect(systemMarketingPages).toHaveLength(21);
     for (const page of systemMarketingPages)
       expect(marketingPageContentSchema.safeParse(page.content).success, page.pageKey).toBe(true);
   });
@@ -56,9 +56,15 @@ describe("Phase 11.2 fixed marketing catalogue", () => {
 
   it("keeps contact and quote paths distinct without invented contact details", () => {
     const contact = JSON.stringify(byKey("CONTACT").content);
+    const requestQuote = byKey("REQUEST_QUOTE");
     expect(contact).toContain("General inquiries");
     expect(contact).toContain("/request-a-quote");
     expect(contact).not.toMatch(/@|\+1|street|open daily/i);
+    expect(requestQuote.slug).toBe("/request-a-quote");
+    expect(requestQuote.content.sections).toHaveLength(1);
+    expect(requestQuote.content.sections[0]).toEqual(
+      expect.objectContaining({ type: "HERO_SLIDER", title: "Tell us what the property needs." }),
+    );
   });
 
   it("adds controlled portfolio and journal landing records without changing domain ownership", () => {

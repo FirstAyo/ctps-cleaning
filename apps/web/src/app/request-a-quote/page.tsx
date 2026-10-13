@@ -1,50 +1,63 @@
 import { Container, Section } from "@ctps/ui/layout";
-import { PageHero, SectionHeading } from "@/components/marketing";
+
+import { SectionHeading } from "@/components/marketing";
+import { PremiumHero } from "@/components/premium-hero";
 import { PublicLayout } from "@/components/public-shell";
-import { QuoteRequestForm } from "@/components/quote-request-form";
-import { GeneralInquiryForm } from "@/components/general-inquiry-form";
+import { RequestPathTabs } from "@/components/request-path-tabs";
+import { getMarketingMetadata, getMarketingPage, type MarketingSection } from "@/lib/marketing-api";
 import { metadataFor } from "@/lib/seo";
 
-export const metadata = metadataFor(
+const fallbackMetadata = metadataFor(
   "Request a Quote",
   "Tell CTPS about your residential or commercial property-care needs and request a review.",
   "/request-a-quote",
 );
-export default function Page() {
+
+const fallbackHero: MarketingSection = {
+  id: "hero",
+  type: "HERO_SLIDER",
+  enabled: true,
+  eyebrow: "Request a quote",
+  title: "Tell us what the property needs.",
+  body: "Choose a quick message or a detailed property review and receive a reference confirming receipt. This is not a price, appointment, or booking.",
+  primaryCta: {
+    label: "Choose an inquiry path",
+    href: "/request-a-quote#request-options",
+  },
+  secondaryCta: { label: "Explore the Estimator", href: "/estimate" },
+  mediaIds: [],
+  overlay: "BALANCED",
+  autoplay: false,
+  intervalMs: 7000,
+};
+
+export function generateMetadata() {
+  return getMarketingMetadata("REQUEST_QUOTE", fallbackMetadata);
+}
+
+export default async function Page() {
+  const page = await getMarketingPage("REQUEST_QUOTE");
+  const managedHero = page?.publishedContent.sections.find(
+    (section) => section.enabled && section.type === "HERO_SLIDER",
+  );
+
   return (
     <PublicLayout>
-      <PageHero
-        eyebrow="Request a quote"
-        title="Tell us what the property needs."
-        description="Choose one or more services, add the details that help our team review the work, and receive a reference confirming receipt. This is not a price, appointment, or booking."
-      />
-      <Section className="request-paths-section">
+      <div className="marketing-page marketing-page-request-quote">
+        <PremiumHero media={page?.media ?? []} section={managedHero ?? fallbackHero} />
         <Container size="wide">
-          <div className="request-paths-grid">
-            <section aria-labelledby="detailed-quote-heading" className="request-detailed-path">
-              <p className="eyebrow">Detailed quote request</p>
-              <h2 id="detailed-quote-heading">Provide the details needed for a property review.</h2>
-              <p>
-                Choose services, describe the property, share timing preferences, and optionally
-                include private photos.
-              </p>
-              <QuoteRequestForm />
-            </section>
-            <aside aria-label="General inquiry" className="request-message-path">
-              <GeneralInquiryForm />
-            </aside>
-          </div>
+          <RequestPathTabs />
         </Container>
-      </Section>
-      <Section className="bg-surface-muted/55" id="privacy">
-        <Container className="max-w-3xl">
-          <SectionHeading
-            eyebrow="Private by design"
-            title="Your details support this request only."
-            copy="Contact, property, and optional photo details are kept private and made available only to authorized staff reviewing your request. Photos are optional. CTPS will confirm scope, serviceability, timing, and any quote after review."
-          />
-        </Container>
-      </Section>
+        <Section className="bg-surface-muted/55" id="privacy">
+          <Container className="max-w-3xl">
+            <SectionHeading
+              copy="Contact, property, and optional photo details are kept private and made available only to authorized staff reviewing your request. Photos are optional. CTPS will confirm scope, serviceability, timing, and any quote after review."
+              eyebrow="Private by design"
+              title="Your details support this request only."
+            />
+          </Container>
+        </Section>
+      </div>
     </PublicLayout>
   );
 }

@@ -62,12 +62,8 @@ describe("Phase 4 public marketing", () => {
     }
   });
 
-  it("keeps the quote workflow active without implying booking or final pricing", () => {
-    const quote = markup(
-      <ToastProvider>
-        <RequestQuotePage />
-      </ToastProvider>,
-    );
+  it("keeps the quote workflow active without implying booking or final pricing", async () => {
+    const quote = markup(<ToastProvider>{await RequestQuotePage()}</ToastProvider>);
     expect(quote).toContain("Step 1 of 8");
     expect(quote).toContain("Property type");
     expect(quote).toContain("This is not a price, appointment, or booking");
@@ -78,6 +74,8 @@ describe("Phase 4 public marketing", () => {
     );
     expect(contact).toContain("Serving six primary communities");
     expect(contact).toContain("general-inquiry-form");
+    expect(quote).toContain("Send us a message");
+    expect(quote).toContain("Request a quote");
     expect(quote).toContain("Detailed quote request");
     expect(quote).toContain("general-inquiry-form");
   });

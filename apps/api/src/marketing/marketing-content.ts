@@ -843,6 +843,28 @@ export const systemMarketingPages: readonly SystemMarketingPage[] = [
     },
   },
   {
+    pageKey: "REQUEST_QUOTE",
+    slug: "/request-a-quote",
+    title: "Request a Quote",
+    pageType: "LANDING",
+    content: {
+      sections: [
+        {
+          ...hero(
+            "Tell us what the property needs.",
+            "Choose a quick message or a detailed property review and receive a reference confirming receipt. This is not a price, appointment, or booking.",
+            "Request a quote",
+          ),
+          primaryCta: {
+            label: "Choose an inquiry path",
+            href: "/request-a-quote#request-options",
+          },
+          secondaryCta: { label: "Explore the Estimator", href: "/estimate" },
+        },
+      ],
+    },
+  },
+  {
     pageKey: "RESIDENTIAL",
     slug: "/residential",
     title: "Residential property care",

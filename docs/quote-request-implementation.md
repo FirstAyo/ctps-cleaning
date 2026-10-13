@@ -1,6 +1,8 @@
 # Quote Request Implementation
 
-The public Request a Quote page offers two separate paths: the existing detailed Quote Request workflow and a lightweight General Inquiry form. A General Inquiry is persisted in its own model, has its own Admin Messages workspace, and never becomes a Quote Request implicitly. The shared form is also used on Contact; see `general-inquiry-implementation.md`.
+The public Request a Quote page offers two separate paths in an accessible tab interface: the lightweight General Inquiry is selected by default, while the detailed Quote Request remains available as the second tab. Switching tabs preserves in-progress form state. A General Inquiry is persisted in its own model, has its own Admin Messages workspace, and never becomes a Quote Request implicitly. The shared form is also used on Contact; see `general-inquiry-implementation.md`.
+
+The page hero is a fixed-key `REQUEST_QUOTE` marketing record. Authorized staff can edit its copy, calls to action, imagery, focal points, overlay, and carousel settings through Admin Pages. The transactional forms remain application-controlled rather than CMS-authored so their validation, privacy, and submission boundaries cannot be bypassed by content edits.
 
 Phase 9 allows eligible Accepted requests—or Quote Prepared/Contacted requests with explicit staff confirmation of external acceptance—to be converted once into a protected operational job. Conversion preserves the quote and copies only approved snapshots. Quote detail displays the linked job without exposing it publicly.
 
