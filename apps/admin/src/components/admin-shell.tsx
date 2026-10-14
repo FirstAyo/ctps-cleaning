@@ -26,6 +26,7 @@ import {
   X,
 } from "@ctps/ui/icons";
 import { cn } from "@ctps/ui/utils";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -191,8 +192,21 @@ export function AdminShell({
         )}
       >
         <div className="flex min-h-16 items-center justify-between gap-2 border-b border-sidebar-border px-4">
-          <Link aria-label="CTPS admin design foundation" className="font-bold" href="/">
-            {collapsed ? "C" : "CTPS Admin"}
+          <Link aria-label="CTPS admin home" className="font-bold" href="/">
+            {collapsed ? (
+              "C"
+            ) : (
+              <span className="inline-flex rounded-md bg-white p-1">
+                <Image
+                  alt=""
+                  className="h-10 w-auto object-contain"
+                  height={241}
+                  priority
+                  src="/images/brand/ctps-logo.jpg"
+                  width={451}
+                />
+              </span>
+            )}
           </Link>
           <IconButton
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
@@ -284,7 +298,17 @@ export function AdminShell({
             role="dialog"
           >
             <div className="flex min-h-16 items-center justify-between border-b border-sidebar-border px-4">
-              <strong>CTPS Admin demo</strong>
+              <Link aria-label="CTPS admin home" href="/">
+                <span className="inline-flex rounded-md bg-white p-1">
+                  <Image
+                    alt=""
+                    className="h-10 w-auto object-contain"
+                    height={241}
+                    src="/images/brand/ctps-logo.jpg"
+                    width={451}
+                  />
+                </span>
+              </Link>
               <IconButton
                 aria-label="Close admin navigation"
                 className="text-sidebar-foreground hover:bg-sidebar-accent"

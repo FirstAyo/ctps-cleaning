@@ -27,6 +27,8 @@ describe("admin shell demonstration", () => {
         <p>Content</p>
       </AdminShell>,
     );
+    const brandLink = screen.getByRole("link", { name: "CTPS admin home" });
+    expect(brandLink.querySelector("img")?.getAttribute("src")).toContain("ctps-logo.jpg");
     await user.click(screen.getByRole("button", { name: "Collapse sidebar" }));
     expect(screen.getByRole("button", { name: "Expand sidebar" })).not.toBeNull();
     expect(screen.getByLabelText("Dashboard")).not.toBeNull();
