@@ -14,6 +14,7 @@ WORKDIR /app
 RUN groupadd --system --gid 1001 ctps && useradd --system --uid 1001 --gid ctps ctps
 COPY --from=build --chown=ctps:ctps /workspace/apps/admin/.next/standalone ./
 COPY --from=build --chown=ctps:ctps /workspace/apps/admin/.next/static ./apps/admin/.next/static
+COPY --from=build --chown=ctps:ctps /workspace/apps/admin/public ./apps/admin/public
 USER ctps
 EXPOSE 3001
 CMD ["node", "apps/admin/server.js"]
