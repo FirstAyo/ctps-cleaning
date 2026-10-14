@@ -1,11 +1,12 @@
 // @vitest-environment jsdom
 
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ToastProvider } from "@ctps/ui/toast";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { RequestPathTabs } from "../src/components/request-path-tabs";
+import { getRandomServices } from "../src/content/site";
 
 beforeEach(() => {
   vi.stubGlobal("crypto", {
@@ -71,5 +72,31 @@ describe("request path tabs", () => {
     await user.keyboard("{ArrowRight}");
     expect(quoteTab.getAttribute("aria-selected")).toBe("true");
     expect(document.activeElement).toBe(quoteTab);
+  });
+
+  it("shows four unique service recommendations selected for the page load", async () => {
+    const random = vi.fn().mockReturnValueOnce(0).mockReturnValueOnce(0.25).mockReturnValue(0.5);
+    const recommendations = getRandomServices(4, random);
+
+    render(
+      <ToastProvider>
+        <RequestPathTabs recommendedServices={recommendations} />
+      </ToastProvider>,
+    );
+
+    const sidebar = screen.getByRole("complementary", { name: /other ways we can help/i });
+
+    expect(sidebar.closest(".request-path-surface")).toBeNull();
+    expect(sidebar.previousElementSibling?.classList.contains("request-path-surface")).toBe(true);
+
+    await waitFor(() => {
+      expect(within(sidebar).getAllByRole("link", { name: "Explore service" })).toHaveLength(4);
+    });
+
+    const serviceLinks = within(sidebar).getAllByRole("link", { name: "Explore service" });
+    expect(new Set(serviceLinks.map((link) => link.getAttribute("href"))).size).toBe(4);
+    expect(serviceLinks.every((link) => link.getAttribute("href")?.startsWith("/services/"))).toBe(
+      true,
+    );
   });
 });

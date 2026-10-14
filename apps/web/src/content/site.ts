@@ -309,6 +309,19 @@ export const primaryNavigation = [
 export function getService(slug: string) {
   return services.find((service) => service.slug === slug);
 }
+export function getRandomServices(
+  count: number,
+  random: () => number = Math.random,
+): readonly Service[] {
+  const candidates = [...services];
+
+  for (let index = candidates.length - 1; index > 0; index -= 1) {
+    const randomIndex = Math.floor(random() * (index + 1));
+    [candidates[index], candidates[randomIndex]] = [candidates[randomIndex]!, candidates[index]!];
+  }
+
+  return candidates.slice(0, Math.max(0, Math.min(count, candidates.length)));
+}
 export function getServiceArea(slug: string) {
   return serviceAreas.find((area) => area.slug === slug);
 }

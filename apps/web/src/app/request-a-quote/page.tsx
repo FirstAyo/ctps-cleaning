@@ -4,8 +4,11 @@ import { SectionHeading } from "@/components/marketing";
 import { PremiumHero } from "@/components/premium-hero";
 import { PublicLayout } from "@/components/public-shell";
 import { RequestPathTabs } from "@/components/request-path-tabs";
+import { getRandomServices } from "@/content/site";
 import { getMarketingMetadata, getMarketingPage, type MarketingSection } from "@/lib/marketing-api";
 import { metadataFor } from "@/lib/seo";
+
+export const dynamic = "force-dynamic";
 
 const fallbackMetadata = metadataFor(
   "Request a Quote",
@@ -37,6 +40,7 @@ export function generateMetadata() {
 
 export default async function Page() {
   const page = await getMarketingPage("REQUEST_QUOTE");
+  const recommendedServices = getRandomServices(4);
   const managedHero = page?.publishedContent.sections.find(
     (section) => section.enabled && section.type === "HERO_SLIDER",
   );
@@ -46,7 +50,7 @@ export default async function Page() {
       <div className="marketing-page marketing-page-request-quote">
         <PremiumHero media={page?.media ?? []} section={managedHero ?? fallbackHero} />
         <Container size="wide">
-          <RequestPathTabs />
+          <RequestPathTabs recommendedServices={recommendedServices} />
         </Container>
         <Section className="bg-surface-muted/55" id="privacy">
           <Container className="max-w-3xl">

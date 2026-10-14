@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Container } from "@ctps/ui/layout";
 import { Button, IconButton, LinkButton } from "@ctps/ui/primitives";
 import { ThemeToggle } from "@ctps/ui/theme";
-import { ChevronDown, Menu, Sparkles, X } from "@ctps/ui/icons";
+import { ChevronDown, Menu, X } from "@ctps/ui/icons";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -105,20 +105,16 @@ export function PublicHeader() {
                 width={160}
               />
             ) : (
-              <>
-                <span
-                  aria-hidden="true"
-                  className="grid size-10 place-items-center rounded-md bg-secondary text-secondary-foreground"
-                >
-                  <Sparkles aria-hidden="true" className="size-5" />
-                </span>
-                <span>
-                  {settings.businessDisplayName ?? "CTPS"}{" "}
-                  <span className="hidden font-normal text-muted-foreground sm:inline">
-                    {settings.brandTagline ?? "Clean Precision"}
-                  </span>
-                </span>
-              </>
+              <span className="inline-flex rounded-md bg-white p-1">
+                <Image
+                  alt=""
+                  className="h-10 w-auto object-contain sm:h-12"
+                  height={241}
+                  priority
+                  src="/images/brand/ctps-logo.jpg"
+                  width={451}
+                />
+              </span>
             )}
           </Link>
           <nav aria-label="Primary navigation" className="hidden items-center gap-0.5 xl:flex">
@@ -282,15 +278,25 @@ export function PublicFooter() {
         <div className="grid gap-10 md:grid-cols-2 xl:grid-cols-[1.4fr_repeat(4,1fr)]">
           <div>
             {settings.logoMediaId ? (
-              <Image
-                alt=""
-                className="h-12 w-auto max-w-48 object-contain"
-                height={56}
-                src={`/media/marketing/${settings.logoMediaId}/standard`}
-                width={192}
-              />
+              <span className="inline-flex rounded-md bg-white p-2">
+                <Image
+                  alt=""
+                  className="h-14 w-auto max-w-48 object-contain"
+                  height={56}
+                  src={`/media/marketing/${settings.logoMediaId}/standard`}
+                  width={192}
+                />
+              </span>
             ) : (
-              <p className="text-2xl font-bold">{settings.businessDisplayName ?? "CTPS"}</p>
+              <span className="inline-flex rounded-md bg-white p-2">
+                <Image
+                  alt=""
+                  className="h-16 w-auto object-contain"
+                  height={241}
+                  src="/images/brand/ctps-logo.jpg"
+                  width={451}
+                />
+              </span>
             )}
             <p className="mt-3 max-w-xs text-sm text-sidebar-muted">
               {settings.footerDescription ??

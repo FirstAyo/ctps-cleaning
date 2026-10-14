@@ -22,6 +22,8 @@ afterEach(() => {
 describe("public mobile navigation", () => {
   it("presents the complete anonymous customer navigation without Admin links", () => {
     render(<PublicHeader />);
+    const brandLink = screen.getByRole("link", { name: "CTPS home" });
+    expect(brandLink.querySelector("img")?.getAttribute("src")).toContain("ctps-logo.jpg");
     for (const href of [
       "/services",
       "/projects",
